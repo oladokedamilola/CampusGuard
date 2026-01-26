@@ -1,0 +1,287 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5" style="background: linear-gradient(135deg, var(--cg-dark) 0%, #2D2D2D 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    Simple, Transparent <span class="text-gradient">Pricing</span>
+                </h1>
+                <p class="lead mb-4 text-white-50">
+                    Choose the perfect plan for your institution's security needs. 
+                    All plans include our core AI surveillance features.
+                </p>
+                
+                <!-- Billing Toggle -->
+                <div class="d-inline-flex align-items-center bg-dark rounded-pill p-1 mb-5">
+                    <span class="px-3 py-2 text-white-50">Monthly</span>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="billingToggle" style="width: 3em; height: 1.5em;">
+                        <label class="form-check-label text-white-50 ms-2" for="billingToggle">
+                            Annual (Save 20%)
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Pricing Plans -->
+<section class="py-5 py-lg-7">
+    <div class="container">
+        <div class="row g-4 justify-content-center">
+            {% for plan in plans %}
+            <div class="col-lg-4">
+                <div class="card h-100 border-0 shadow-lg {% if plan.popular %}border-primary border-2{% endif %}">
+                    {% if plan.popular %}
+                    <div class="position-absolute top-0 start-50 translate-middle">
+                        <span class="badge bg-gradient-primary text-white px-3 py-2 rounded-pill">
+                            <i class="fas fa-crown me-1"></i>Most Popular
+                        </span>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="card-body p-4">
+                        <div class="text-center mb-4">
+                            <h3 class="h2 fw-bold mb-2">{{ plan.name }}</h3>
+                            <p class="text-muted mb-4">{{ plan.description }}</p>
+                            
+                            <div class="display-3 fw-bold text-gradient mb-1">
+                                {{ plan.price }}
+                            </div>
+                            <div class="text-muted mb-4">{{ plan.period }}</div>
+                            
+                            <a href="{% url 'landing:contact' %}" 
+                               class="btn {{ plan.cta_class }} btn-lg w-100 mb-4">
+                                {{ plan.cta_text }}
+                            </a>
+                        </div>
+                        
+                        <h5 class="mb-3">What's included:</h5>
+                        <ul class="list-unstyled mb-4">
+                            {% for feature in plan.features %}
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                {{ feature }}
+                            </li>
+                            {% endfor %}
+                            
+                            {% for not_feature in plan.not_included %}
+                            <li class="mb-2 text-muted">
+                                <i class="fas fa-times me-2"></i>
+                                <span class="text-decoration-line-through">{{ not_feature }}</span>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                        
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                <i class="fas fa-shield-alt me-1"></i>
+                                14-day free trial • No credit card required
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Custom Plan CTA -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm bg-gradient-dark text-white">
+                    <div class="card-body p-5 text-center">
+                        <h3 class="h2 fw-bold mb-3">Need a Custom Solution?</h3>
+                        <p class="lead mb-4">
+                            Large campuses, multiple locations, or special requirements? 
+                            We'll build a custom plan just for you.
+                        </p>
+                        <a href="{% url 'landing:contact' %}?plan=custom" class="btn btn-light btn-lg">
+                            <i class="fas fa-headset me-2"></i>Request Custom Quote
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Comparison Table -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Feature Comparison</h2>
+            <p class="lead text-muted">See how our plans stack up against each other.</p>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="bg-gradient-dark text-white">
+                    <tr>
+                        <th style="width: 30%;">Feature</th>
+                        <th class="text-center">Basic</th>
+                        <th class="text-center">Professional</th>
+                        <th class="text-center">Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Cameras Supported</strong></td>
+                        <td class="text-center">Up to 10</td>
+                        <td class="text-center">Up to 50</td>
+                        <td class="text-center">Unlimited</td>
+                    </tr>
+                    <tr>
+                        <td><strong>AI Detection Types</strong></td>
+                        <td class="text-center">Basic Motion</td>
+                        <td class="text-center">Motion, Object, Face</td>
+                        <td class="text-center">Full AI Suite</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Video Retention</strong></td>
+                        <td class="text-center">7 days</td>
+                        <td class="text-center">30 days</td>
+                        <td class="text-center">90+ days</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Alert Channels</strong></td>
+                        <td class="text-center">Email</td>
+                        <td class="text-center">Email, SMS, App</td>
+                        <td class="text-center">All + Custom</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Support</strong></td>
+                        <td class="text-center">Email</td>
+                        <td class="text-center">Priority</td>
+                        <td class="text-center">24/7 Dedicated</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Analytics & Reports</strong></td>
+                        <td class="text-center">Basic</td>
+                        <td class="text-center">Advanced</td>
+                        <td class="text-center">Custom</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Training</strong></td>
+                        <td class="text-center">Documentation</td>
+                        <td class="text-center">Online</td>
+                        <td class="text-center">On-site</td>
+                    </tr>
+                    <tr>
+                        <td><strong>SLA Guarantee</strong></td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-times text-danger"></i></td>
+                        <td class="text-center"><i class="fas fa-check text-success"></i></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- FAQ Section -->
+<section class="py-5 py-lg-7">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Frequently Asked Questions</h2>
+            <p class="lead text-muted">Can't find what you're looking for? <a href="{% url 'landing:contact' %}">Contact our team</a>.</p>
+        </div>
+        
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="accordion" id="faqAccordion">
+                    {% for faq in faqs %}
+                    <div class="accordion-item border-0 shadow-sm mb-3">
+                        <h3 class="accordion-header">
+                            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                                    type="button" data-bs-toggle="collapse" 
+                                    data-bs-target="#faq{{ forloop.counter }}">
+                                <i class="fas fa-question-circle text-primary me-3"></i>
+                                {{ faq.question }}
+                            </button>
+                        </h3>
+                        <div id="faq{{ forloop.counter }}" 
+                             class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                             data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                {{ faq.answer }}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 py-lg-7 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-3">Ready to Get Started?</h2>
+                <p class="lead mb-0">
+                    Join hundreds of Nigerian institutions protecting their campuses with AI.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="d-flex flex-column flex-lg-row gap-3">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-play-circle me-2"></i>Start Free Trial
+                    </a>
+                    <a href="{% url 'landing:contact' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-calendar me-2"></i>Book a Demo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Billing toggle functionality
+    const billingToggle = document.getElementById('billingToggle');
+    const monthlyPrices = {
+        'basic': '₦50,000',
+        'professional': '₦150,000', 
+        'enterprise': 'Custom'
+    };
+    const annualPrices = {
+        'basic': '₦40,000',
+        'professional': '₦120,000',
+        'enterprise': 'Custom'
+    };
+    
+    billingToggle.addEventListener('change', function() {
+        const isAnnual = this.checked;
+        const planElements = document.querySelectorAll('[data-plan]');
+        
+        planElements.forEach(element => {
+            const plan = element.getAttribute('data-plan');
+            const priceElement = element.querySelector('.plan-price');
+            const periodElement = element.querySelector('.plan-period');
+            
+            if (priceElement && periodElement) {
+                if (isAnnual) {
+                    priceElement.textContent = annualPrices[plan];
+                    periodElement.textContent = '/month (annual)';
+                } else {
+                    priceElement.textContent = monthlyPrices[plan];
+                    periodElement.textContent = '/month';
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

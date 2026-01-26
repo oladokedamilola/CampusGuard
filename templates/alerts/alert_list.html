@@ -1,0 +1,472 @@
+{% extends 'base_app.html' %}
+
+{% load static %}
+
+{% block title %}Alerts - CampusGuard AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .alert-card {
+        border-left: 4px solid;
+        transition: all 0.2s ease;
+    }
+    
+    .alert-card:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .alert-unread {
+        background-color: rgba(0, 102, 204, 0.05);
+        border-left-color: var(--cg-primary);
+    }
+    
+    .alert-read {
+        background-color: var(--cg-white);
+        border-left-color: var(--cg-gray-300);
+    }
+    
+    .alert-high { border-left-color: var(--cg-danger); }
+    .alert-medium { border-left-color: var(--cg-warning); }
+    .alert-low { border-left-color: var(--cg-info); }
+    
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 15px;
+    }
+    
+    .notification-icon.incident {
+        background-color: rgba(220, 53, 69, 0.1);
+        color: var(--cg-danger);
+    }
+    
+    .notification-icon.camera {
+        background-color: rgba(0, 102, 204, 0.1);
+        color: var(--cg-primary);
+    }
+    
+    .notification-icon.system {
+        background-color: rgba(23, 162, 184, 0.1);
+        color: var(--cg-info);
+    }
+    
+    .channel-badge {
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        margin-right: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Alerts</li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>
+            <i class="fas fa-bell me-2"></i>Alerts & Notifications
+        </h1>
+        <p class="text-muted mb-0">Monitor security alerts and system notifications</p>
+    </div>
+    
+    <div class="btn-group">
+        <a href="{% url 'alerts:preferences' %}" class="btn btn-outline-primary">
+            <i class="fas fa-cog me-1"></i>Preferences
+        </a>
+        {% if user.is_superuser or user.role in 'admin,security_manager' %}
+        <a href="{% url 'alerts:rule_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-rules me-1"></i>Alert Rules
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Alerts</h6>
+                        <h2 class="mb-0">{{ alerts.paginator.count }}</h2>
+                    </div>
+                    <i class="fas fa-bell fa-3x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Unread</h6>
+                        <h2 class="mb-0">{{ unread_count }}</h2>
+                    </div>
+                    <i class="fas fa-envelope fa-3x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Email Sent</h6>
+                        <h2 class="mb-0">{{ alerts_email_sent }}</h2>
+                    </div>
+                    <i class="fas fa-paper-plane fa-3x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Today</h6>
+                        <h2 class="mb-0">{{ alerts_today }}</h2>
+                    </div>
+                    <i class="fas fa-calendar-day fa-3x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-gradient-dark text-white py-3">
+        <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>Filter Alerts
+            <button class="btn btn-sm btn-outline-light float-end" type="button" data-bs-toggle="collapse" data-bs-target="#filterCollapse">
+                <i class="fas fa-chevron-down"></i>
+            </button>
+        </h5>
+    </div>
+    <div class="collapse show" id="filterCollapse">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    {{ filter_form.status }}
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">Alert Type</label>
+                    {{ filter_form.alert_type }}
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">Read Status</label>
+                    {{ filter_form.read_status }}
+                </div>
+                
+                <div class="col-md-3">
+                    <label class="form-label">Search</label>
+                    {{ filter_form.search }}
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label">Date From</label>
+                    {{ filter_form.date_from }}
+                </div>
+                
+                <div class="col-md-4">
+                    <label class="form-label">Date To</label>
+                    {{ filter_form.date_to }}
+                </div>
+                
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search me-1"></i>Apply Filters
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Actions -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body py-2">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="select-all-alerts">
+                <label class="form-check-label" for="select-all-alerts">Select All</label>
+            </div>
+            
+            <div class="btn-group">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="markSelectedAsRead()">
+                    <i class="fas fa-check me-1"></i>Mark as Read
+                </button>
+                <a href="{% url 'alerts:mark_all_read' %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-check-double me-1"></i>Mark All Read
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alerts List -->
+<div class="card shadow-lg">
+    <div class="card-body p-0">
+        {% if alerts %}
+        <div class="list-group list-group-flush">
+            {% for alert in alerts %}
+            <div class="list-group-item p-0">
+                <div class="alert-card p-4 {% if alert.is_read %}alert-read{% else %}alert-unread{% endif %} 
+                            alert-{{ alert.metadata.severity|default:'medium' }}">
+                    <div class="d-flex">
+                        <!-- Alert Icon -->
+                        <div class="notification-icon {{ alert.alert_type|cut:'_' }}">
+                            {% if alert.alert_type == 'incident_detected' %}
+                            <i class="fas fa-exclamation-triangle"></i>
+                            {% elif alert.alert_type == 'camera_offline' %}
+                            <i class="fas fa-video-slash"></i>
+                            {% else %}
+                            <i class="fas fa-bell"></i>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Alert Content -->
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h5 class="mb-1">
+                                        {% if not alert.is_read %}
+                                        <span class="badge bg-danger me-2">NEW</span>
+                                        {% endif %}
+                                        {{ alert.title }}
+                                    </h5>
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <span class="badge bg-{{ alert.get_severity_color }}">
+                                            {{ alert.metadata.severity|default:'medium'|title }}
+                                        </span>
+                                        <span class="badge bg-secondary">
+                                            {{ alert.get_alert_type_display }}
+                                        </span>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ alert.created_at|timesince }} ago
+                                        </small>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-check">
+                                    <input type="checkbox" class="form-check-input alert-checkbox" 
+                                           value="{{ alert.pk }}" 
+                                           id="alert-{{ alert.pk }}">
+                                </div>
+                            </div>
+                            
+                            <p class="mb-3">{{ alert.message|truncatechars:200 }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <!-- Delivery Channels -->
+                                    {% if alert.channels %}
+                                    <div class="mb-2">
+                                        <small class="text-muted me-2">Delivered via:</small>
+                                        {% for channel in alert.channels %}
+                                        <span class="badge channel-badge bg-light text-dark">
+                                            <i class="fas fa-{{ channel }} me-1"></i>{{ channel|title }}
+                                        </span>
+                                        {% endfor %}
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <!-- Source Information -->
+                                    <div>
+                                        {% if alert.camera %}
+                                        <small class="text-muted">
+                                            <i class="fas fa-video me-1"></i>
+                                            <a href="{% url 'cameras:detail' alert.camera.pk %}" class="text-decoration-none">
+                                                {{ alert.camera.name }}
+                                            </a>
+                                        </small>
+                                        {% endif %}
+                                        
+                                        {% if alert.incident %}
+                                        <small class="text-muted ms-3">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>
+                                            <a href="{% url 'incidents:detail' alert.incident.pk %}" class="text-decoration-none">
+                                                {{ alert.incident.incident_id }}
+                                            </a>
+                                        </small>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="btn-group">
+                                    <a href="{% url 'alerts:detail' alert.pk %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                    {% if not alert.is_read %}
+                                    <a href="{% url 'alerts:mark_read' alert.pk %}" class="btn btn-sm btn-outline-success">
+                                        <i class="fas fa-check me-1"></i>Mark Read
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+            <h4>No Alerts Found</h4>
+            <p class="text-muted">All caught up! No alerts match your filters.</p>
+            <a href="{% url 'alerts:list' %}" class="btn btn-primary">
+                <i class="fas fa-sync me-1"></i>Clear Filters
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Pagination -->
+{% if alerts.paginator.num_pages > 1 %}
+<nav aria-label="Alert pagination" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if alerts.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ alerts.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                <i class="fas fa-chevron-left me-1"></i>Previous
+            </a>
+        </li>
+        {% endif %}
+        
+        {% for num in alerts.paginator.page_range %}
+            {% if alerts.number == num %}
+            <li class="page-item active">
+                <span class="page-link">{{ num }}</span>
+            </li>
+            {% elif num > alerts.number|add:'-3' and num < alerts.number|add:'3' %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                    {{ num }}
+                </a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        
+        {% if alerts.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ alerts.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                Next <i class="fas fa-chevron-right ms-1"></i>
+            </a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all checkboxes
+    const selectAll = document.getElementById('select-all-alerts');
+    const alertCheckboxes = document.querySelectorAll('.alert-checkbox');
+    
+    selectAll.addEventListener('change', function() {
+        alertCheckboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+        });
+    });
+    
+    // Individual checkbox behavior
+    alertCheckboxes.forEach(cb => {
+        cb.addEventListener('change', function() {
+            if (!this.checked) {
+                selectAll.checked = false;
+            } else {
+                // Check if all are selected
+                const allChecked = Array.from(alertCheckboxes).every(c => c.checked);
+                selectAll.checked = allChecked;
+            }
+        });
+    });
+    
+    // Auto-refresh for new alerts every 30 seconds
+    setInterval(function() {
+        if (document.visibilityState === 'visible') {
+            // Check for new alerts via HTMX
+            console.log('Checking for new alerts...');
+        }
+    }, 30000);
+});
+
+function markSelectedAsRead() {
+    const selectedAlerts = Array.from(document.querySelectorAll('.alert-checkbox:checked'))
+        .map(cb => cb.value);
+    
+    if (selectedAlerts.length === 0) {
+        showToast('Please select alerts to mark as read', 'warning');
+        return;
+    }
+    
+    // Send AJAX request to mark as read
+    fetch('{% url "alerts:mark_all_read" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            alert_ids: selectedAlerts
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showToast(`Marked ${selectedAlerts.length} alerts as read`, 'success');
+            // Reload page after 1 second
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            showToast('Error marking alerts as read', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Error marking alerts as read', 'error');
+    });
+}
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    // Mark all as read with Ctrl+Shift+M
+    if (e.ctrlKey && e.shiftKey && e.key === 'M') {
+        e.preventDefault();
+        document.querySelector('a[href="{% url 'alerts:mark_all_read' %}"]').click();
+    }
+    
+    // Refresh with F5
+    if (e.key === 'F5') {
+        e.preventDefault();
+        location.reload();
+    }
+});
+</script>
+{% endblock %}

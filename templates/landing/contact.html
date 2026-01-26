@@ -1,0 +1,322 @@
+{% extends 'base_public.html' %}
+{% load static %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5" style="background: linear-gradient(135deg, var(--cg-dark) 0%, #2D2D2D 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8 mx-auto text-center">
+                <h1 class="display-4 fw-bold mb-4">
+                    Get in <span class="text-gradient">Touch</span>
+                </h1>
+                <p class="lead mb-4 text-white-50">
+                    Have questions about CampusGuard AI? Our security experts are here to help 
+                    you protect your campus with intelligent surveillance technology.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Content -->
+<section class="py-5 py-lg-7">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Contact Form -->
+            <div class="col-lg-7">
+                <div class="card border-0 shadow-lg">
+                    <div class="card-header bg-gradient-primary text-white py-4">
+                        <h3 class="h4 mb-0">
+                            <i class="fas fa-envelope me-2"></i>Send us a Message
+                        </h3>
+                    </div>
+                    <div class="card-body p-4 p-lg-5">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <form method="post" novalidate>
+                            {% csrf_token %}
+                            
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label for="name" class="form-label">Full Name *</label>
+                                    <input type="text" class="form-control" id="name" name="name" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label">Email Address *</label>
+                                    <input type="email" class="form-control" id="email" name="email" required>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="phone" class="form-label">Phone Number</label>
+                                    <input type="tel" class="form-control" id="phone" name="phone">
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <label for="institution" class="form-label">Institution/Organization</label>
+                                    <input type="text" class="form-control" id="institution" name="institution">
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="contact_method" class="form-label">Preferred Contact Method</label>
+                                    <select class="form-select" id="contact_method" name="contact_method">
+                                        <option value="email">Email</option>
+                                        <option value="phone">Phone Call</option>
+                                        <option value="whatsapp">WhatsApp</option>
+                                        <option value="any">Any Method</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <label for="message" class="form-label">Your Message *</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="privacy" name="privacy" required>
+                                        <label class="form-check-label" for="privacy">
+                                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy Policy</a> 
+                                            and consent to being contacted by CampusGuard AI.
+                                        </label>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                                        <i class="fas fa-paper-plane me-2"></i>Send Message
+                                    </button>
+                                </div>
+                                
+                                <div class="col-12 text-center">
+                                    <small class="text-muted">
+                                        We typically respond within 24 hours during business days.
+                                    </small>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Contact Information -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-lg h-100">
+                    <div class="card-header bg-gradient-dark text-white py-4">
+                        <h3 class="h4 mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Contact Information
+                        </h3>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="icon-wrapper bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-envelope text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Email</h5>
+                                <p class="mb-0">
+                                    <a href="mailto:{{ contact_info.email }}" class="text-decoration-none">
+                                        {{ contact_info.email }}
+                                    </a>
+                                </p>
+                                <small class="text-muted">For general inquiries</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="icon-wrapper bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-phone text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Phone</h5>
+                                <p class="mb-0">
+                                    <a href="tel:{{ contact_info.phone|cut:' ' }}" class="text-decoration-none">
+                                        {{ contact_info.phone }}
+                                    </a>
+                                </p>
+                                <small class="text-muted">Monday - Friday, 8AM - 6PM WAT</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="icon-wrapper bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-map-marker-alt text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Office</h5>
+                                <p class="mb-0">{{ contact_info.address }}</p>
+                                <small class="text-muted">By appointment only</small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex align-items-start mb-4">
+                            <div class="icon-wrapper bg-gradient-primary rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                 style="width: 50px; height: 50px;">
+                                <i class="fas fa-clock text-white"></i>
+                            </div>
+                            <div>
+                                <h5 class="mb-1">Business Hours</h5>
+                                <p class="mb-0">{{ contact_info.hours }}</p>
+                                <small class="text-muted">Emergency support available 24/7 for enterprise clients</small>
+                            </div>
+                        </div>
+                        
+                        <hr class="my-4">
+                        
+                        <h5 class="mb-3">Quick Links</h5>
+                        <div class="d-flex flex-wrap gap-2">
+                            <a href="{% url 'landing:pricing' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-tag me-1"></i>View Pricing
+                            </a>
+                            <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-sign-in-alt me-1"></i>Start Trial
+                            </a>
+                            <a href="#" class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#demoModal">
+                                <i class="fas fa-play-circle me-1"></i>Book Demo
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- FAQ Preview -->
+        <div class="row mt-5">
+            <div class="col-lg-8 mx-auto">
+                <div class="card border-0 shadow-sm bg-light">
+                    <div class="card-body p-5 text-center">
+                        <h3 class="h2 fw-bold mb-3">Need Answers Quickly?</h3>
+                        <p class="lead mb-4">
+                            Check our FAQ for quick answers to common questions about 
+                            CampusGuard AI features, pricing, and implementation.
+                        </p>
+                        <a href="{% url 'landing:pricing' %}#faqAccordion" class="btn btn-primary btn-lg">
+                            <i class="fas fa-question-circle me-2"></i>View FAQs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Privacy Policy Modal -->
+<div class="modal fade" id="privacyModal" tabindex="-1" aria-labelledby="privacyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="privacyModalLabel">
+                    <i class="fas fa-shield-alt me-2"></i>Privacy Policy
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>Data Collection and Use</h5>
+                <p>
+                    We collect your contact information solely to respond to your inquiry and 
+                    provide information about CampusGuard AI services. We do not share your 
+                    information with third parties without your consent.
+                </p>
+                
+                <h5 class="mt-4">Compliance</h5>
+                <p>
+                    CampusGuard AI complies with the Nigeria Data Protection Act (NDPA) 2023. 
+                    All data is handled securely and used only for the purposes stated.
+                </p>
+                
+                <h5 class="mt-4">Contact Preferences</h5>
+                <p>
+                    By submitting this form, you consent to being contacted by our team via 
+                    your preferred method. You can unsubscribe from communications at any time.
+                </p>
+                
+                <div class="alert alert-info mt-4">
+                    <i class="fas fa-info-circle me-2"></i>
+                    For our full privacy policy, please email 
+                    <a href="mailto:privacy@campusguard-ai.com">privacy@campusguard-ai.com</a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Demo Modal -->
+<div class="modal fade" id="demoModal" tabindex="-1" aria-labelledby="demoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-primary text-white">
+                <h5 class="modal-title" id="demoModalLabel">
+                    <i class="fas fa-calendar me-2"></i>Schedule a Demo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    Book a personalized demo with our security experts. See CampusGuard AI 
+                    in action and get all your questions answered.
+                </p>
+                
+                <div class="alert alert-info">
+                    <i class="fas fa-clock me-2"></i>
+                    Demos typically last 30-45 minutes and can be scheduled 
+                    Monday - Friday, 9AM - 5PM WAT.
+                </div>
+                
+                <p class="text-center mt-4">
+                    <a href="{% url 'landing:contact' %}?subject=Demo%20Request" class="btn btn-primary">
+                        <i class="fas fa-calendar-check me-2"></i>Request Demo via Contact Form
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set form values from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    
+    if (urlParams.has('subject')) {
+        document.getElementById('message').value = `Subject: ${urlParams.get('subject')}\n\n`;
+    }
+    
+    if (urlParams.has('plan')) {
+        const plan = urlParams.get('plan');
+        let message = document.getElementById('message').value;
+        message += `I'm interested in the ${plan} plan. Please provide more information.\n\n`;
+        document.getElementById('message').value = message;
+    }
+    
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(event) {
+        const privacyCheck = document.getElementById('privacy');
+        if (!privacyCheck.checked) {
+            event.preventDefault();
+            alert('Please agree to the Privacy Policy before submitting.');
+            privacyCheck.focus();
+        }
+    });
+});
+</script>
+{% endblock %}

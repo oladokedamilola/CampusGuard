@@ -1,0 +1,617 @@
+# ============================================
+# CAMPUSGUARD AI - Django Project .gitignore
+# ============================================
+
+# 🐍 Python
+# ============================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+# ============================================
+*.log
+*.sqlite3
+*.sqlite
+*.db
+*.migrations/
+*.migration
+*.cache
+*.pid
+
+# Django media and static
+media/
+media_root/
+staticfiles/
+static_root/
+uploads/
+user_uploads/
+
+# Celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+# ============================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+pythonenv*
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# PyCharm
+.idea/
+.idea/*
+*.iws
+
+# VSCode
+.vscode/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# pdm
+.pdm.toml
+
+# PEP 582; used by e.g. github.com/David-OConnor/pyflow
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule.*
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Cython debug symbols
+cython_debug/
+
+# 🖥️ Operating System Files
+# ============================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.AppleDouble
+.LSOverride
+Icon
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msm
+*.msp
+
+# Linux
+*~
+
+# KDE directory preferences
+.directory
+
+# 📁 Project Specific
+# ============================================
+# Django
+local_settings.py
+local_settings.pyc
+db.sqlite3
+db.sqlite3-journal
+*.sqlite3
+*.sqlite
+*.db
+
+# Django migrations (except __init__.py)
+*/migrations/*.py
+!*/migrations/__init__.py
+
+# Django static files (collected)
+staticfiles/
+collected_static/
+
+# Django media files
+media/
+uploads/
+user_uploads/
+
+# Environment variables
+.env
+.env.*
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Python Virtual Environment
+venv/
+.venv/
+env/
+ENV/
+
+# Testing
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Logs
+*.log
+logs/
+log/
+*.log.*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
+.grunt
+
+# Bower dependency directory (https://bower.io/)
+bower_components/
+
+# node_modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Parcel cache
+.cache/
+.parcel-cache
+
+# Next.js build output
+.next/
+out/
+
+# Nuxt.js build / generate output
+.nuxt/
+dist/
+
+# Gatsby files
+.cache/
+# Comment in the public line in if your project uses Gatsby and not Next.js
+# https://nextjs.org/blog/next-9-1#public-directory-support
+# public
+
+# Vue.js build output
+dist/
+
+# Svelte build output
+.svelte-kit/
+
+# Rollup cache
+rollup-cache/
+
+# Storybook build outputs
+.out/
+.storybook-out/
+storybook-static/
+
+# Temporary folders
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Cache files
+.cache
+*.cache
+
+# Security
+SECRET_KEY.txt
+secrets.txt
+*.pem
+*.key
+*.crt
+*.csr
+
+# IDE specific
+# ============================================
+# Visual Studio Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# JetBrains IDEs (IntelliJ, PyCharm, etc.)
+.idea/
+*.iws
+*.iml
+*.ipr
+
+# Eclipse
+.project
+.classpath
+.settings/
+
+# NetBeans
+nbproject/
+nbactions.xml
+
+# Sublime Text
+*.sublime-workspace
+*.sublime-project
+
+# Atom
+.atom/
+.atom-build.json
+
+# Vim
+[._]*.s[a-w][a-z]
+[._]s[a-w][a-z]
+*.un~
+Session.vim
+.netrwhist
+*~
+
+# Emacs
+*~
+\#*
+.\#*
+.direnv/
+
+# Notepad++
+*.session.xml
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.vcxproj.user
+*.vcxproj.filters
+
+# 🗄️ Database Files
+# ============================================
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.sqlite-journal
+*.sqlite3-journal
+
+# MySQL
+*.frm
+*.myd
+*.myi
+*.ibd
+*.mdf
+*.ldf
+
+# PostgreSQL
+*.pid
+*.lock
+postmaster.pid
+postmaster.opts
+
+# SQLite
+db.sqlite3
+db.sqlite3-journal
+
+# 🚀 Deployment
+# ============================================
+# Docker
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.dockerignore
+
+# Kubernetes
+*.kubeconfig
+*.kubeconfig.*
+
+# Heroku
+*.heroku
+
+# PythonAnywhere
+*.pythonanywhere
+
+# 📊 Testing & CI/CD
+# ============================================
+# Jest
+jest.config.js
+jest.setup.js
+__tests__/
+__mocks__/
+
+# Cypress
+cypress/videos/
+cypress/screenshots/
+
+# CI/CD
+.circleci/
+.travis.yml
+.gitlab-ci.yml
+.github/
+.gitlab/
+bitbucket-pipelines.yml
+azure-pipelines.yml
+
+# 📦 Package Managers
+# ============================================
+# npm
+package-lock.json
+npm-shrinkwrap.json
+node_modules/
+
+# Yarn
+yarn.lock
+.yarn/
+.yarnrc
+
+# pnpm
+pnpm-lock.yaml
+
+# Poetry
+poetry.lock
+
+# pipenv
+Pipfile.lock
+
+# 🎨 Frontend Build Outputs
+# ============================================
+# Build directories
+build/
+dist/
+out/
+.next/
+.nuxt/
+.svelte-kit/
+
+# Compiled files
+*.css.map
+*.js.map
+*.min.css
+*.min.js
+
+# Bundler files
+webpack-assets.json
+parcel-cache/
+
+# 📝 Documentation
+# ============================================
+docs/_build/
+docs/build/
+site/
+_book/
+
+# 🎯 Custom for CampusGuard AI
+# ============================================
+# AI Models
+models/
+*.pth
+*.pt
+*.h5
+*.keras
+*.tflite
+*.onnx
+
+# Computer Vision
+haarcascades/
+*.xml
+*.yml
+*.yaml
+
+# Video/Image uploads
+media/videos/
+media/evidence/
+media/uploads/
+media/profiles/
+
+# Reports
+reports/
+exports/
+*.pdf
+*.csv
+*.xlsx
+
+# Temporary uploads
+tmp_uploads/
+temp/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Session files
+*.session
+*.pickle
+
+# Dataset files
+*.csv
+*.json
+*.npz
+*.npy
+
+# License files (except project license)
+LICENSE-*
+COPYING-*
+
+# 🔒 Security (DO NOT COMMIT!)
+# ============================================
+# API Keys & Secrets
+*.key
+*.pem
+*.crt
+*.cer
+*.p12
+*.pfx
+
+# Configuration with secrets
+config/secrets.py
+config/local.py
+settings/local.py
+
+# Environment files
+.env*
+!.env.example
+
+# Password files
+*.passwd
+*.pwd
+
+# Certificate files
+*.crt
+*.cert
+*.der
+
+# Private keys
+*.key
+*.pem
+*.pkcs12
+*.pfx
+*.p12
+
+# ============================================
+# END OF .gitignore
+# ============================================

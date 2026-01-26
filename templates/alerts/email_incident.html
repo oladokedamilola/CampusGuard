@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin-bottom: 20px; }
+        .incident-info { background-color: #fff3cd; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .severity-high { background-color: #f8d7da; }
+        .severity-medium { background-color: #fff3cd; }
+        .severity-low { background-color: #d1ecf1; }
+        .btn { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 5px; }
+        .footer { margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; font-size: 12px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>Smart Surveillance System Alert</h2>
+            <p>Security Incident Detected</p>
+        </div>
+        
+        <div class="incident-info severity-{{ alert.metadata.severity }}">
+            <h3>{{ alert.title }}</h3>
+            <p><strong>Incident ID:</strong> {{ incident.incident_id }}</p>
+            <p><strong>Type:</strong> {{ incident.get_incident_type_display }}</p>
+            <p><strong>Severity:</strong> {{ incident.get_severity_display }}</p>
+            <p><strong>Camera:</strong> {{ camera.name }} ({{ camera.location.name }})</p>
+            <p><strong>Detected:</strong> {{ incident.detected_at|date:"F d, Y H:i:s" }}</p>
+            
+            <hr>
+            
+            <p><strong>Description:</strong></p>
+            <p>{{ alert.message }}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'incidents:detail' incident.pk %}" class="btn">
+                View Incident Details
+            </a>
+        </div>
+        
+        <div class="footer">
+            <p>This is an automated alert from the Smart Surveillance System.</p>
+            <p>If you believe this alert was sent in error, please contact your system administrator.</p>
+            <p>To manage your notification preferences, visit your account settings.</p>
+        </div>
+    </div>
+</body>
+</html>

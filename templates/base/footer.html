@@ -1,0 +1,51 @@
+<footer class="mt-auto">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <h5 class="brand-footer mb-3">CampusGuard AI</h5>
+                <p class="mb-3">Intelligent security surveillance system for educational institutions.</p>
+                <div class="d-flex gap-3">
+                    <a href="#" class="text-white"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
+                    <a href="#" class="text-white"><i class="fab fa-github fa-lg"></i></a>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <h6 class="text-white mb-3">Quick Links</h6>
+                <ul class="list-unstyled">
+                    <li><a href="{% url 'dashboard:index' %}" class="text-white-50">Dashboard</a></li>
+                    <li><a href="{% url 'cameras:list' %}" class="text-white-50">Cameras</a></li>
+                    <li><a href="{% url 'incidents:list' %}" class="text-white-50">Incidents</a></li>
+                    <li><a href="{% url 'alerts:list' %}" class="text-white-50">Alerts</a></li>
+                </ul>
+            </div>
+            
+            <div class="col-md-3">
+                <h6 class="text-white mb-3">Support</h6>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-white-50">Documentation</a></li>
+                    <li><a href="#" class="text-white-50">Help Center</a></li>
+                    <li><a href="#" class="text-white-50">Contact Us</a></li>
+                    <li><a href="#" class="text-white-50">Privacy Policy</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+        
+        <div class="row">
+            <div class="col-md-6">
+                <p class="mb-0 text-white-50">
+                    &copy; {% now "Y" %} CampusGuard AI. All rights reserved.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p class="mb-0 text-white-50">
+                    Version 1.0.0 | Built for Nigerian Educational Institutions
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>

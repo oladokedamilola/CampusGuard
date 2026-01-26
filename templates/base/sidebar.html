@@ -1,0 +1,182 @@
+<!-- Sidebar Overlay (Mobile Only) -->
+<div class="sidebar-overlay"></div>
+
+<!-- Sidebar -->
+<div class="sidebar" id="sidebar">
+    <!-- Sidebar Header -->
+    <div class="sidebar-header">
+        <a href="{% url 'dashboard:index' %}" class="sidebar-brand">
+            <i class="fas fa-shield-alt"></i>
+            <span class="sidebar-brand-text">
+                <span class="text-gradient">CampusGuard</span>
+                <span class="text-secondary">AI</span>
+            </span>
+        </a>
+        <button class="sidebar-toggle-btn d-none d-lg-block" id="desktopSidebarToggle">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="sidebar-toggle-btn d-lg-none" id="mobileSidebarToggle">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav">
+        <!-- Dashboard Section -->
+        <div class="nav-section">
+            <div class="nav-section-title">MAIN</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'dashboard:index' %}" class="nav-link">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span class="nav-link-text">Dashboard</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Monitoring Section -->
+        <div class="nav-section">
+            <div class="nav-section-title">MONITORING</div>
+            <ul class="nav flex-column">
+                {% if user.can_manage_cameras %}
+                <li class="nav-item">
+                    <a href="{% url 'cameras:list' %}" class="nav-link">
+                        <i class="fas fa-video"></i>
+                        <span class="nav-link-text">Cameras</span>
+                        {% with camera_count=user.cameras_to_manage.count %}
+                            {% if camera_count > 0 %}
+                            <span class="nav-badge">{{ camera_count }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'cameras:video_list' %}" class="nav-link">
+                        <i class="fas fa-file-video"></i>
+                        <span class="nav-link-text">Video Analysis</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.can_acknowledge_incidents %}
+                <li class="nav-item">
+                    <a href="{% url 'incidents:list' %}" class="nav-link">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <span class="nav-link-text">Incidents</span>
+                        {% with open_incidents=user.assigned_incidents.exclude.status__in='resolved,false_alarm'|length %}
+                            {% if open_incidents > 0 %}
+                            <span class="nav-badge">{{ open_incidents }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        <!-- Analytics Section -->
+        {% if user.can_view_analytics %}
+        <div class="nav-section">
+            <div class="nav-section-title">ANALYTICS</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'incidents:dashboard' %}" class="nav-link">
+                        <i class="fas fa-chart-bar"></i>
+                        <span class="nav-link-text">Incident Reports</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'cameras:dashboard' %}" class="nav-link">
+                        <i class="fas fa-chart-line"></i>
+                        <span class="nav-link-text">Camera Analytics</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+        
+        <!-- Notifications Section -->
+        <div class="nav-section">
+            <div class="nav-section-title">NOTIFICATIONS</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'alerts:list' %}" class="nav-link">
+                        <i class="fas fa-bell"></i>
+                        <span class="nav-link-text">Alerts</span>
+                        {% with unread_alerts=user.received_alerts.filter.is_read=False.count %}
+                            {% if unread_alerts > 0 %}
+                            <span class="nav-badge">{{ unread_alerts }}</span>
+                            {% endif %}
+                        {% endwith %}
+                    </a>
+                </li>
+            </ul>
+        </div>
+        
+        <!-- Administration Section -->
+        {% if user.is_superuser or user.role == 'admin' or user.role == 'security_manager' %}
+        <div class="nav-section">
+            <div class="nav-section-title">ADMINISTRATION</div>
+            <ul class="nav flex-column">
+                {% if user.can_manage_users %}
+                <li class="nav-item">
+                    <a href="{% url 'accounts:user_list' %}" class="nav-link">
+                        <i class="fas fa-users"></i>
+                        <span class="nav-link-text">User Management</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.can_manage_cameras %}
+                <li class="nav-item">
+                    <a href="{% url 'alerts:rule_list' %}" class="nav-link">
+                        <i class="fas fa-cog"></i>
+                        <span class="nav-link-text">Alert Rules</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                {% if user.is_superuser %}
+                <li class="nav-item">
+                    <a href="{% url 'admin:index' %}" class="nav-link">
+                        <i class="fas fa-cogs"></i>
+                        <span class="nav-link-text">Admin Panel</span>
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+        </div>
+        {% endif %}
+        
+        <!-- Account Section -->
+        <div class="nav-section">
+            <div class="nav-section-title">ACCOUNT</div>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a href="{% url 'accounts:profile' %}" class="nav-link">
+                        <i class="fas fa-user"></i>
+                        <span class="nav-link-text">My Profile</span>
+                    </a>
+                </li>
+                
+                <li class="nav-item">
+                    <a href="{% url 'alerts:preferences' %}" class="nav-link">
+                        <i class="fas fa-bell"></i>
+                        <span class="nav-link-text">Notifications</span>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <small class="text-white-50">
+            CampusGuard AI v1.0<br>
+            © {% now "Y" %}
+        </small>
+    </div>
+</div>

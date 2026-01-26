@@ -1,0 +1,73 @@
+<div class="row">
+    <!-- Today's Incidents -->
+    <div class="col-md-3">
+        <div class="card stats-card bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Today's Incidents</h6>
+                        <h2 class="mb-0">{{ stats.today_incidents }}</h2>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-3x"></i>
+                </div>
+                <p class="mb-0 mt-2">
+                    <small>Last updated: {% now "H:i" %}</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Open Incidents -->
+    <div class="col-md-3">
+        <div class="card stats-card bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Open Incidents</h6>
+                        <h2 class="mb-0">{{ stats.open_incidents }}</h2>
+                    </div>
+                    <i class="fas fa-clock fa-3x"></i>
+                </div>
+                <p class="mb-0 mt-2">
+                    <small>Requiring attention</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Critical Incidents -->
+    <div class="col-md-3">
+        <div class="card stats-card bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Critical Incidents</h6>
+                        <h2 class="mb-0">{{ stats.critical_incidents }}</h2>
+                    </div>
+                    <i class="fas fa-skull-crossbones fa-3x"></i>
+                </div>
+                <p class="mb-0 mt-2">
+                    <small>Immediate action required</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Unread Alerts -->
+    <div class="col-md-3">
+        <div class="card stats-card bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Unread Alerts</h6>
+                        <h2 class="mb-0">{{ stats.unread_alerts }}</h2>
+                    </div>
+                    <i class="fas fa-bell fa-3x"></i>
+                </div>
+                <p class="mb-0 mt-2">
+                    <small>{% if stats.unread_alerts > 0 %}Needs review{% else %}All caught up{% endif %}</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>

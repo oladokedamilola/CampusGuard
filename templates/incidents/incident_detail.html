@@ -1,0 +1,579 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{{ incident.title }} - CampusGuard AI{% endblock %}
+
+{% block extra_css %}
+<style>
+    .evidence-preview {
+        max-height: 300px;
+        object-fit: contain;
+        background-color: var(--cg-dark);
+        border-radius: var(--cg-border-radius);
+    }
+    
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: var(--cg-gray-300);
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 20px;
+    }
+    
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -25px;
+        top: 5px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background-color: var(--cg-primary);
+        border: 2px solid white;
+    }
+    
+    .comment-bubble {
+        background-color: var(--cg-gray-100);
+        border-radius: 15px;
+        padding: 10px 15px;
+        position: relative;
+        max-width: 80%;
+    }
+    
+    .comment-bubble::before {
+        content: '';
+        position: absolute;
+        left: -10px;
+        top: 10px;
+        width: 0;
+        height: 0;
+        border-top: 10px solid transparent;
+        border-bottom: 10px solid transparent;
+        border-right: 10px solid var(--cg-gray-100);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'incidents:list' %}">Incidents</a></li>
+        <li class="breadcrumb-item active">{{ incident.incident_id }}</li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-1">
+            <i class="fas fa-exclamation-triangle me-2"></i>{{ incident.title }}
+        </h1>
+        <div class="d-flex align-items-center gap-2">
+            <span class="badge bg-{{ incident.get_severity_color }} fs-6">
+                {{ incident.get_severity_display }}
+            </span>
+            <span class="badge bg-{{ incident.get_status_color }} fs-6">
+                {{ incident.get_status_display }}
+            </span>
+            <span class="text-muted">
+                <i class="fas fa-clock me-1"></i>{{ incident.detected_at|date:"F d, Y H:i" }}
+            </span>
+        </div>
+    </div>
+    
+    <div class="btn-group">
+        {% if user.can_acknowledge_incidents %}
+            {% if incident.can_be_acknowledged %}
+            <a href="{% url 'incidents:acknowledge' incident.pk %}" class="btn btn-warning">
+                <i class="fas fa-check-circle me-1"></i>Acknowledge
+            </a>
+            {% endif %}
+            
+            {% if incident.can_be_resolved %}
+            <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#resolveModal">
+                <i class="fas fa-flag-checkered me-1"></i>Resolve
+            </button>
+            {% endif %}
+            
+            <a href="{% url 'incidents:edit' incident.pk %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-1"></i>Edit
+            </a>
+        {% endif %}
+        
+        <a href="{% url 'incidents:list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back
+        </a>
+    </div>
+</div>
+
+<!-- Incident Details -->
+<div class="row">
+    <!-- Left Column: Main Details -->
+    <div class="col-lg-8">
+        <!-- Evidence Section -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-camera me-2"></i>Evidence
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <!-- Main Evidence Image -->
+                    {% if incident.evidence_image %}
+                    <div class="col-md-6 mb-3">
+                        <h6>Primary Evidence</h6>
+                        <img src="{{ incident.evidence_image.url }}" 
+                             alt="Evidence Image" 
+                             class="img-fluid evidence-preview w-100">
+                        <div class="mt-2">
+                            <a href="{{ incident.evidence_image.url }}" 
+                               target="_blank" 
+                               class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-expand me-1"></i>View Full Size
+                            </a>
+                            <a href="{{ incident.evidence_image.url }}" 
+                               download 
+                               class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-download me-1"></i>Download
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Additional Evidence -->
+                    <div class="col-md-6">
+                        <h6>Additional Evidence</h6>
+                        {% if additional_evidence %}
+                            <div class="list-group">
+                                {% for evidence in additional_evidence %}
+                                <div class="list-group-item">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="fas fa-file-{{ evidence.evidence_type }} me-2 text-primary"></i>
+                                            {{ evidence.description|default:"Evidence File" }}
+                                        </div>
+                                        <div>
+                                            <a href="{{ evidence.file.url }}" 
+                                               target="_blank" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{{ evidence.file.url }}" 
+                                               download 
+                                               class="btn btn-sm btn-outline-secondary">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-muted">No additional evidence files.</p>
+                        {% endif %}
+                        
+                        <!-- Upload Evidence Form -->
+                        {% if user.can_acknowledge_incidents %}
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-primary" 
+                                    type="button" 
+                                    data-bs-toggle="collapse" 
+                                    data-bs-target="#uploadEvidenceCollapse">
+                                <i class="fas fa-upload me-1"></i>Upload Additional Evidence
+                            </button>
+                            
+                            <div class="collapse mt-2" id="uploadEvidenceCollapse">
+                                <div class="card card-body">
+                                    <form method="post" action="{% url 'incidents:upload_evidence' incident.pk %}" 
+                                          enctype="multipart/form-data">
+                                        {% csrf_token %}
+                                        <div class="mb-3">
+                                            <label class="form-label">Evidence Type</label>
+                                            <select name="evidence_type" class="form-select">
+                                                <option value="image">Image</option>
+                                                <option value="video">Video</option>
+                                                <option value="audio">Audio</option>
+                                                <option value="document">Document</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">File</label>
+                                            <input type="file" name="file" class="form-control" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Description</label>
+                                            <textarea name="description" class="form-control" rows="2"></textarea>
+                                        </div>
+                                        <button type="submit" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-upload me-1"></i>Upload
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Description & Notes -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-file-alt me-2"></i>Description & Investigation Notes
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if incident.description %}
+                <div class="mb-4">
+                    <h6>Incident Description</h6>
+                    <p>{{ incident.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if incident.location_description %}
+                <div class="mb-4">
+                    <h6>Location Details</h6>
+                    <p>{{ incident.location_description|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if incident.notes %}
+                <div>
+                    <h6>Investigation Notes</h6>
+                    <div class="bg-light p-3 rounded">
+                        {{ incident.notes|linebreaks }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Comments Section -->
+        <div class="card shadow-lg">
+            <div class="card-header bg-gradient-info text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-comments me-2"></i>Comments & Updates
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Add Comment Form -->
+                {% if user.can_acknowledge_incidents %}
+                <div class="mb-4">
+                    <form method="post" action="{% url 'incidents:add_comment' incident.pk %}" 
+                          enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="comment" 
+                                      class="form-control" 
+                                      rows="3" 
+                                      placeholder="Add your comment or update..." 
+                                      required></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    <input type="checkbox" name="is_internal" class="form-check-input" id="internalCheck">
+                                    <label class="form-check-label" for="internalCheck">
+                                        Internal Note (not shown to all users)
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <input type="file" name="attachment" class="form-control">
+                                <small class="text-muted">Optional attachment</small>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane me-1"></i>Add Comment
+                        </button>
+                    </form>
+                </div>
+                {% endif %}
+                
+                <!-- Comments List -->
+                <div class="timeline">
+                    {% for comment in comments %}
+                    <div class="timeline-item">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <strong>{{ comment.user.get_full_name|default:comment.user.email }}</strong>
+                                        {% if comment.is_internal %}
+                                        <span class="badge bg-secondary ms-2">Internal</span>
+                                        {% endif %}
+                                    </div>
+                                    <small class="text-muted">{{ comment.created_at|timesince }} ago</small>
+                                </div>
+                                
+                                <p class="mb-2">{{ comment.comment|linebreaks }}</p>
+                                
+                                {% if comment.attachment %}
+                                <div class="mt-2">
+                                    <a href="{{ comment.attachment.url }}" 
+                                       target="_blank" 
+                                       class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-paperclip me-1"></i>
+                                        {{ comment.attachment.name|slice:"-20:" }}
+                                    </a>
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-comment-slash fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No comments yet. Be the first to add one.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Right Column: Metadata & Actions -->
+    <div class="col-lg-4">
+        <!-- Incident Metadata -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-info-circle me-2"></i>Incident Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-5">Incident ID:</dt>
+                    <dd class="col-sm-7"><code>{{ incident.incident_id }}</code></dd>
+                    
+                    <dt class="col-sm-5">Type:</dt>
+                    <dd class="col-sm-7">{{ incident.get_incident_type_display }}</dd>
+                    
+                    <dt class="col-sm-5">Confidence:</dt>
+                    <dd class="col-sm-7">
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-{{ incident.confidence_score|yesno:'success,warning,danger' }}" 
+                                 style="width: {{ incident.confidence_score|floatformat:2 }}%">
+                            </div>
+                        </div>
+                        <small>{{ incident.confidence_score|floatformat:2 }}</small>
+                    </dd>
+                    
+                    <dt class="col-sm-5">Camera:</dt>
+                    <dd class="col-sm-7">
+                        <a href="{% url 'cameras:detail' incident.camera.pk %}">
+                            {{ incident.camera.name }}
+                        </a>
+                    </dd>
+                    
+                    <dt class="col-sm-5">Location:</dt>
+                    <dd class="col-sm-7">{{ incident.camera.location.name }}</dd>
+                    
+                    {% if incident.assigned_to %}
+                    <dt class="col-sm-5">Assigned To:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-info">{{ incident.assigned_to.get_full_name }}</span>
+                    </dd>
+                    {% endif %}
+                    
+                    {% if incident.acknowledged_by %}
+                    <dt class="col-sm-5">Acknowledged:</dt>
+                    <dd class="col-sm-7">
+                        {{ incident.acknowledged_at|date:"M d, H:i" }}
+                        <br>
+                        <small>by {{ incident.acknowledged_by.get_short_name }}</small>
+                    </dd>
+                    {% endif %}
+                    
+                    {% if incident.resolved_by %}
+                    <dt class="col-sm-5">Resolved:</dt>
+                    <dd class="col-sm-7">
+                        {{ incident.resolved_at|date:"M d, H:i" }}
+                        <br>
+                        <small>by {{ incident.resolved_by.get_short_name }}</small>
+                    </dd>
+                    {% endif %}
+                    
+                    {% if incident.is_false_positive %}
+                    <dt class="col-sm-5">False Positive:</dt>
+                    <dd class="col-sm-7">
+                        <span class="badge bg-secondary">Yes</span>
+                    </dd>
+                    {% endif %}
+                    
+                    {% if incident.tags %}
+                    <dt class="col-sm-5">Tags:</dt>
+                    <dd class="col-sm-7">
+                        {% for tag in incident.tags %}
+                        <span class="badge bg-light text-dark me-1">{{ tag }}</span>
+                        {% endfor %}
+                    </dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+        
+        <!-- Action History -->
+        <div class="card shadow-lg mb-4">
+            <div class="card-header bg-gradient-dark text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history me-2"></i>Action History
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    {% for log in action_logs %}
+                    <div class="list-group-item px-0">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <strong>{{ log.get_action_display }}</strong>
+                                <br>
+                                <small class="text-muted">
+                                    by {{ log.user.get_short_name|default:"System" }}
+                                </small>
+                            </div>
+                            <small class="text-muted">{{ log.created_at|timesince }} ago</small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-3">
+                        <p class="text-muted mb-0">No action history</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Related Alerts -->
+        <div class="card shadow-lg">
+            <div class="card-header bg-gradient-accent text-dark">
+                <h5 class="mb-0">
+                    <i class="fas fa-bell me-2"></i>Related Alerts
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if incident.alerts.exists %}
+                <div class="list-group list-group-flush">
+                    {% for alert in incident.alerts.all|slice:":3" %}
+                    <a href="{% url 'alerts:detail' alert.pk %}" 
+                       class="list-group-item list-group-item-action">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-bell me-2 text-{{ alert.get_severity_color }}"></i>
+                                {{ alert.title|truncatechars:30 }}
+                            </div>
+                            <span class="badge bg-{{ alert.is_read|yesno:'secondary,primary' }}">
+                                {{ alert.is_read|yesno:'Read,Unread' }}
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="text-muted text-center py-3">No alerts generated for this incident.</p>
+                {% endif %}
+                
+                <div class="text-center mt-3">
+                    <a href="{% url 'alerts:list' %}?incident={{ incident.pk }}" 
+                       class="btn btn-sm btn-outline-primary">
+                        View All Alerts
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Resolve Modal -->
+<div class="modal fade" id="resolveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-gradient-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-flag-checkered me-2"></i>Resolve Incident
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" action="{% url 'incidents:resolve' incident.pk %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Resolution Notes</label>
+                        <textarea name="notes" class="form-control" rows="4" 
+                                  placeholder="Add notes about how this incident was resolved..."></textarea>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input type="checkbox" name="is_false_positive" class="form-check-input" id="falsePositiveCheck">
+                        <label class="form-check-label" for="falsePositiveCheck">
+                            Mark as False Positive
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-1"></i>Mark as Resolved
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh comments every 30 seconds
+setInterval(function() {
+    // This could be enhanced with HTMX to refresh only the comments section
+    console.log('Auto-refresh triggered for comments');
+}, 30000);
+
+// Image preview for evidence upload
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.querySelector('input[name="file"]');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    // Create preview if it doesn't exist
+                    let preview = document.getElementById('file-preview');
+                    if (!preview) {
+                        preview = document.createElement('div');
+                        preview.id = 'file-preview';
+                        preview.className = 'mt-2';
+                        fileInput.parentNode.appendChild(preview);
+                    }
+                    preview.innerHTML = `
+                        <div class="alert alert-info p-2">
+                            <img src="${e.target.result}" class="img-thumbnail" style="max-height: 100px;">
+                            <small class="d-block mt-1">Preview of selected file</small>
+                        </div>
+                    `;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

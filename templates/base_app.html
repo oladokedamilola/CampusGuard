@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Dashboard - CampusGuard AI{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar Layout -->
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        {% include 'base/sidebar.html' %}
+        
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Navigation Bar -->
+            <nav class="top-navbar navbar navbar-expand-lg navbar-dark">
+                <div class="container-fluid">
+                    <button class="btn sidebar-toggle" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <div class="navbar-brand d-lg-none">
+                        <i class="fas fa-shield-alt me-2"></i>
+                        <span class="text-gradient">CampusGuard</span>
+                        <span class="text-secondary">AI</span>
+                    </div>
+                    
+                    <div class="navbar-nav ms-auto">
+                        <!-- Notification Bell -->
+                        {% if user.is_authenticated %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" 
+                               role="button" data-bs-toggle="dropdown" 
+                               hx-get="{% url 'alerts:api_unread_count' %}" 
+                               hx-trigger="load, every 30s"
+                               hx-target="#unread-count"
+                               hx-swap="innerHTML">
+                                <i class="fas fa-bell"></i>
+                                <span id="unread-count" class="badge bg-danger">
+                                    {% with unread_count=user.received_alerts.filter.is_read=False.count %}
+                                        {% if unread_count > 0 %}{{ unread_count }}{% endif %}
+                                    {% endwith %}
+                                </span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" 
+                                style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                                <li>
+                                    <h6 class="dropdown-header">Notifications</h6>
+                                </li>
+                                <div id="notification-list" 
+                                     hx-get="{% url 'alerts:api_recent_alerts' %}" 
+                                     hx-trigger="load, every 60s"
+                                     hx-swap="innerHTML">
+                                    <li class="dropdown-item text-center">
+                                        <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </li>
+                                </div>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item text-center" href="{% url 'alerts:list' %}">
+                                        <i class="fas fa-list me-1"></i>View All Notifications
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item text-center" href="{% url 'alerts:mark_all_read' %}">
+                                        <i class="fas fa-check-double me-1"></i>Mark All as Read
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        
+                        <!-- User Dropdown -->
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" 
+                               role="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle me-1"></i>
+                                {{ user.get_short_name|default:user.email }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                        <i class="fas fa-user me-2"></i>My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'alerts:preferences' %}">
+                                        <i class="fas fa-bell me-2"></i>Notification Settings
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                {% if user.is_superuser %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'admin:index' %}">
+                                        <i class="fas fa-cog me-2"></i>Admin Panel
+                                    </a>
+                                </li>
+                                {% endif %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:logout' %}">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        {% endif %}
+                    </div>
+                </div>
+            </nav>
+            
+            <!-- Page Content -->
+            <main class="page-content">
+                <div class="container-fluid py-4">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% block content %}{% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+    
+    <!-- Custom JS -->
+    <script src="{% static 'js/main.js' %}"></script>
+    <script src="{% static 'js/sidebar.js' %}"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,303 @@
+{% extends 'base_app.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{{ title|default:"Camera Form" }} - CampusGuard AI{% endblock %}
+
+{% block content %}
+<!-- Breadcrumb Navigation -->
+<nav aria-label="breadcrumb" class="mb-4">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'cameras:list' %}">Cameras</a></li>
+        <li class="breadcrumb-item active">{{ title }}</li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>
+            <i class="fas fa-{{ object.pk|yesno:'edit,plus' }} me-2"></i>{{ title }}
+        </h1>
+        <p class="text-muted mb-0">
+            {% if object.pk %}
+                Update camera configuration and settings
+            {% else %}
+                Add a new surveillance camera to the system
+            {% endif %}
+        </p>
+    </div>
+    
+    <div>
+        <a href="{% url 'cameras:list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to List
+        </a>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="card shadow-lg">
+    <div class="card-header bg-gradient-primary text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-camera me-2"></i>Camera Details
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data" novalidate>
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-info-circle me-2 text-primary"></i>Basic Information
+                    </h5>
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.name|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.location|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.camera_type|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.status|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.is_active|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Connection Details -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-plug me-2 text-primary"></i>Connection Details
+                    </h5>
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.connection_protocol|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.stream_url|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.ip_address|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.port|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.username|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-12">
+                    {{ form.password|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Technical Specifications -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-microchip me-2 text-primary"></i>Technical Specifications
+                    </h5>
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.resolution|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.fps|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.field_of_view|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.has_night_vision|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.has_audio|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Operational Settings -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-cog me-2 text-primary"></i>Operational Settings
+                    </h5>
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.motion_detection_enabled|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-6">
+                    {{ form.recording_enabled|as_crispy_field }}
+                </div>
+                
+                <div class="col-12">
+                    {{ form.detection_zones|as_crispy_field }}
+                    <small class="text-muted d-block mt-1">
+                        JSON array of coordinates: [{"x1": 0, "y1": 0, "x2": 100, "y2": 100}]
+                    </small>
+                </div>
+            </div>
+            
+            <!-- Maintenance Information -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-tools me-2 text-primary"></i>Maintenance Information
+                    </h5>
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.manufacturer|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.model|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.serial_number|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.installation_date|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.warranty_expiry|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.last_maintenance|as_crispy_field }}
+                </div>
+                
+                <div class="col-md-4">
+                    {{ form.next_maintenance|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Additional Notes -->
+            <div class="row">
+                <div class="col-12">
+                    <h5 class="border-bottom pb-2 mb-3">
+                        <i class="fas fa-sticky-note me-2 text-primary"></i>Additional Information
+                    </h5>
+                    {{ form.notes|as_crispy_field }}
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="row mt-4">
+                <div class="col-12 d-flex justify-content-between">
+                    <a href="{% url 'cameras:list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </a>
+                    
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>
+                            {% if object.pk %}Update Camera{% else %}Create Camera{% endif %}
+                        </button>
+                        
+                        {% if object.pk %}
+                        <a href="{% url 'cameras:detail' object.pk %}" class="btn btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i>View
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Connection Test Card (for existing cameras) -->
+{% if object.pk %}
+<div class="card shadow-lg mt-4">
+    <div class="card-header bg-gradient-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-wifi me-2"></i>Connection Test
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Test Camera Connection</h6>
+                <p class="text-muted">
+                    Verify that the camera is accessible with the current settings.
+                </p>
+                <a href="{% url 'cameras:health_check' object.pk %}" class="btn btn-outline-info">
+                    <i class="fas fa-heartbeat me-1"></i>Run Connection Test
+                </a>
+            </div>
+            
+            <div class="col-md-6">
+                <h6>Quick Actions</h6>
+                <div class="d-grid gap-2">
+                    <a href="{% url 'cameras:toggle_status' object.pk %}" 
+                       class="btn btn-{{ object.is_active|yesno:'warning,success' }}">
+                        <i class="fas fa-power-off me-1"></i>
+                        {{ object.is_active|yesno:'Deactivate,Activate' }} Camera
+                    </a>
+                    
+                    {% if object.stream_url %}
+                    <button class="btn btn-outline-secondary" onclick="testStream()">
+                        <i class="fas fa-play-circle me-1"></i>Test Stream
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testStream() {
+    // This would open a modal with the camera stream
+    alert('Stream test functionality would open in a modal.');
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    const streamUrlField = document.getElementById('id_stream_url');
+    
+    if (streamUrlField) {
+        streamUrlField.addEventListener('blur', function() {
+            const url = this.value;
+            if (url && !url.startsWith('rtsp://') && !url.startsWith('http://') && !url.startsWith('https://')) {
+                this.classList.add('is-invalid');
+                showToast('Stream URL should start with rtsp://, http://, or https://', 'warning');
+            } else {
+                this.classList.remove('is-invalid');
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

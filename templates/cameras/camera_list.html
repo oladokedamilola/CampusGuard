@@ -1,0 +1,524 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Cameras - CampusGuard AI{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Cameras</li>
+                </ol>
+            </nav>
+            <h1 class="mb-2">
+                <i class="fas fa-video me-2"></i>Camera Management
+            </h1>
+            <p class="text-muted mb-0">Monitor and manage all surveillance cameras</p>
+        </div>
+        
+        <div class="btn-group">
+            {% if user.can_manage_cameras %}
+            <a href="{% url 'cameras:create' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-1"></i>Add Camera
+            </a>
+            <a href="{% url 'cameras:video_upload' %}" class="btn btn-outline-primary">
+                <i class="fas fa-upload me-1"></i>Upload Video
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Cameras</h6>
+                        <h2 class="mb-0">{{ total_cameras }}</h2>
+                    </div>
+                    <i class="fas fa-video fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Active</h6>
+                        <h2 class="mb-0">{{ active_cameras }}</h2>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-warning">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Maintenance</h6>
+                        <h2 class="mb-0">{{ maintenance_cameras }}</h2>
+                    </div>
+                    <i class="fas fa-tools fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card stats-card bg-danger">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Offline</h6>
+                        <h2 class="mb-0">{{ offline_cameras }}</h2>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="row">
+    <div class="col-lg-12">
+        <!-- Filter Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-filter me-2"></i>Filter Cameras
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3" id="filterForm">
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        {{ filter_form.status }}
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Type</label>
+                        {{ filter_form.camera_type }}
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Location</label>
+                        {{ filter_form.location }}
+                    </div>
+                    
+                    <div class="col-md-3">
+                        <label class="form-label">Activity</label>
+                        {{ filter_form.is_active }}
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <label class="form-label">Search</label>
+                        {{ filter_form.search }}
+                    </div>
+                    
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="fas fa-search me-1"></i>Apply Filters
+                        </button>
+                        <a href="{% url 'cameras:list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-1"></i>Clear
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Cameras Table Card -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Camera List
+                    <span class="badge bg-primary ms-2">{{ cameras.paginator.count }}</span>
+                </h5>
+                
+                <div class="d-flex align-items-center">
+                    <div class="form-check me-3">
+                        <input type="checkbox" class="form-check-input" id="selectAllCameras">
+                        <label class="form-check-label" for="selectAllCameras">Select All</label>
+                    </div>
+                    
+                    <div class="dropdown">
+                        <button class="btn btn-outline-primary btn-sm dropdown-toggle" type="button" 
+                                data-bs-toggle="dropdown">
+                            <i class="fas fa-cog me-1"></i>Bulk Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" data-bulk-action="activate">Activate Selected</a></li>
+                            <li><a class="dropdown-item" href="#" data-bulk-action="deactivate">Deactivate Selected</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" data-bulk-action="export">Export Selected</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                {% if cameras %}
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="camerasTable">
+                            <thead>
+                                <tr>
+                                    <th width="50">
+                                        <input type="checkbox" id="selectAllHeader">
+                                    </th>
+                                    <th>Camera</th>
+                                    <th>Location</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Connection</th>
+                                    <th>Last Active</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for camera in cameras %}
+                                <tr data-camera-id="{{ camera.pk }}" 
+                                    class="camera-row {% if not camera.is_active %}table-secondary{% endif %}">
+                                    <td>
+                                        <input type="checkbox" class="camera-checkbox" 
+                                               value="{{ camera.pk }}">
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="camera-status-indicator me-3 
+                                                        {% if camera.status == 'active' %}status-active
+                                                        {% elif camera.status == 'offline' %}status-offline
+                                                        {% elif camera.status == 'maintenance' %}status-maintenance
+                                                        {% else %}status-inactive{% endif %}">
+                                            </div>
+                                            <div>
+                                                <a href="{% url 'cameras:detail' camera.pk %}" 
+                                                   class="text-decoration-none fw-semibold">
+                                                    {{ camera.name }}
+                                                </a>
+                                                <div class="text-muted small">
+                                                    <code>{{ camera.camera_id }}</code>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 150px;" 
+                                             title="{{ camera.location.name }}">
+                                            {{ camera.location.name }}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            {{ camera.get_camera_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ camera.get_status_color }}">
+                                            {{ camera.get_status_display }}
+                                        </span>
+                                        {% if camera.is_active %}
+                                            <span class="badge bg-success">Active</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 120px;">
+                                            {% if camera.ip_address %}
+                                                <small class="text-muted">{{ camera.ip_address }}:{{ camera.port }}</small>
+                                            {% else %}
+                                                <span class="text-muted">Not configured</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if camera.last_ping %}
+                                            <div class="small">
+                                                {{ camera.last_ping|timesince }} ago
+                                            </div>
+                                        {% else %}
+                                            <span class="text-muted">Never</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'cameras:detail' camera.pk %}" 
+                                               class="btn btn-outline-primary" title="View">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            
+                                            {% if user.can_manage_cameras %}
+                                            <a href="{% url 'cameras:edit' camera.pk %}" 
+                                               class="btn btn-outline-warning" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            
+                                            <a href="{% url 'cameras:health_check' camera.pk %}" 
+                                               class="btn btn-outline-info" title="Health Check">
+                                                <i class="fas fa-heartbeat"></i>
+                                            </a>
+                                            
+                                            <button class="btn btn-outline-{{ camera.is_active|yesno:'warning,success' }} toggle-camera-btn"
+                                                    data-camera-id="{{ camera.pk }}"
+                                                    data-is-active="{{ camera.is_active|yesno:'true,false' }}"
+                                                    title="{{ camera.is_active|yesno:'Deactivate,Activate' }}">
+                                                <i class="fas fa-power-off"></i>
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Pagination -->
+                    {% if cameras.paginator.num_pages > 1 %}
+                    <nav aria-label="Page navigation" class="mt-4">
+                        <ul class="pagination justify-content-center">
+                            {% if cameras.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ cameras.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in cameras.paginator.page_range %}
+                                {% if cameras.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                                {% elif num > cameras.number|add:'-3' and num < cameras.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                        {{ num }}
+                                    </a>
+                                </li>
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if cameras.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ cameras.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                    {% endif %}
+                    
+                {% else %}
+                    <div class="empty-state text-center py-5">
+                        <i class="fas fa-video-slash fa-4x text-muted mb-4"></i>
+                        <h4>No Cameras Found</h4>
+                        <p class="text-muted mb-4">No cameras match your current filters.</p>
+                        <a href="{% url 'cameras:create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-1"></i>Add Your First Camera
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.camera-status-indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.status-active {
+    background-color: var(--cg-success);
+    box-shadow: 0 0 8px var(--cg-success);
+}
+
+.status-offline {
+    background-color: var(--cg-danger);
+    box-shadow: 0 0 8px var(--cg-danger);
+}
+
+.status-maintenance {
+    background-color: var(--cg-warning);
+    box-shadow: 0 0 8px var(--cg-warning);
+}
+
+.status-inactive {
+    background-color: var(--cg-gray-500);
+}
+
+.camera-row:hover {
+    background-color: rgba(var(--cg-primary-rgb), 0.05) !important;
+}
+
+.table-secondary {
+    opacity: 0.7;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Bulk selection
+    const selectAllHeader = document.getElementById('selectAllHeader');
+    const selectAllCameras = document.getElementById('selectAllCameras');
+    const cameraCheckboxes = document.querySelectorAll('.camera-checkbox');
+    
+    function updateSelectAll() {
+        const allChecked = Array.from(cameraCheckboxes).every(cb => cb.checked);
+        selectAllHeader.checked = allChecked;
+        selectAllCameras.checked = allChecked;
+    }
+    
+    selectAllHeader.addEventListener('change', function() {
+        cameraCheckboxes.forEach(cb => {
+            cb.checked = this.checked;
+        });
+        selectAllCameras.checked = this.checked;
+    });
+    
+    selectAllCameras.addEventListener('change', function() {
+        cameraCheckboxes.forEach(cb => {
+            cb.checked = this.checked;
+        });
+        selectAllHeader.checked = this.checked;
+    });
+    
+    cameraCheckboxes.forEach(cb => {
+        cb.addEventListener('change', updateSelectAll);
+    });
+    
+    // Bulk actions
+    document.querySelectorAll('[data-bulk-action]').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            const action = this.dataset.bulkAction;
+            const selectedCameras = Array.from(cameraCheckboxes)
+                .filter(cb => cb.checked)
+                .map(cb => cb.value);
+            
+            if (selectedCameras.length === 0) {
+                showToast('Please select at least one camera', 'warning');
+                return;
+            }
+            
+            if (action === 'activate') {
+                bulkToggleCameras(selectedCameras, true);
+            } else if (action === 'deactivate') {
+                bulkToggleCameras(selectedCameras, false);
+            } else if (action === 'export') {
+                exportCameras(selectedCameras);
+            }
+        });
+    });
+    
+    // Toggle camera status
+    document.querySelectorAll('.toggle-camera-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const cameraId = this.dataset.cameraId;
+            const isActive = this.dataset.isActive === 'true';
+            const newStatus = !isActive;
+            
+            if (confirm(`Are you sure you want to ${newStatus ? 'activate' : 'deactivate'} this camera?`)) {
+                toggleCameraStatus(cameraId, newStatus);
+            }
+        });
+    });
+    
+    // Functions
+    function bulkToggleCameras(cameraIds, activate) {
+        fetch('{% url "cameras:bulk_toggle" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                camera_ids: cameraIds,
+                activate: activate
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`${data.message}`, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast(data.message || 'Error performing action', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error performing action', 'error');
+        });
+    }
+    
+    function toggleCameraStatus(cameraId, activate) {
+        fetch(`/cameras/${cameraId}/toggle/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                showToast(`Camera ${activate ? 'activated' : 'deactivated'} successfully`, 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                throw new Error('Failed to toggle camera status');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('Error toggling camera status', 'error');
+        });
+    }
+    
+    function exportCameras(cameraIds) {
+        const params = new URLSearchParams();
+        cameraIds.forEach(id => params.append('camera_ids', id));
+        params.append('format', 'csv');
+        
+        window.open(`{% url "cameras:export" %}?${params.toString()}`, '_blank');
+    }
+    
+    // Utility function to get CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

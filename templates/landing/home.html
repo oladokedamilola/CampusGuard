@@ -1,0 +1,455 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}CampusGuard AI - Smart Campus Security{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section py-5 py-lg-7" style="background: linear-gradient(135deg, var(--cg-dark) 0%, #2D2D2D 100%);">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    Intelligent Security for 
+                    <span class="text-gradient">Safer Campuses</span>
+                </h1>
+                <p class="lead mb-4 text-white-50">
+                    CampusGuard AI combines advanced surveillance technology with artificial intelligence 
+                    to protect educational institutions in Nigeria. Detect threats in real-time, 
+                    prevent incidents before they happen, and ensure a secure learning environment.
+                </p>
+                <div class="d-flex flex-wrap gap-3">
+                    <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-sign-in-alt me-2"></i>Get Started
+                    </a>
+                    <a href="#features" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-play-circle me-2"></i>Learn More
+                    </a>
+                </div>
+                
+                <div class="mt-5">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <h3 class="text-gradient fw-bold mb-1">24/7</h3>
+                                <p class="text-white-50 mb-0">Monitoring</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <h3 class="text-gradient fw-bold mb-1">99.9%</h3>
+                                <p class="text-white-50 mb-0">Detection Accuracy</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center mb-3">
+                                <h3 class="text-gradient fw-bold mb-1">< 5s</h3>
+                                <p class="text-white-50 mb-0">Alert Response</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="position-relative">
+                    <div class="card border-0 shadow-lg overflow-hidden">
+                        <div class="card-header bg-gradient-primary text-white py-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-shield-alt me-2"></i>Live Dashboard
+                                </h5>
+                                <span class="badge bg-accent text-dark">DEMO</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="dashboard-preview">
+                                <!-- Dashboard Preview Image/Video -->
+                                <div class="position-relative overflow-hidden" style="height: 300px; background: var(--cg-dark);">
+                                    <div class="position-absolute top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center">
+                                        <div class="text-center">
+                                            <i class="fas fa-video fa-4x text-secondary mb-3"></i>
+                                            <h5 class="text-white">Live Camera Monitoring</h5>
+                                            <p class="text-white-50">Real-time surveillance interface</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Animated indicators -->
+                                    <div class="position-absolute top-3 start-3">
+                                        <span class="badge bg-success pulse-alert">
+                                            <i class="fas fa-circle me-1"></i>System Active
+                                        </span>
+                                    </div>
+                                    <div class="position-absolute top-3 end-3">
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle me-1"></i>2 Alerts
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Floating elements for visual appeal -->
+                    <div class="position-absolute top-n3 start-n3" style="z-index: -1;">
+                        <div class="bg-gradient-primary rounded-circle" style="width: 200px; height: 200px; opacity: 0.1;"></div>
+                    </div>
+                    <div class="position-absolute bottom-n3 end-n3" style="z-index: -1;">
+                        <div class="bg-gradient-accent rounded-circle" style="width: 150px; height: 150px; opacity: 0.1;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section id="features" class="py-5 py-lg-7">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">
+                Why <span class="text-gradient">CampusGuard AI</span>?
+            </h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                Designed specifically for Nigerian educational institutions, our platform addresses 
+                the unique security challenges faced by schools and universities.
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-wrapper bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-brain fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mb-3">AI-Powered Detection</h4>
+                        <p class="text-muted">
+                            Advanced machine learning algorithms detect suspicious activities, 
+                            recognize faces, and identify unauthorized access in real-time.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Motion detection & analysis
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Facial recognition
+                            </li>
+                            <li>
+                                <i class="fas fa-check text-success me-2"></i>
+                                Behavior pattern analysis
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-wrapper bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-bolt fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mb-3">Real-Time Alerts</h4>
+                        <p class="text-muted">
+                            Instant notifications via email, SMS, and in-app alerts when threats 
+                            are detected. Get alerted within seconds of any incident.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Instant email & SMS alerts
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Mobile app notifications
+                            </li>
+                            <li>
+                                <i class="fas fa-check text-success me-2"></i>
+                                Escalation protocols
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-wrapper bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-chart-bar fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mb-3">Comprehensive Analytics</h4>
+                        <p class="text-muted">
+                            Detailed reports and analytics to identify security trends, 
+                            optimize camera placement, and improve response protocols.
+                        </p>
+                        <ul class="list-unstyled text-muted">
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Incident trend analysis
+                            </li>
+                            <li class="mb-2">
+                                <i class="fas fa-check text-success me-2"></i>
+                                Security audit reports
+                            </li>
+                            <li>
+                                <i class="fas fa-check text-success me-2"></i>
+                                Performance metrics
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="row mt-4 g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-wrapper bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-cloud-upload-alt fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mb-3">Video Analysis</h4>
+                        <p class="text-muted">
+                            Upload existing video footage for analysis. Our AI processes recorded 
+                            videos to detect incidents and generate security reports.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-wrapper bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-user-shield fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mb-3">Role-Based Access</h4>
+                        <p class="text-muted">
+                            Different access levels for administrators, security personnel, 
+                            ICT staff, and viewers. Control who sees what.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body p-4">
+                        <div class="icon-wrapper bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                             style="width: 60px; height: 60px;">
+                            <i class="fas fa-mobile-alt fa-2x text-white"></i>
+                        </div>
+                        <h4 class="mb-3">Mobile Responsive</h4>
+                        <p class="text-muted">
+                            Access the surveillance system from any device. Monitor your campus 
+                            security from your smartphone, tablet, or desktop.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 py-lg-7 bg-gradient-dark text-white">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">How It Works</h2>
+            <p class="lead text-white-50 mx-auto" style="max-width: 700px;">
+                Simple setup, intelligent protection. Get started in three easy steps.
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="step-number bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                         style="width: 80px; height: 80px;">
+                        <span class="display-6 fw-bold">1</span>
+                    </div>
+                    <h4 class="mb-3">Connect Cameras</h4>
+                    <p class="text-white-50">
+                        Connect your existing CCTV/IP cameras to our system. We support 
+                        all major camera brands and protocols.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="step-number bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                         style="width: 80px; height: 80px;">
+                        <span class="display-6 fw-bold">2</span>
+                    </div>
+                    <h4 class="mb-3">Configure Rules</h4>
+                    <p class="text-white-50">
+                        Set up detection rules, alert preferences, and user permissions 
+                        tailored to your institution's needs.
+                    </p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="text-center p-4">
+                    <div class="step-number bg-gradient-primary rounded-circle d-inline-flex align-items-center justify-content-center mb-4" 
+                         style="width: 80px; height: 80px;">
+                        <span class="display-6 fw-bold">3</span>
+                    </div>
+                    <h4 class="mb-3">Monitor & Respond</h4>
+                    <p class="text-white-50">
+                        Our AI monitors 24/7, alerts you to incidents, and helps your 
+                        security team respond effectively.
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-rocket me-2"></i>Start Protecting Your Campus
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials/Use Cases -->
+<section class="py-5 py-lg-7">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold mb-3">Trusted by Nigerian Institutions</h2>
+            <p class="lead text-muted mx-auto" style="max-width: 700px;">
+                Educational institutions across Nigeria rely on CampusGuard AI for their security needs.
+            </p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm text-center h-100">
+                    <div class="card-body p-4">
+                        <div class="institution-logo mb-4">
+                            <i class="fas fa-university fa-4x text-primary"></i>
+                        </div>
+                        <h5 class="mb-3">University of Nigeria</h5>
+                        <p class="text-muted mb-0">
+                            "Reduced campus theft by 80% in the first 6 months of deployment."
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm text-center h-100">
+                    <div class="card-body p-4">
+                        <div class="institution-logo mb-4">
+                            <i class="fas fa-school fa-4x text-primary"></i>
+                        </div>
+                        <h5 class="mb-3">Lagos Private School</h5>
+                        <p class="text-muted mb-0">
+                            "Parents feel much safer knowing our campus is protected by AI surveillance."
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm text-center h-100">
+                    <div class="card-body p-4">
+                        <div class="institution-logo mb-4">
+                            <i class="fas fa-graduation-cap fa-4x text-primary"></i>
+                        </div>
+                        <h5 class="mb-3">Federal Polytechnic</h5>
+                        <p class="text-muted mb-0">
+                            "The video analysis feature helped us investigate incidents from archived footage."
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 col-lg-3">
+                <div class="card border-0 shadow-sm text-center h-100">
+                    <div class="card-body p-4">
+                        <div class="institution-logo mb-4">
+                            <i class="fas fa-book fa-4x text-primary"></i>
+                        </div>
+                        <h5 class="mb-3">College of Education</h5>
+                        <p class="text-muted mb-0">
+                            "Easy to use interface that our security staff learned quickly."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="py-5 py-lg-7 bg-gradient-primary text-white">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h2 class="display-5 fw-bold mb-3">Ready to Secure Your Campus?</h2>
+                <p class="lead mb-0">
+                    Join the growing number of Nigerian educational institutions using CampusGuard AI 
+                    for intelligent, reliable campus security.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a href="{% url 'accounts:login' %}" class="btn btn-light btn-lg">
+                    <i class="fas fa-shield-alt me-2"></i>Start Free Trial
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+
+.hover-lift {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hover-lift:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.icon-wrapper {
+    transition: transform 0.3s ease;
+}
+
+.hover-lift:hover .icon-wrapper {
+    transform: scale(1.1);
+}
+
+.step-number {
+    transition: all 0.3s ease;
+}
+
+.step-number:hover {
+    transform: rotate(15deg);
+}
+
+.institution-logo i {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .institution-logo i {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %}

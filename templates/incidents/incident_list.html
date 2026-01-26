@@ -1,0 +1,478 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Incidents - Smart Surveillance System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>
+        <i class="fas fa-exclamation-triangle me-2"></i>Incidents
+    </h1>
+    
+    {% if user.can_acknowledge_incidents %}
+    <div class="btn-group">
+        <a href="{% url 'incidents:create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-1"></i>Report Incident
+        </a>
+        <a href="{% url 'incidents:export' %}?format=csv" class="btn btn-secondary">
+            <i class="fas fa-download me-1"></i>Export CSV
+        </a>
+        <a href="{% url 'incidents:dashboard' %}" class="btn btn-info">
+            <i class="fas fa-chart-bar me-1"></i>Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Total Incidents</h6>
+                        <h3 class="mb-0">{{ total_incidents }}</h3>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Open Incidents</h6>
+                        <h3 class="mb-0">{{ open_incidents }}</h3>
+                    </div>
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Today</h6>
+                        <h3 class="mb-0">{{ today_incidents }}</h3>
+                    </div>
+                    <i class="fas fa-calendar-day fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="card-title">Unacknowledged</h6>
+                        <h3 class="mb-0">{{ unacknowledged_incidents }}</h3>
+                    </div>
+                    <i class="fas fa-bell fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filter Form -->
+<div class="card shadow mb-4">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="fas fa-filter me-2"></i>Filter Incidents
+        </h5>
+    </div>
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-2">
+                {{ filter_form.status.label_tag }}
+                {{ filter_form.status }}
+            </div>
+            
+            <div class="col-md-2">
+                {{ filter_form.severity.label_tag }}
+                {{ filter_form.severity }}
+            </div>
+            
+            <div class="col-md-2">
+                {{ filter_form.incident_type.label_tag }}
+                {{ filter_form.incident_type }}
+            </div>
+            
+            <div class="col-md-2">
+                {{ filter_form.camera.label_tag }}
+                {{ filter_form.camera }}
+            </div>
+            
+            <div class="col-md-2">
+                {{ filter_form.assigned_to.label_tag }}
+                {{ filter_form.assigned_to }}
+            </div>
+            
+            <div class="col-md-2">
+                {{ filter_form.search.label_tag }}
+                {{ filter_form.search }}
+            </div>
+            
+            <div class="col-md-3">
+                {{ filter_form.date_from.label_tag }}
+                {{ filter_form.date_from }}
+            </div>
+            
+            <div class="col-md-3">
+                {{ filter_form.date_to.label_tag }}
+                {{ filter_form.date_to }}
+            </div>
+            
+            <div class="col-md-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search me-1"></i>Apply Filters
+                </button>
+                <a href="{% url 'incidents:list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times me-1"></i>Clear Filters
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Bulk Actions Form -->
+{% if user.can_acknowledge_incidents %}
+<form method="post" action="{% url 'incidents:bulk_action' %}" id="bulk-action-form">
+    {% csrf_token %}
+    <div class="card shadow mb-4">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-tasks me-2"></i>Incident List
+                <span class="badge bg-primary ms-2">{{ incidents.paginator.count }} incidents</span>
+            </h5>
+            
+            <div class="d-flex align-items-center">
+                <div class="form-check me-3">
+                    <input type="checkbox" class="form-check-input" id="select-all">
+                    <label class="form-check-label" for="select-all">Select All</label>
+                </div>
+                
+                <div class="input-group" style="width: 300px;">
+                    {{ bulk_action_form.action }}
+                    <button type="submit" class="btn btn-outline-primary">Apply</button>
+                </div>
+                
+                <!-- Hidden field for assigned user (will be shown when needed) -->
+                <div id="assign-user-field" class="ms-2" style="display: none;">
+                    {{ bulk_action_form.assigned_user }}
+                </div>
+                
+                <!-- Hidden field for resolution notes (will be shown when needed) -->
+                <div id="resolution-notes-field" class="ms-2" style="display: none;">
+                    {{ bulk_action_form.resolution_notes }}
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body">
+            {% if incidents %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th width="50"></th>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Camera</th>
+                                <th>Type</th>
+                                <th>Severity</th>
+                                <th>Status</th>
+                                <th>Detected</th>
+                                <th>Assigned To</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for incident in incidents %}
+                            <tr>
+                                <td>
+                                    <input type="checkbox" name="incident_ids" 
+                                           value="{{ incident.pk }}" class="form-check-input incident-checkbox">
+                                </td>
+                                <td>
+                                    <a href="{% url 'incidents:detail' incident.pk %}" class="text-decoration-none">
+                                        <code>{{ incident.incident_id }}</code>
+                                    </a>
+                                </td>
+                                <td>
+                                    <a href="{% url 'incidents:detail' incident.pk %}" class="text-decoration-none">
+                                        {{ incident.title|truncatechars:50 }}
+                                    </a>
+                                </td>
+                                <td>{{ incident.camera.name|truncatechars:20 }}</td>
+                                <td>{{ incident.get_incident_type_display }}</td>
+                                <td>
+                                    <span class="badge bg-{{ incident.get_severity_color }}">
+                                        {{ incident.get_severity_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ incident.get_status_color }}">
+                                        {{ incident.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {{ incident.detected_at|date:"M d, H:i" }}
+                                    <br>
+                                    <small class="text-muted">{{ incident.detected_at|timesince }} ago</small>
+                                </td>
+                                <td>
+                                    {% if incident.assigned_to %}
+                                        <span class="badge bg-info">{{ incident.assigned_to.get_short_name }}</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Unassigned</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a href="{% url 'incidents:detail' incident.pk %}" 
+                                           class="btn btn-info" title="View">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        
+                                        {% if user.can_acknowledge_incidents %}
+                                            {% if incident.can_be_acknowledged %}
+                                            <a href="{% url 'incidents:acknowledge' incident.pk %}" 
+                                               class="btn btn-warning" title="Acknowledge">
+                                                <i class="fas fa-check-circle"></i>
+                                            </a>
+                                            {% endif %}
+                                            
+                                            {% if incident.can_be_resolved %}
+                                            <a href="{% url 'incidents:resolve' incident.pk %}" 
+                                               class="btn btn-success" title="Resolve">
+                                                <i class="fas fa-flag-checkered"></i>
+                                            </a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                {% if incidents.paginator.num_pages > 1 %}
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {% if incidents.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ incidents.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Previous
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in incidents.paginator.page_range %}
+                            {% if incidents.number == num %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ num }}</span>
+                            </li>
+                            {% elif num > incidents.number|add:'-3' and num < incidents.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                    {{ num }}
+                                </a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if incidents.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ incidents.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                Next
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+                
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                    <h4>No incidents found</h4>
+                    <p class="text-muted">All clear! No incidents match your filters.</p>
+                    {% if user.can_acknowledge_incidents %}
+                    <a href="{% url 'incidents:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-1"></i>Report First Incident
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</form>
+
+<script>
+// Bulk action form handling
+document.addEventListener('DOMContentLoaded', function() {
+    // Select all checkboxes
+    const selectAll = document.getElementById('select-all');
+    const incidentCheckboxes = document.querySelectorAll('.incident-checkbox');
+    
+    selectAll.addEventListener('change', function() {
+        incidentCheckboxes.forEach(cb => {
+            cb.checked = selectAll.checked;
+        });
+    });
+    
+    // Show/hide additional fields based on action
+    const actionSelect = document.querySelector('select[name="action"]');
+    const assignUserField = document.getElementById('assign-user-field');
+    const resolutionNotesField = document.getElementById('resolution-notes-field');
+    
+    actionSelect.addEventListener('change', function() {
+        if (this.value === 'assign') {
+            assignUserField.style.display = 'block';
+            resolutionNotesField.style.display = 'none';
+        } else if (this.value === 'resolve') {
+            assignUserField.style.display = 'none';
+            resolutionNotesField.style.display = 'block';
+        } else {
+            assignUserField.style.display = 'none';
+            resolutionNotesField.style.display = 'none';
+        }
+    });
+});
+</script>
+
+{% else %}
+<!-- For users without bulk action permissions -->
+<div class="card shadow">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">
+            <i class="fas fa-list me-2"></i>Incident List
+            <span class="badge bg-primary ms-2">{{ incidents.paginator.count }} incidents</span>
+        </h5>
+    </div>
+    
+    <div class="card-body">
+        {% if incidents %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Camera</th>
+                            <th>Type</th>
+                            <th>Severity</th>
+                            <th>Status</th>
+                            <th>Detected</th>
+                            <th>Assigned To</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for incident in incidents %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'incidents:detail' incident.pk %}" class="text-decoration-none">
+                                    <code>{{ incident.incident_id }}</code>
+                                </a>
+                            </td>
+                            <td>
+                                <a href="{% url 'incidents:detail' incident.pk %}" class="text-decoration-none">
+                                    {{ incident.title|truncatechars:50 }}
+                                </a>
+                            </td>
+                            <td>{{ incident.camera.name|truncatechars:20 }}</td>
+                            <td>{{ incident.get_incident_type_display }}</td>
+                            <td>
+                                <span class="badge bg-{{ incident.get_severity_color }}">
+                                    {{ incident.get_severity_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ incident.get_status_color }}">
+                                    {{ incident.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {{ incident.detected_at|date:"M d, H:i" }}
+                                <br>
+                                <small class="text-muted">{{ incident.detected_at|timesince }} ago</small>
+                            </td>
+                            <td>
+                                {% if incident.assigned_to %}
+                                    <span class="badge bg-info">{{ incident.assigned_to.get_short_name }}</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Unassigned</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{% url 'incidents:detail' incident.pk %}" class="btn btn-sm btn-info">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination (same as above) -->
+            {% if incidents.paginator.num_pages > 1 %}
+            <nav aria-label="Page navigation">
+                <ul class="pagination justify-content-center">
+                    {% if incidents.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ incidents.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            Previous
+                        </a>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in incidents.paginator.page_range %}
+                        {% if incidents.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > incidents.number|add:'-3' and num < incidents.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if incidents.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ incidents.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">
+                            Next
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                <h4>No incidents found</h4>
+                <p class="text-muted">All clear! No incidents match your filters.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+{% endblock %}
