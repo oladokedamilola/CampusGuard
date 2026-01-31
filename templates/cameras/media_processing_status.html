@@ -1,0 +1,83 @@
+{% extends 'base_app.html' %}
+{% load i18n static %}
+
+{% block title %}{% trans "Processing Status" %} - {{ media_upload.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">{% trans "Processing Status" %}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="text-center mb-4">
+                        {% if media_upload.thumbnail %}
+                        <img src="{{ media_upload.thumbnail.url }}" alt="{{ media_upload.title }}" 
+                             class="img-fluid rounded mb-3" style="max-height: 200px;">
+                        {% endif %}
+                        <h5>{{ media_upload.title }}</h5>
+                        <p class="text-muted">
+                            {% trans "Uploaded" %}: {{ media_upload.uploaded_at|date:"Y-m-d H:i" }}
+                        </p>
+                    </div>
+                    
+                    <div class="progress mb-3" style="height: 30px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: {{ progress_percentage }}%">
+                            {{ progress_percentage }}%
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <h6><i class="fas fa-info-circle"></i> {% trans "Processing Information" %}</h6>
+                        <ul class="mb-0">
+                            <li>{% trans "Media Type" %}: {{ media_upload.get_media_type_display }}</li>
+                            <li>{% trans "Status" %}: {{ media_upload.get_processing_status_display }}</li>
+                            {% if media_upload.job_id %}
+                            <li>{% trans "Job ID" %}: <code>{{ media_upload.job_id }}</code></li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                    
+                    {% if media_upload.processing_status == 'completed' %}
+                    <div class="text-center mt-4">
+                        <a href="{% url 'cameras:media_analysis_results' media_upload.id %}" 
+                           class="btn btn-success btn-lg">
+                            <i class="fas fa-chart-bar"></i> {% trans "View Analysis Results" %}
+                        </a>
+                    </div>
+                    {% elif media_upload.processing_status == 'failed' %}
+                    <div class="alert alert-danger">
+                        <h6><i class="fas fa-exclamation-triangle"></i> {% trans "Processing Failed" %}</h6>
+                        <p>{% trans "There was an error processing your media file. Please try again." %}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="text-center mt-4">
+                        <a href="{% url 'cameras:media_gallery' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> {% trans "Back to Gallery" %}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh status every 5 seconds
+document.addEventListener('DOMContentLoaded', function() {
+    const status = "{{ media_upload.processing_status }}";
+    if (status !== 'completed' && status !== 'failed') {
+        setTimeout(function() {
+            window.location.reload();
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

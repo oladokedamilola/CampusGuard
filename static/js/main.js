@@ -200,3 +200,177 @@ function createToastContainer() {
     document.body.appendChild(container);
     return container;
 }
+
+
+
+
+// Flash Messages Enhancement
+(function() {
+    'use strict';
+    
+    class FlashMessageSystem {
+        constructor() {
+            this.container = document.getElementById('flash-messages-container');
+            this.init();
+        }
+        
+        init() {
+            // Check for existing messages
+            this.setupExistingMessages();
+            
+            // Global event listener for AJAX messages
+            document.addEventListener('flash:show', (e) => {
+                this.show(e.detail.message, e.detail.type, e.detail.options);
+            });
+        }
+        
+        setupExistingMessages() {
+            const messages = document.querySelectorAll('.flash-message');
+            
+            messages.forEach((message, index) => {
+                // Add stagger delay
+                message.style.animationDelay = `${index * 0.1}s`;
+                
+                // Setup close button
+                const closeBtn = message.querySelector('.flash-close');
+                if (closeBtn) {
+                    closeBtn.addEventListener('click', () => this.remove(message));
+                }
+                
+                // Auto-dismiss if enabled
+                const autoDismiss = message.getAttribute('data-auto-dismiss') === 'true';
+                if (autoDismiss) {
+                    setTimeout(() => this.remove(message), 7000);
+                }
+            });
+            
+            // Show container if messages exist
+            if (messages.length > 0) {
+                this.container.classList.add('has-messages');
+            }
+        }
+        
+        show(message, type = 'info', options = {}) {
+            const defaultOptions = {
+                autoDismiss: true,
+                duration: 7000,
+                icon: null,
+                title: null,
+                closeable: true
+            };
+            
+            const config = { ...defaultOptions, ...options };
+            
+            // Create message element
+            const messageElement = this.createMessageElement(message, type, config);
+            
+            // Add to container
+            this.container.appendChild(messageElement);
+            this.container.classList.add('has-messages');
+            
+            // Trigger animation
+            requestAnimationFrame(() => {
+                messageElement.classList.add('flash-visible');
+            });
+            
+            // Auto-dismiss
+            if (config.autoDismiss) {
+                setTimeout(() => this.remove(messageElement), config.duration);
+            }
+            
+            return messageElement;
+        }
+        
+        createMessageElement(message, type, config) {
+            const element = document.createElement('div');
+            element.className = `flash-message flash-${type}`;
+            element.setAttribute('role', 'alert');
+            
+            // Set icon based on type
+            let icon = config.icon;
+            if (!icon) {
+                switch(type) {
+                    case 'success': icon = 'fa-check-circle'; break;
+                    case 'error': 
+                    case 'danger': icon = 'fa-exclamation-circle'; break;
+                    case 'warning': icon = 'fa-exclamation-triangle'; break;
+                    case 'info': icon = 'fa-info-circle'; break;
+                    default: icon = 'fa-bell';
+                }
+            }
+            
+            // Set title based on type
+            let title = config.title;
+            if (!title) {
+                switch(type) {
+                    case 'success': title = 'Success'; break;
+                    case 'error': 
+                    case 'danger': title = 'Error'; break;
+                    case 'warning': title = 'Warning'; break;
+                    case 'info': title = 'Information'; break;
+                    default: title = 'Notification';
+                }
+            }
+            
+            element.innerHTML = `
+                <div class="flash-content">
+                    <div class="flash-icon">
+                        <i class="fas ${icon}"></i>
+                    </div>
+                    <div class="flash-body">
+                        <h6 class="flash-title">${title}</h6>
+                        <p class="flash-text">${message}</p>
+                    </div>
+                </div>
+                ${config.closeable ? '<button type="button" class="flash-close" aria-label="Close"><i class="fas fa-times"></i></button>' : ''}
+                ${config.autoDismiss ? '<div class="flash-progress" style="animation: flashProgress ' + config.duration + 'ms linear forwards;"></div>' : ''}
+            `;
+            
+            // Add close event if closeable
+            if (config.closeable) {
+                const closeBtn = element.querySelector('.flash-close');
+                closeBtn.addEventListener('click', () => this.remove(element));
+            }
+            
+            return element;
+        }
+        
+        remove(messageElement) {
+            if (!messageElement || !messageElement.parentNode) return;
+            
+            // Add exiting animation
+            messageElement.classList.add('flash-exiting');
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+                
+                // Hide container if empty
+                if (this.container.children.length === 0) {
+                    this.container.classList.remove('has-messages');
+                }
+            }, 300);
+        }
+        
+        clearAll() {
+            document.querySelectorAll('.flash-message').forEach(message => {
+                this.remove(message);
+            });
+        }
+    }
+    
+    // Initialize when DOM is ready
+    document.addEventListener('DOMContentLoaded', () => {
+        window.flashMessages = new FlashMessageSystem();
+    });
+    
+    // Global helper function for showing flash messages
+    window.showFlashMessage = function(message, type = 'info', options = {}) {
+        const event = new CustomEvent('flash:show', {
+            detail: { message, type, options }
+        });
+        document.dispatchEvent(event);
+    };
+})();

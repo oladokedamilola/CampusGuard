@@ -1,0 +1,31 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Security Guard Dashboard - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="dashboard-header mb-4">
+        <h1 class="h2 mb-2">
+            <i class="fas fa-user-shield me-2 text-primary"></i>Security Monitoring Panel
+        </h1>
+        <p class="text-muted mb-0">Real-time surveillance and incident response</p>
+    </div>
+    
+    <div class="alert alert-info">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Current Shift:</strong> {{ current_shift }}
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">Assigned Cameras</h5>
+        </div>
+        <div class="card-body">
+            <p>Monitor your assigned cameras and respond to incidents.</p>
+            <a href="{% url 'cameras:list' %}" class="btn btn-primary">
+                <i class="fas fa-eye me-1"></i> View All Cameras
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

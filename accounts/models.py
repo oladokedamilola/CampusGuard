@@ -1,26 +1,24 @@
+# smart_surveillance/accounts/models.py
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-
-# In accounts/models.py, add this at the top
 from .managers import UserManager
-
-# In User class, add:
-objects = UserManager()
-    
-# Also update username field to use email
-USERNAME_FIELD = 'email'
-REQUIRED_FIELDS = ['first_name', 'last_name']
-
-# And remove username field (since we're using email)
-# AbstractUser already has username, we need to override it
-username = None
-email = models.EmailField(_('email address'), unique=True)
 
 class User(AbstractUser):
     """
     Custom User model with role-based permissions for security surveillance system.
     """
+    
+    # IMPORTANT: Remove username field and make email the username field
+    username = None  # Remove username field
+    email = models.EmailField(_('email address'), unique=True)
+    
+    # Override the USERNAME_FIELD to use email
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
+    
+    # Use custom manager
+    objects = UserManager()
     
     class Role(models.TextChoices):
         ADMIN = 'admin', _('System Administrator')

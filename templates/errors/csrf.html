@@ -1,0 +1,42 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_icon %}
+<div class="text-center">
+    <i class="fas fa-shield-alt error-icon security-icon"></i>
+</div>
+{% endblock %}
+
+{% block error_details %}
+<div class="alert alert-warning">
+    <i class="fas fa-lock"></i> <strong>Security Verification Failed</strong><br>
+    <small>This request was blocked to protect against cross-site request forgery.</small>
+</div>
+
+<p><strong>Common causes:</strong></p>
+<ul>
+    <li>Your session may have expired</li>
+    <li>You may have left the page open for too long</li>
+    <li>Browser privacy settings may be blocking cookies</li>
+    <li>You may have navigated back and tried to resubmit a form</li>
+</ul>
+
+<p><strong>How to fix this:</strong></p>
+<ol>
+    <li>Refresh the page and try again</li>
+    <li>Clear your browser cache and cookies</li>
+    <li>Ensure cookies are enabled in your browser</li>
+    <li>Log out and log back in</li>
+</ol>
+{% endblock %}
+
+{% block error_actions %}
+<a href="javascript:history.back()" class="btn-error btn-primary-error">
+    <i class="fas fa-arrow-left"></i> Go Back
+</a>
+<button onclick="location.reload()" class="btn-error btn-secondary-error">
+    <i class="fas fa-sync-alt"></i> Refresh Page
+</button>
+<a href="{% url 'accounts:logout' %}" class="btn-error btn-secondary-error">
+    <i class="fas fa-sign-out-alt"></i> Log Out
+</a>
+{% endblock %}

@@ -1,0 +1,428 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Upload Media - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-cloud-upload-alt me-3"></i>Upload Media for Analysis
+            </h1>
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'cameras:media_selection' %}">Media Analysis</a></li>
+                    <li class="breadcrumb-item active">Upload Media</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <div class="card shadow-lg">
+                <div class="card-header bg-oxford text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-upload me-2"></i>Upload Surveillance Media
+                    </h3>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Media Type Selection -->
+                    <div class="row mb-5">
+                        <div class="col-12">
+                            <h4 class="mb-4">Select Media Type</h4>
+                            <div class="btn-group w-100" role="group" aria-label="Media type selection">
+                                <input type="radio" class="btn-check" name="mediaType" id="videoType" autocomplete="off" checked>
+                                <label class="btn btn-outline-primary btn-lg py-3" for="videoType">
+                                    <i class="fas fa-video me-2"></i>Video File
+                                </label>
+                                
+                                <input type="radio" class="btn-check" name="mediaType" id="imageType" autocomplete="off">
+                                <label class="btn btn-outline-primary btn-lg py-3" for="imageType">
+                                    <i class="fas fa-image me-2"></i>Image File
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Area -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="upload-area border-dashed rounded p-5 text-center mb-4" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-4"></i>
+                                <h4 class="mb-3">Drag & Drop or Click to Upload</h4>
+                                <p class="text-muted mb-4" id="fileTypesInfo">
+                                    Upload video files (MP4, AVI, MOV, MPEG) up to 2GB
+                                </p>
+                                <input type="file" class="d-none" id="fileInput" accept=".mp4,.avi,.mov,.mpeg,.jpg,.jpeg,.png">
+                                <button class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
+                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                </button>
+                                <div class="mt-3 text-muted" id="selectedFileInfo"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Progress (Initially Hidden) -->
+                    <div class="row d-none" id="uploadProgressSection">
+                        <div class="col-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Uploading Media
+                                    </h5>
+                                    <div class="progress mb-2" style="height: 25px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                             role="progressbar" 
+                                             id="uploadProgressBar"
+                                             style="width: 0%">0%</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <span id="uploadStatus">Preparing upload...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Processing Progress (Initially Hidden) -->
+                    <div class="row d-none" id="processingProgressSection">
+                        <div class="col-12">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="mb-3">
+                                        <i class="fas fa-cogs me-2"></i>Analyzing Media
+                                    </h5>
+                                    <p class="mb-3">The system is now analyzing the uploaded media for security threats.</p>
+                                    <div class="progress mb-2" style="height: 25px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
+                                             role="progressbar" 
+                                             id="processingProgressBar"
+                                             style="width: 0%">0%</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <span id="processingStatus">Initializing analysis...</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="row mt-4">
+                        <div class="col-12 text-center">
+                            <button class="btn btn-secondary btn-lg me-3" onclick="window.history.back()">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </button>
+                            <button class="btn btn-primary btn-lg" id="uploadBtn" onclick="startUpload()" disabled>
+                                <i class="fas fa-upload me-2"></i>Upload & Analyze
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Help Information -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-info-circle me-2"></i>Upload Guidelines
+                        </h5>
+                        <ul class="mb-0">
+                            <li>Ensure video files are clear and well-lit for optimal analysis</li>
+                            <li>Recommended resolution: 720p or higher</li>
+                            <li>For images: upload multiple angles if available</li>
+                            <li>Processing time depends on file size (approx. 1 minute per 100MB)</li>
+                            <li>All uploaded files are encrypted and stored securely</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-oxford text-white">
+                <h5 class="modal-title" id="previewModalLabel">
+                    <i class="fas fa-eye me-2"></i>Preview Upload
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="previewContent">
+                    <!-- Preview will be inserted here -->
+                </div>
+                <div class="mt-4">
+                    <p id="fileDetails" class="text-muted"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-outline-primary" onclick="changeFile()">
+                    <i class="fas fa-exchange-alt me-2"></i>Change File
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmUpload()">
+                    <i class="fas fa-check me-2"></i>Confirm & Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .border-dashed {
+        border: 3px dashed var(--border-color);
+        transition: all 0.3s ease;
+    }
+    
+    .border-dashed:hover {
+        border-color: var(--academic-gold);
+        background-color: rgba(255, 215, 0, 0.05);
+    }
+    
+    .upload-area {
+        cursor: pointer;
+    }
+    
+    .progress-bar-animated {
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedFile = null;
+    const videoExtensions = ['.mp4', '.avi', '.mov', '.mpeg'];
+    const imageExtensions = ['.jpg', '.jpeg', '.png'];
+
+    // Get CSRF token from cookies
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    // Update media type description
+    document.getElementById('videoType').addEventListener('change', function() {
+        document.getElementById('fileTypesInfo').textContent = 
+            'Upload video files (MP4, AVI, MOV, MPEG) up to 2GB';
+        document.getElementById('fileInput').setAttribute('accept', '.mp4,.avi,.mov,.mpeg');
+        selectedFile = null;
+        resetUploadUI();
+    });
+
+    document.getElementById('imageType').addEventListener('change', function() {
+        document.getElementById('fileTypesInfo').textContent = 
+            'Upload image files (JPG, JPEG, PNG) up to 100MB';
+        document.getElementById('fileInput').setAttribute('accept', '.jpg,.jpeg,.png');
+        selectedFile = null;
+        resetUploadUI();
+    });
+
+    // File input handling
+    document.getElementById('fileInput').addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            selectedFile = e.target.files[0];
+            validateAndPreviewFile(selectedFile);
+        }
+    });
+
+    // Drag and drop functionality
+    const uploadArea = document.getElementById('uploadArea');
+    
+    uploadArea.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.classList.add('border-primary');
+    });
+
+    uploadArea.addEventListener('dragleave', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary');
+    });
+
+    uploadArea.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.classList.remove('border-primary');
+        
+        if (e.dataTransfer.files.length > 0) {
+            selectedFile = e.dataTransfer.files[0];
+            document.getElementById('fileInput').files = e.dataTransfer.files;
+            validateAndPreviewFile(selectedFile);
+        }
+    });
+
+    function validateAndPreviewFile(file) {
+        const maxSize = file.type.startsWith('video/') ? 2 * 1024 * 1024 * 1024 : 100 * 1024 * 1024;
+        
+        if (file.size > maxSize) {
+            alert(`File size exceeds maximum limit (${maxSize / (1024*1024)}MB)`);
+            resetUploadUI();
+            return;
+        }
+
+        // Enable upload button
+        document.getElementById('uploadBtn').disabled = false;
+        
+        // Show file info
+        const fileSize = (file.size / (1024*1024)).toFixed(2);
+        document.getElementById('selectedFileInfo').innerHTML = `
+            <i class="fas fa-file me-2"></i>
+            <strong>${file.name}</strong> (${fileSize} MB)
+        `;
+
+        // Show preview modal
+        showPreview(file);
+    }
+
+    function showPreview(file) {
+        const previewContent = document.getElementById('previewContent');
+        const fileDetails = document.getElementById('fileDetails');
+        
+        // Clear previous preview
+        previewContent.innerHTML = '';
+        
+        if (file.type.startsWith('video/')) {
+            previewContent.innerHTML = `
+                <video controls width="100%" height="auto">
+                    <source src="${URL.createObjectURL(file)}" type="${file.type}">
+                    Your browser does not support the video tag.
+                </video>
+            `;
+        } else if (file.type.startsWith('image/')) {
+            previewContent.innerHTML = `
+                <img src="${URL.createObjectURL(file)}" alt="Preview" class="img-fluid rounded" style="max-height: 400px;">
+            `;
+        }
+        
+        const fileSize = (file.size / (1024*1024)).toFixed(2);
+        fileDetails.textContent = `${file.name} | ${fileSize} MB | ${file.type}`;
+        
+        const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+        modal.show();
+    }
+
+    function changeFile() {
+        document.getElementById('fileInput').click();
+        bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
+    }
+
+    function confirmUpload() {
+        bootstrap.Modal.getInstance(document.getElementById('previewModal')).hide();
+        startUpload();
+    }
+
+    function startUpload() {
+        if (!selectedFile) return;
+
+        // Show upload progress
+        document.getElementById('uploadProgressSection').classList.remove('d-none');
+        document.getElementById('uploadBtn').disabled = true;
+        document.getElementById('uploadArea').style.display = 'none';
+
+        // Create FormData for actual file upload
+        const formData = new FormData();
+        formData.append('media_file', selectedFile);
+        
+        // Determine media type
+        const isVideo = selectedFile.type.startsWith('video/');
+        formData.append('media_type', isVideo ? 'video' : 'image');
+        formData.append('title', selectedFile.name);
+        formData.append('description', 'Uploaded media for analysis');
+        
+        // Add detection types
+        formData.append('detection_types', 'person');
+        formData.append('detection_types', 'vehicle');
+        
+        // Add CSRF token
+        const csrftoken = getCookie('csrftoken');
+        
+        // Show real progress
+        const xhr = new XMLHttpRequest();
+        
+        // Track upload progress
+        xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+                const percentComplete = (e.loaded / e.total) * 100;
+                document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
+                document.getElementById('uploadProgressBar').textContent = Math.round(percentComplete) + '%';
+                document.getElementById('uploadStatus').textContent = `Uploading... ${Math.round(percentComplete)}%`;
+            }
+        });
+        
+        // Handle upload completion
+        xhr.addEventListener('load', function() {
+            if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                document.getElementById('uploadStatus').textContent = 'Upload complete! Starting analysis...';
+                
+                // Switch to processing
+                setTimeout(() => {
+                    document.getElementById('uploadProgressSection').classList.add('d-none');
+                    document.getElementById('processingProgressSection').classList.remove('d-none');
+                    
+                    // Redirect to processing status page
+                    if (response.upload_id) {
+                        setTimeout(() => {
+                            window.location.href = `/cameras/media/${response.upload_id}/status/`;
+                        }, 1500);
+                    }
+                }, 1000);
+            } else {
+                // Handle error
+                try {
+                    const errorResponse = JSON.parse(xhr.responseText);
+                    alert('Upload failed: ' + (errorResponse.error || errorResponse.message || 'Unknown error'));
+                } catch {
+                    alert('Upload failed: ' + xhr.statusText);
+                }
+                resetUploadUI();
+            }
+        });
+        
+        // Handle errors
+        xhr.addEventListener('error', function() {
+            alert('Upload failed. Please check your connection.');
+            resetUploadUI();
+        });
+        
+        // Start upload with CSRF token
+        xhr.open('POST', '{% url "cameras:upload_media" %}');
+        xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+        if (csrftoken) {
+            xhr.setRequestHeader('X-CSRFToken', csrftoken);
+        }
+        xhr.send(formData);
+    }
+
+    function resetUploadUI() {
+        selectedFile = null;
+        document.getElementById('fileInput').value = '';
+        document.getElementById('selectedFileInfo').textContent = '';
+        document.getElementById('uploadBtn').disabled = true;
+        document.getElementById('uploadArea').style.display = 'block';
+        document.getElementById('uploadProgressSection').classList.add('d-none');
+        document.getElementById('processingProgressSection').classList.add('d-none');
+    }
+</script>
+{% endblock %}

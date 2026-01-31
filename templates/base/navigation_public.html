@@ -1,56 +1,326 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-gradient-dark">
+<!-- ============================================
+   NAVIGATION BAR - CAMPUSGUARD AI
+   Professional Academic Brand
+   ============================================ -->
+
+<nav class="navbar navbar-expand-lg" style="
+    background: linear-gradient(90deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+    border-bottom: 3px solid var(--academic-gold);
+    box-shadow: 0 2px 15px rgba(0, 33, 71, 0.2);
+    padding: 1rem 0;
+    font-family: var(--font-sans);
+">
     <div class="container">
-        <a class="navbar-brand" href="{% url 'landing:home' %}">
-            <i class="fas fa-shield-alt me-2"></i>
-            <span class="text-gradient">CampusGuard</span>
-            <span class="text-secondary">AI</span>
+        <!-- Brand Logo -->
+        <a class="navbar-brand d-flex align-items-center" href="{% url 'landing:home' %}" style="
+            font-family: var(--font-serif);
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--ivory-white);
+            text-decoration: none;
+        ">
+            <div class="brand-logo-small me-2" style="
+                width: 36px;
+                height: 36px;
+                background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
+                border-radius: 8px;
+                border: 2px solid var(--ivory-white);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--oxford-blue);
+                font-size: 0.9rem;
+                font-weight: bold;
+            ">
+                ⚔️
+            </div>
+            <div>
+                <span style="color: var(--ivory-white);">CampusGuard</span>
+                <span style="color: var(--academic-gold);"> AI</span>
+            </div>
         </a>
         
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon"></span>
+        <!-- Mobile Toggle -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar" 
+                aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation"
+                style="border: 1px solid var(--academic-gold);">
+            <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
         </button>
         
-        <div class="collapse navbar-collapse" id="navbarNav">
+        <!-- Navigation Links -->
+        <div class="collapse navbar-collapse" id="mainNavbar">
+            <!-- Left Navigation (only for non-authenticated users on homepage) -->
+            {% if not user.is_authenticated and request.path == '/' %}
             <ul class="navbar-nav me-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'landing:home' %}#features">Features</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#how-it-works">How It Works</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#pricing">Pricing</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="#contact">Contact</a>
+                    <a class="nav-link" href="{% url 'landing:home' %}#overview" style="
+                        color: rgba(255, 255, 240, 0.9);
+                        font-weight: 500;
+                        padding: 0.5rem 1rem;
+                        border-radius: var(--border-radius);
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-info-circle me-1"></i>System Overview
+                    </a>
                 </li>
             </ul>
+            {% elif user.is_authenticated %}
+            <ul class="navbar-nav me-auto">
+                <!-- Dashboard Link -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'dashboard:index' %}" style="
+                        color: rgba(255, 255, 240, 0.9);
+                        font-weight: 500;
+                        padding: 0.5rem 1rem;
+                        border-radius: var(--border-radius);
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    </a>
+                </li>
+                
+                <!-- Cameras Link (if user has permission) -->
+                {% if user.can_manage_cameras %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'cameras:list' %}" style="
+                        color: rgba(255, 255, 240, 0.9);
+                        font-weight: 500;
+                        padding: 0.5rem 1rem;
+                        border-radius: var(--border-radius);
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-video me-1"></i>Cameras
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Incidents Link (if user has permission) -->
+                {% if user.can_acknowledge_incidents %}
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'incidents:list' %}" style="
+                        color: rgba(255, 255, 240, 0.9);
+                        font-weight: 500;
+                        padding: 0.5rem 1rem;
+                        border-radius: var(--border-radius);
+                        transition: all 0.3s ease;
+                    ">
+                        <i class="fas fa-exclamation-triangle me-1"></i>Incidents
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+            {% endif %}
             
-            <ul class="navbar-nav">
+            <!-- Right Navigation (User Actions) -->
+            <ul class="navbar-nav ms-auto">
                 {% if user.is_authenticated %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard:index' %}">
-                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                    <!-- User Menu Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" 
+                           id="userDropdown" role="button" data-bs-toggle="dropdown"
+                           style="
+                                color: var(--ivory-white);
+                                font-weight: 500;
+                                padding: 0.5rem 1rem;
+                                border-radius: var(--border-radius);
+                                transition: all 0.3s ease;
+                                background: rgba(255, 255, 240, 0.1);
+                           ">
+                            <div class="user-avatar me-2" style="
+                                width: 32px;
+                                height: 32px;
+                                background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
+                                border-radius: 50%;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                color: var(--oxford-blue);
+                                font-weight: bold;
+                                font-size: 0.9rem;
+                            ">
+                                {{ user.first_name|first|default:user.email|first|upper }}
+                            </div>
+                            <div class="d-none d-md-block">
+                                <span>{{ user.get_short_name|default:user.email|truncatechars:20 }}</span>
+                                <small class="d-block" style="font-size: 0.8rem; color: var(--academic-gold);">
+                                    {{ user.get_role_display }}
+                                </small>
+                            </div>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:logout' %}">
-                            <i class="fas fa-sign-out-alt me-1"></i>Logout
-                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown"
+                            style="
+                                background-color: var(--ivory-white);
+                                border: 2px solid var(--academic-gold);
+                                border-radius: var(--border-radius);
+                                box-shadow: 0 8px 25px rgba(0, 33, 71, 0.15);
+                                min-width: 200px;
+                            ">
+                            <!-- User Info -->
+                            <li class="dropdown-header px-3 py-2" style="
+                                background: linear-gradient(90deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                                color: var(--ivory-white);
+                                border-radius: var(--border-radius) var(--border-radius) 0 0;
+                            ">
+                                <div class="d-flex align-items-center">
+                                    <div class="user-avatar me-2" style="width: 40px; height: 40px;">
+                                        {{ user.first_name|first|default:user.email|first|upper }}
+                                    </div>
+                                    <div>
+                                        <strong>{{ user.get_full_name|default:user.email }}</strong>
+                                        <div style="font-size: 0.8rem;">{{ user.get_role_display }}</div>
+                                    </div>
+                                </div>
+                            </li>
+                            
+                            <li><hr class="dropdown-divider" style="border-color: var(--academic-gold); opacity: 0.3;"></li>
+                            
+                            <!-- Profile Links -->
+                            <li>
+                                <a class="dropdown-item" href="{% url 'accounts:profile' %}" style="
+                                    color: var(--oxford-blue);
+                                    padding: 0.75rem 1.25rem;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <i class="fas fa-user me-2" style="color: var(--oxford-blue);"></i>
+                                    My Profile
+                                </a>
+                            </li>
+                            
+                            <li>
+                                <a class="dropdown-item" href="{% url 'alerts:list' %}" style="
+                                    color: var(--oxford-blue);
+                                    padding: 0.75rem 1.25rem;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <i class="fas fa-bell me-2" style="color: var(--oxford-blue);"></i>
+                                    Notifications
+                                   
+                                </a>
+                            </li>
+                            
+                            <li>
+                                <a class="dropdown-item" href="{% url 'alerts:preferences' %}" style="
+                                    color: var(--oxford-blue);
+                                    padding: 0.75rem 1.25rem;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <i class="fas fa-cog me-2" style="color: var(--oxford-blue);"></i>
+                                    Settings
+                                </a>
+                            </li>
+                            
+                            <!-- Admin Links (if applicable) -->
+                            {% if user.is_superuser or user.role == 'admin' %}
+                            <li><hr class="dropdown-divider" style="border-color: var(--academic-gold); opacity: 0.3;"></li>
+                            <li>
+                                <a class="dropdown-item" href="{% url 'admin:index' %}" style="
+                                    color: var(--oxford-blue);
+                                    padding: 0.75rem 1.25rem;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <i class="fas fa-cogs me-2" style="color: var(--oxford-blue);"></i>
+                                    Admin Panel
+                                </a>
+                            </li>
+                            {% endif %}
+                            
+                            <!-- Logout -->
+                            <li><hr class="dropdown-divider" style="border-color: var(--academic-gold); opacity: 0.3;"></li>
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}" style="
+                                    padding: 0.75rem 1.25rem;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <i class="fas fa-sign-out-alt me-2"></i>
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                 {% else %}
+                    <!-- Login Button -->
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'accounts:login' %}">
+                        <a class="nav-link" href="{% url 'accounts:login' %}" style="
+                            color: var(--academic-gold);
+                            font-weight: 500;
+                            padding: 0.5rem 1rem;
+                            border: 1px solid var(--academic-gold);
+                            border-radius: var(--border-radius);
+                            transition: all 0.3s ease;
+                        ">
                             <i class="fas fa-sign-in-alt me-1"></i>Login
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="btn btn-primary ms-2" href="{% url 'accounts:login' %}">
+                    
+                    <!-- Get Started Button (only on homepage) -->
+                    {% if request.path == '/' %}
+                    <li class="nav-item ms-2">
+                        <a class="btn btn-academic" href="{% url 'accounts:login' %}" style="
+                            background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
+                            color: var(--oxford-blue);
+                            border: none;
+                            padding: 0.5rem 1.5rem;
+                            border-radius: var(--border-radius);
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                        ">
                             Get Started
                         </a>
                     </li>
+                    {% endif %}
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
+
+<style>
+/* Hover effects */
+.nav-link:hover {
+    background-color: rgba(255, 215, 0, 0.1) !important;
+    color: var(--academic-gold) !important;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(0, 33, 71, 0.05) !important;
+    padding-left: 1.5rem !important;
+}
+
+.btn-academic:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+}
+
+/* Active link indicator */
+.nav-link.active {
+    background-color: rgba(255, 215, 0, 0.2) !important;
+    color: var(--academic-gold) !important;
+    position: relative;
+}
+
+.nav-link.active::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 1rem;
+    right: 1rem;
+    height: 2px;
+    background: var(--academic-gold);
+    border-radius: 1px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .navbar-nav {
+        padding-top: 1rem;
+    }
+    
+    .nav-item {
+        margin-bottom: 0.5rem;
+    }
+    
+    .dropdown-menu {
+        position: absolute !important;
+    }
+}
+</style>

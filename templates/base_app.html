@@ -1,4 +1,6 @@
+<!--templates/base_app.html-->
 <!DOCTYPE html>
+{% load static %}
 <html lang="en" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
@@ -24,6 +26,242 @@
     <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
     
     {% block extra_css %}{% endblock %}
+    
+<style>
+/* Center-aligned Flash Messages for App (Dark Theme) */
+.flash-messages-container {
+    position: fixed;
+    top: 80px; /* Below the top navbar */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050; /* Higher than Bootstrap modals (1050) */
+    width: auto;
+    max-width: 90%;
+    min-width: 350px;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.flash-message {
+    background: linear-gradient(135deg, var(--ivory-white), var(--ivory-white-dark));
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 33, 71, 0.3), 0 0 0 2px var(--academic-gold-light);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transform: translateY(-100px);
+    opacity: 0;
+    animation: flashDropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    position: relative;
+    border-left: 6px solid;
+    pointer-events: auto; /* Re-enable clicks on the message itself */
+    color: var(--oxford-blue-dark);
+    font-weight: 500;
+}
+
+.flash-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 18px;
+    padding-right: 45px;
+}
+
+.flash-icon {
+    margin-right: 14px;
+    font-size: 1.6rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.flash-body {
+    flex: 1;
+}
+
+.flash-title {
+    margin: 0 0 6px 0;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.flash-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--oxford-blue);
+}
+
+.flash-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--slate-gray);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.flash-close:hover {
+    opacity: 1;
+    color: var(--oxford-blue);
+    background: rgba(0, 33, 71, 0.1);
+}
+
+.flash-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 33, 71, 0.1);
+    transform-origin: left;
+    transform: scaleX(1);
+}
+
+/* Message Type Colors using Oxford Blue theme */
+.flash-success {
+    border-left-color: var(--success);
+    background: linear-gradient(135deg, #e8f5e9, #d4edda);
+}
+
+.flash-success .flash-icon {
+    color: var(--success);
+}
+
+.flash-success .flash-title {
+    color: var(--success);
+}
+
+.flash-error, .flash-danger {
+    border-left-color: var(--danger);
+    background: linear-gradient(135deg, #fdecea, #f8d7da);
+}
+
+.flash-error .flash-icon,
+.flash-danger .flash-icon {
+    color: var(--danger);
+}
+
+.flash-error .flash-title,
+.flash-danger .flash-title {
+    color: var(--danger);
+}
+
+.flash-warning {
+    border-left-color: var(--academic-gold);
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+}
+
+.flash-warning .flash-icon {
+    color: var(--academic-gold-dark);
+}
+
+.flash-warning .flash-title {
+    color: var(--academic-gold-dark);
+}
+
+.flash-info {
+    border-left-color: var(--oxford-blue-light);
+    background: linear-gradient(135deg, #e8f4f8, #d1ecf1);
+}
+
+.flash-info .flash-icon {
+    color: var(--oxford-blue-light);
+}
+
+.flash-info .flash-title {
+    color: var(--oxford-blue-light);
+}
+
+/* Special progress bar colors */
+.flash-success .flash-progress {
+    background: linear-gradient(90deg, var(--success), rgba(40, 167, 69, 0.3));
+}
+
+.flash-error .flash-progress,
+.flash-danger .flash-progress {
+    background: linear-gradient(90deg, var(--danger), rgba(220, 53, 69, 0.3));
+}
+
+.flash-warning .flash-progress {
+    background: linear-gradient(90deg, var(--academic-gold), rgba(255, 215, 0, 0.3));
+}
+
+.flash-info .flash-progress {
+    background: linear-gradient(90deg, var(--oxford-blue-light), rgba(26, 61, 102, 0.3));
+}
+
+/* Animations */
+@keyframes flashDropIn {
+    0% {
+        transform: translateY(-100px) scale(0.9);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(10px) scale(1.02);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes flashProgress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+.flash-exiting {
+    animation: flashPopOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+}
+
+@keyframes flashPopOut {
+    to {
+        transform: scale(0.8) translateY(-50px);
+        opacity: 0;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .flash-messages-container {
+        top: 70px;
+        max-width: 95%;
+        min-width: 280px;
+    }
+    
+    .flash-message {
+        min-width: 280px;
+    }
+    
+    .flash-content {
+        padding: 14px;
+        padding-right: 40px;
+    }
+    
+    .flash-icon {
+        font-size: 1.4rem;
+        margin-right: 12px;
+    }
+    
+    .flash-title {
+        font-size: 0.95rem;
+    }
+    
+    .flash-text {
+        font-size: 0.9rem;
+    }
+}
+</style>
 </head>
 <body>
     <!-- Sidebar Layout -->
@@ -33,6 +271,54 @@
         
         <!-- Main Content -->
         <div class="main-content">
+            <!-- Flash Messages Container (Center Top) -->
+            <div id="flash-messages-container" class="flash-messages-container">
+                {% if messages %}
+                    {% for message in messages %}
+                    <div class="flash-message flash-{{ message.tags }}" 
+                         role="alert" 
+                         data-message-id="{{ forloop.counter }}"
+                         data-auto-dismiss="true">
+                        <div class="flash-content">
+                            <div class="flash-icon">
+                                {% if message.tags == 'success' %}
+                                    <i class="fas fa-check-circle"></i>
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                    <i class="fas fa-exclamation-circle"></i>
+                                {% elif message.tags == 'warning' %}
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                {% elif message.tags == 'info' %}
+                                    <i class="fas fa-info-circle"></i>
+                                {% else %}
+                                    <i class="fas fa-bell"></i>
+                                {% endif %}
+                            </div>
+                            <div class="flash-body">
+                                <h6 class="flash-title">
+                                    {% if message.tags == 'success' %}
+                                        Success
+                                    {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                        Error
+                                    {% elif message.tags == 'warning' %}
+                                        Warning
+                                    {% elif message.tags == 'info' %}
+                                        Information
+                                    {% else %}
+                                        Notification
+                                    {% endif %}
+                                </h6>
+                                <p class="flash-text">{{ message }}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="flash-close" aria-label="Close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        <div class="flash-progress"></div>
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            </div>
+            
             <!-- Top Navigation Bar -->
             <nav class="top-navbar navbar navbar-expand-lg navbar-dark">
                 <div class="container-fluid">
@@ -48,49 +334,40 @@
                     
                     <div class="navbar-nav ms-auto">
                         <!-- Notification Bell -->
-                        {% if user.is_authenticated %}
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" 
-                               role="button" data-bs-toggle="dropdown" 
-                               hx-get="{% url 'alerts:api_unread_count' %}" 
-                               hx-trigger="load, every 30s"
-                               hx-target="#unread-count"
-                               hx-swap="innerHTML">
-                                <i class="fas fa-bell"></i>
-                                <span id="unread-count" class="badge bg-danger">
-                                    {% with unread_count=user.received_alerts.filter.is_read=False.count %}
-                                        {% if unread_count > 0 %}{{ unread_count }}{% endif %}
-                                    {% endwith %}
-                                </span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" 
-                                style="min-width: 300px; max-height: 400px; overflow-y: auto;">
-                                <li>
-                                    <h6 class="dropdown-header">Notifications</h6>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" 
+                        role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-bell"></i>
+                            <span id="unread-count" class="badge bg-danger">
+                                {% if unread_notifications_count > 0 %}{{ unread_notifications_count }}{% endif %}
+                            </span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationDropdown" 
+                            style="min-width: 300px; max-height: 400px; overflow-y: auto;">
+                            <li>
+                                <h6 class="dropdown-header">Notifications</h6>
+                            </li>
+                            <div id="notification-list">
+                                <li class="dropdown-item text-center">
+                                    <div class="spinner-border spinner-border-sm" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
                                 </li>
-                                <div id="notification-list" 
-                                     hx-get="{% url 'alerts:api_recent_alerts' %}" 
-                                     hx-trigger="load, every 60s"
-                                     hx-swap="innerHTML">
-                                    <li class="dropdown-item text-center">
-                                        <div class="spinner-border spinner-border-sm" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
-                                    </li>
-                                </div>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <a class="dropdown-item text-center" href="{% url 'alerts:list' %}">
-                                        <i class="fas fa-list me-1"></i>View All Notifications
-                                    </a>
-                                </li>
-                                <li>
-                                    <a class="dropdown-item text-center" href="{% url 'alerts:mark_all_read' %}">
-                                        <i class="fas fa-check-double me-1"></i>Mark All as Read
-                                    </a>
-                                </li>
-                            </ul>
-                        </li>
+                            </div>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-center" href="{% url 'alerts:list' %}">
+                                    <i class="fas fa-list me-1"></i>View All Notifications
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-center" href="{% url 'alerts:mark_all_read' %}">
+                                    <i class="fas fa-check-double me-1"></i>Mark All as Read
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                         
                         <!-- User Dropdown -->
                         <li class="nav-item dropdown">
@@ -133,15 +410,6 @@
             <!-- Page Content -->
             <main class="page-content">
                 <div class="container-fluid py-4">
-                    {% if messages %}
-                        {% for message in messages %}
-                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                                {{ message }}
-                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                    
                     {% block content %}{% endblock %}
                 </div>
             </main>
@@ -157,6 +425,87 @@
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/sidebar.js' %}"></script>
+    
+    <script>
+// Load notification count
+function loadNotificationCount() {
+    fetch('{% url "alerts:api_unread_count" %}')
+        .then(response => response.json())
+        .then(data => {
+            const badge = document.getElementById('unread-count');
+            if (badge) {
+                if (data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.textContent = '';
+                    badge.style.display = 'none';
+                }
+            }
+        })
+        .catch(error => console.error('Error loading notification count:', error));
+}
+
+// Load recent notifications for dropdown
+function loadRecentNotifications() {
+    fetch('{% url "alerts:api_recent_alerts" %}')
+        .then(response => response.json())
+        .then(data => {
+            const notificationList = document.getElementById('notification-list');
+            if (notificationList && data.alerts) {
+                if (data.alerts.length > 0) {
+                    let html = '';
+                    data.alerts.forEach(alert => {
+                        html += `
+                            <li class="dropdown-item notification-item ${alert.is_read ? '' : 'unread'}">
+                                <div class="d-flex w-100">
+                                    <div class="me-2">
+                                        <span class="badge ${alert.severity_color || 'bg-secondary'}">●</span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <a href="${alert.url}" class="text-decoration-none text-reset">
+                                            <strong>${alert.title}</strong>
+                                            <p class="mb-0 small text-muted">${alert.message}</p>
+                                            <small class="text-muted">${alert.created_at}</small>
+                                        </a>
+                                    </div>
+                                </div>
+                            </li>
+                        `;
+                    });
+                    notificationList.innerHTML = html;
+                } else {
+                    notificationList.innerHTML = `
+                        <li class="dropdown-item text-center text-muted">
+                            <i class="fas fa-bell-slash me-1"></i>
+                            No notifications
+                        </li>
+                    `;
+                }
+            }
+        })
+        .catch(error => console.error('Error loading notifications:', error));
+}
+
+// Load data when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Load notification data
+    loadNotificationCount();
+    loadRecentNotifications();
+    
+    // Auto-refresh every 30 seconds
+    setInterval(loadNotificationCount, 30000);
+    setInterval(loadRecentNotifications, 60000);
+    
+    // Also load when dropdown is opened
+    const notificationDropdown = document.getElementById('notificationDropdown');
+    if (notificationDropdown) {
+        notificationDropdown.addEventListener('click', function() {
+            setTimeout(loadRecentNotifications, 100); // Small delay to ensure dropdown is open
+        });
+    }
+});
+</script>
     
     {% block extra_js %}{% endblock %}
 </body>

@@ -288,3 +288,9 @@ class ContactView(TemplateView):
             ))
         
         return redirect('landing:contact')
+    
+    
+from django.http import HttpResponse
+
+def test_view(request):
+    return HttpResponse("Landing app is working!")

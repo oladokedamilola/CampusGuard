@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Error {{ error_code }} - CampusGuard AI{% endblock %}</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom Error CSS -->
+    <style>
+        :root {
+            --oxford-blue: #002147;
+            --academic-gold: #FFD700;
+            --ivory-white: #FFFFF0;
+            --slate-gray: #708090;
+        }
+        
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: linear-gradient(135deg, #002147 0%, #1a3d66 100%);
+            color: var(--ivory-white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .error-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+        }
+        
+        .error-header {
+            background: linear-gradient(135deg, var(--oxford-blue) 0%, #1a3d66 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-bottom: 5px solid var(--academic-gold);
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            line-height: 1;
+            margin: 0;
+            color: var(--academic-gold);
+            text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.2);
+        }
+        
+        .error-title {
+            font-size: 2.5rem;
+            margin: 10px 0 0 0;
+            font-weight: 600;
+        }
+        
+        .error-body {
+            padding: 40px;
+            color: var(--oxford-blue);
+        }
+        
+        .error-icon {
+            font-size: 4rem;
+            color: var(--academic-gold);
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--oxford-blue);
+        }
+        
+        .error-description {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: var(--slate-gray);
+        }
+        
+        .error-details {
+            background: rgba(0, 33, 71, 0.05);
+            border-left: 4px solid var(--academic-gold);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--oxford-blue);
+        }
+        
+        .error-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+        
+        .btn-error {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .btn-primary-error {
+            background: var(--oxford-blue);
+            color: white;
+            border: 2px solid var(--oxford-blue);
+        }
+        
+        .btn-primary-error:hover {
+            background: #001225;
+            border-color: #001225;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 33, 71, 0.2);
+        }
+        
+        .btn-secondary-error {
+            background: transparent;
+            color: var(--oxford-blue);
+            border: 2px solid var(--oxford-blue);
+        }
+        
+        .btn-secondary-error:hover {
+            background: rgba(0, 33, 71, 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .error-footer {
+            text-align: center;
+            padding: 20px;
+            background: rgba(0, 33, 71, 0.05);
+            border-top: 1px solid rgba(112, 128, 144, 0.2);
+            color: var(--slate-gray);
+            font-size: 0.9rem;
+        }
+        
+        .system-logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--academic-gold);
+            margin-bottom: 10px;
+        }
+        
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--oxford-blue) 50%, var(--academic-gold) 50%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 6rem;
+            }
+            
+            .error-title {
+                font-size: 2rem;
+            }
+            
+            .error-body {
+                padding: 20px;
+            }
+            
+            .error-actions {
+                flex-direction: column;
+            }
+            
+            .btn-error {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        .security-icon {
+            color: #dc3545;
+        }
+        
+        .maintenance-icon {
+            color: #ffc107;
+        }
+        
+        .server-icon {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-header">
+            <div class="system-logo">
+                <div class="logo-icon">CG</div>
+                <span>CampusGuard AI</span>
+            </div>
+            <h1 class="error-code">{{ error_code }}</h1>
+            <h2 class="error-title">{{ error_title }}</h2>
+        </div>
+        
+        <div class="error-body">
+            {% block error_icon %}
+            <div class="text-center">
+                <i class="fas fa-exclamation-triangle error-icon"></i>
+            </div>
+            {% endblock %}
+            
+            <h3 class="error-message">{{ error_message }}</h3>
+            <p class="error-description">{{ error_description }}</p>
+            
+            {% block error_details %}{% endblock %}
+            
+            <div class="error-actions">
+                {% block error_actions %}
+                <a href="/" class="btn-error btn-primary-error">
+                    <i class="fas fa-home"></i> Go to Homepage
+                </a>
+                <a href="javascript:history.back()" class="btn-error btn-secondary-error">
+                    <i class="fas fa-arrow-left"></i> Go Back
+                </a>
+                <a href="{% url 'dashboard:index' %}" class="btn-error btn-secondary-error">
+                    <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+                </a>
+                {% endblock %}
+            </div>
+        </div>
+        
+        <div class="error-footer">
+            <p>
+                <i class="fas fa-shield-alt"></i> CampusGuard AI - Intelligent Security System<br>
+                <small>If this error persists, please contact your system administrator.</small>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{% extends 'base_app.html' %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "Select Camera to Configure" %}</h1>
+<div class="row">
+    {% for camera in cameras %}
+    <div class="col-md-4 mb-3">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ camera.name }}</h5>
+                <p class="card-text">
+                    <strong>Location:</strong> {{ camera.location.name }}<br>
+                    <strong>Type:</strong> {{ camera.get_camera_type_display }}<br>
+                    <strong>Status:</strong> 
+                    <span class="badge bg-{{ camera.get_status_color }}">
+                        {{ camera.get_status_display }}
+                    </span>
+                </p>
+                <a href="{% url 'cameras:configure_camera_detail' camera.id %}" class="btn btn-primary">
+                    {% trans "Configure" %}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            {% trans "No active cameras available for configuration." %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

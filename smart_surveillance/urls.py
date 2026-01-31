@@ -9,6 +9,7 @@ urlpatterns = [
     path('cameras/', include('cameras.urls')),
     path('incidents/', include('incidents.urls')),
     path('dashboard/', include('dashboard.urls')), 
+    path('alerts/', include('alerts.urls')),
     path('', include('landing.urls')),    # Landing page URLs
 ]
 

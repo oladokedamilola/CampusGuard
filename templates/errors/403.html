@@ -1,0 +1,49 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_icon %}
+<div class="text-center">
+    <i class="fas fa-ban error-icon security-icon"></i>
+</div>
+{% endblock %}
+
+{% block error_details %}
+{% if user.is_authenticated %}
+<div class="alert alert-info">
+    <i class="fas fa-user"></i> Logged in as: <strong>{{ user.username }}</strong><br>
+    <small>Your account may not have sufficient permissions for this action.</small>
+</div>
+{% else %}
+<div class="alert alert-warning">
+    <i class="fas fa-user-slash"></i> You are not logged in.<br>
+    <small>This resource requires authentication.</small>
+</div>
+{% endif %}
+
+<p><strong>Possible solutions:</strong></p>
+<ul>
+    {% if not user.is_authenticated %}
+    <li><a href="{% url 'login' %}?next={{ request.path }}">Log in with appropriate credentials</a></li>
+    {% endif %}
+    <li>Request access from your administrator</li>
+    <li>Check if you're accessing the correct URL</li>
+</ul>
+{% endblock %}
+
+{% block error_actions %}
+{% if not user.is_authenticated %}
+<a href="{% url 'login' %}?next={{ request.path }}" class="btn-error btn-primary-error">
+    <i class="fas fa-sign-in-alt"></i> Log In
+</a>
+{% endif %}
+<a href="/" class="btn-error btn-secondary-error">
+    <i class="fas fa-home"></i> Go to Homepage
+</a>
+<a href="javascript:history.back()" class="btn-error btn-secondary-error">
+    <i class="fas fa-arrow-left"></i> Go Back
+</a>
+{% if user.is_authenticated and user.is_staff %}
+<a href="{% url 'admin:index' %}" class="btn-error btn-secondary-error">
+    <i class="fas fa-cog"></i> Admin Panel
+</a>
+{% endif %}
+{% endblock %}

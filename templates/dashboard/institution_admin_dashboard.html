@@ -1,0 +1,226 @@
+<!-- templates/dashboard/institution_admin_dashboard.html -->
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}{{ user.institution }} - Administration{% endblock %}
+
+{% block content %}
+<div class="dashboard-header mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="h2 mb-2">{{ user.institution }}</h1>
+            <p class="text-muted mb-0">Institution Administration Dashboard</p>
+        </div>
+        <div class="text-end">
+            <span class="badge bg-success fs-6 px-3 py-2">
+                <i class="fas fa-university me-1"></i>Institution Admin
+            </span>
+        </div>
+    </div>
+</div>
+
+<!-- Institution Overview -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-2">Total Staff</h6>
+                        <h2 class="mb-0 text-white">{{ institution_stats.total_staff|default:"0" }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-users fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="{% url 'accounts:user_list' %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-eye me-1"></i>View All
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-2">Active Cameras</h6>
+                        <h2 class="mb-0 text-white">{{ institution_stats.active_cameras|default:"0" }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-video fa-2x text-success opacity-50"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="#" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-expand me-1"></i>Monitor
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-2">Monthly Incidents</h6>
+                        <h2 class="mb-0 text-white">{{ institution_stats.monthly_incidents|default:"0" }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-chart-line fa-2x text-info opacity-50"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="#" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-chart-bar me-1"></i>Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="text-uppercase text-muted mb-2">Compliance Score</h6>
+                        <h2 class="mb-0 text-white">{{ institution_stats.compliance_score|default:"92%" }}</h2>
+                    </div>
+                    <div>
+                        <i class="fas fa-shield-alt fa-2x text-warning opacity-50"></i>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <a href="#" class="btn btn-sm btn-outline-light">
+                        <i class="fas fa-file-alt me-1"></i>Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Management -->
+<div class="row mb-4">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-user-cog me-2"></i>User Management</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
+                                <h5>Add New User</h5>
+                                <p class="text-muted">Register new staff members to the system</p>
+                                <a href="{% url 'accounts:register' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Create User
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h5>Manage Users</h5>
+                                <p class="text-muted">View and manage existing user accounts</p>
+                                <a href="{% url 'accounts:user_list' %}" class="btn btn-success">
+                                    <i class="fas fa-list me-2"></i>View All Users
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Department Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="display-4 text-primary">5</div>
+                    <p class="text-muted">Departments</p>
+                </div>
+                <table class="table table-sm">
+                    <tr>
+                        <td>Security</td>
+                        <td class="text-end">12</td>
+                    </tr>
+                    <tr>
+                        <td>Administration</td>
+                        <td class="text-end">8</td>
+                    </tr>
+                    <tr>
+                        <td>ICT</td>
+                        <td class="text-end">5</td>
+                    </tr>
+                    <tr>
+                        <td>Faculty</td>
+                        <td class="text-end">24</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Reports -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Quick Reports & Documents</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-primary w-100 h-100 py-3">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="fas fa-file-pdf fa-2x mb-2"></i>
+                                <span>Monthly Security Report</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-success w-100 h-100 py-3">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="fas fa-clipboard-check fa-2x mb-2"></i>
+                                <span>Compliance Documents</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-info w-100 h-100 py-3">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                                <span>Schedule Management</span>
+                            </div>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="#" class="btn btn-outline-warning w-100 h-100 py-3">
+                            <div class="d-flex flex-column align-items-center">
+                                <i class="fas fa-camera fa-2x mb-2"></i>
+                                <span>Access Requests</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,58 +1,546 @@
-{% extends 'base.html' %}
+{% extends 'base_public.html' %}
+{% load static %}
 {% load crispy_forms_tags %}
 
-{% block title %}Login - Smart Surveillance System{% endblock %}
+{% block title %}Login - CampusGuard AI Surveillance System{% endblock %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-5">
-        <div class="card shadow">
-            <div class="card-header bg-primary text-white">
-                <h4 class="mb-0">
-                    <i class="fas fa-sign-in-alt me-2"></i>Login
-                </h4>
-            </div>
-            <div class="card-body">
-                {% if messages %}
-                    {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
-                            {{ message }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+<div class="login-container" style="
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    background: linear-gradient(rgba(0, 33, 71, 0.9), rgba(0, 33, 71, 0.95)), 
+                url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    padding: 2rem 0;
+">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <!-- Academic Login Card -->
+                <div class="login-card card border-0 shadow-lg" style="
+                    border-radius: 12px;
+                    overflow: hidden;
+                    border-top: 4px solid var(--academic-gold);
+                    transition: transform 0.3s ease;
+                ">
+                    <!-- Header with Academic Seal -->
+                    <div class="card-header text-center py-4" style="
+                        background: linear-gradient(90deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                        border-bottom: 2px solid var(--academic-gold);
+                        position: relative;
+                    ">
+                        <!-- Academic Seal -->
+                        <div class="academic-seal mb-3" style="
+                            width: 70px;
+                            height: 70px;
+                            background: var(--academic-gold);
+                            border-radius: 50%;
+                            border: 3px solid var(--ivory-white);
+                            margin: 0 auto;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            font-size: 1.8rem;
+                            color: var(--oxford-blue);
+                            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+                        ">
+                            <i class="fas fa-shield-alt"></i>
                         </div>
-                    {% endfor %}
-                {% endif %}
-                
-                <form method="post" novalidate>
-                    {% csrf_token %}
-                    {{ form|crispy }}
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-sign-in-alt me-1"></i>Login
-                        </button>
                         
-                        <a href="{% url 'accounts:password_reset' %}" class="btn btn-link">
-                            Forgot your password?
-                        </a>
+                        <h3 class="mb-1" style="
+                            font-family: var(--font-serif);
+                            color: var(--ivory-white);
+                            font-weight: 700;
+                            letter-spacing: 0.5px;
+                        ">
+                            CampusGuard AI
+                        </h3>
+                        <p class="mb-0" style="color: var(--academic-gold); font-size: 0.9rem;">
+                            <i class="fas fa-graduation-cap me-1"></i>Intelligent Campus Security System
+                        </p>
                     </div>
-                </form>
-                
-                <hr>
-                
-                <div class="text-center">
-                    <p class="mb-0">
-                        <strong>Demo Credentials:</strong><br>
-                        Admin: admin@example.com / admin123<br>
-                        Security Guard: guard@example.com / guard123
-                    </p>
+                    
+                    <!-- Login Form -->
+                    <div class="card-body p-4 p-md-5" style="background-color: var(--ivory-white);">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-4" role="alert" style="
+                                    border-left: 4px solid var(--academic-gold);
+                                    border-radius: 4px;
+                                ">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' or message.tags == 'danger' %}exclamation-triangle{% else %}info-circle{% endif %} me-2"></i>
+                                        <div>{{ message }}</div>
+                                    </div>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <h4 class="mb-4 text-center" style="
+                            font-family: var(--font-serif);
+                            color: var(--oxford-blue);
+                            font-weight: 600;
+                        ">
+                            <i class="fas fa-sign-in-alt me-2 text-accent"></i>
+                            System Access
+                        </h4>
+                        
+                        <form method="post" novalidate id="loginForm">
+                            {% csrf_token %}
+                            
+                            <!-- Email Field -->
+                            <div class="form-group mb-4">
+                                <label for="id_email" class="form-label" style="
+                                    font-weight: 600;
+                                    color: var(--oxford-blue);
+                                    font-family: var(--font-serif);
+                                    font-size: 0.95rem;
+                                ">
+                                    <i class="fas fa-envelope me-1 text-accent"></i>
+                                    Email Address
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="
+                                        background-color: rgba(0, 33, 71, 0.05);
+                                        border: 1px solid var(--border-color);
+                                        border-right: none;
+                                        color: var(--oxford-blue);
+                                    ">
+                                        <i class="fas fa-user"></i>
+                                    </span>
+                                    <input type="email" 
+                                           name="email" 
+                                           id="id_email" 
+                                           class="form-control" 
+                                           placeholder="Enter institutional email"
+                                           required
+                                           style="
+                                               border-left: none;
+                                               padding: 0.75rem 1rem;
+                                               font-size: 0.95rem;
+                                           ">
+                                </div>
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password Field with Toggle -->
+                            <div class="form-group mb-4">
+                                <label for="id_password" class="form-label" style="
+                                    font-weight: 600;
+                                    color: var(--oxford-blue);
+                                    font-family: var(--font-serif);
+                                    font-size: 0.95rem;
+                                ">
+                                    <i class="fas fa-lock me-1 text-accent"></i>
+                                    Password
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text" style="
+                                        background-color: rgba(0, 33, 71, 0.05);
+                                        border: 1px solid var(--border-color);
+                                        border-right: none;
+                                        color: var(--oxford-blue);
+                                    ">
+                                        <i class="fas fa-key"></i>
+                                    </span>
+                                    <input type="password" 
+                                           name="password" 
+                                           id="id_password" 
+                                           class="form-control" 
+                                           placeholder="Enter your password"
+                                           required
+                                           style="
+                                               border-left: none;
+                                               border-right: none;
+                                               padding: 0.75rem 1rem;
+                                               font-size: 0.95rem;
+                                           ">
+                                    <button class="btn btn-outline-secondary" 
+                                            type="button" 
+                                            id="togglePassword"
+                                            style="
+                                                background-color: rgba(0, 33, 71, 0.05);
+                                                border: 1px solid var(--border-color);
+                                                border-left: none;
+                                                color: var(--oxford-blue);
+                                                transition: all 0.3s ease;
+                                            ">
+                                        <i class="fas fa-eye" id="toggleIcon"></i>
+                                    </button>
+                                </div>
+                                {% if form.password.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.password.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Remember Me -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" 
+                                       type="checkbox" 
+                                       name="remember_me" 
+                                       id="remember_me"
+                                       style="border-color: var(--oxford-blue);">
+                                <label class="form-check-label" for="remember_me" style="
+                                    color: var(--slate-gray);
+                                    font-size: 0.9rem;
+                                ">
+                                    Remember me on this device
+                                </label>
+                            </div>
+                            
+                            <!-- Submit Button -->
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-login py-3" style="
+                                    background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
+                                    color: var(--oxford-blue);
+                                    border: none;
+                                    font-weight: 600;
+                                    font-size: 1rem;
+                                    border-radius: 6px;
+                                    transition: all 0.3s ease;
+                                ">
+                                    <i class="fas fa-sign-in-alt me-2"></i>
+                                    Access System
+                                </button>
+                                
+                                <!-- Forgot Password Link -->
+                                <div class="text-center mt-3">
+                                    <a href="{% url 'accounts:password_reset' %}" class="text-decoration-none" style="
+                                        color: var(--oxford-blue);
+                                        font-size: 0.9rem;
+                                        transition: color 0.3s ease;
+                                    ">
+                                        <i class="fas fa-question-circle me-1"></i>
+                                        Forgot your password?
+                                    </a>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        <!-- Divider -->
+                        <div class="position-relative my-4">
+                            <hr style="border-color: rgba(112, 128, 144, 0.2);">
+                            <div class="position-absolute top-50 start-50 translate-middle px-3" style="
+                                background-color: var(--ivory-white);
+                                color: var(--slate-gray);
+                                font-size: 0.85rem;
+                                font-style: italic;
+                            ">
+                                Academic Access
+                            </div>
+                        </div>
+                        
+                    
+                    </div>
+                    
+                   
+                        
                 </div>
-            </div>
-            <div class="card-footer text-center">
-                <small class="text-muted">
-                    Smart Surveillance System &copy; {% now "Y" %}
-                </small>
+                
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --oxford-blue: #002147;
+    --oxford-blue-light: #1a3d66;
+    --academic-gold: #FFD700;
+    --academic-gold-light: #FFE44D;
+    --ivory-white: #FFFFF0;
+    --slate-gray: #708090;
+    --border-color: rgba(112, 128, 144, 0.3);
+}
+
+.text-accent {
+    color: var(--academic-gold);
+}
+
+.login-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 33, 71, 0.25) !important;
+}
+
+.btn-login:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(255, 215, 0, 0.3);
+}
+
+.btn-login:active {
+    transform: translateY(0);
+}
+
+#togglePassword:hover {
+    background-color: rgba(0, 33, 71, 0.1) !important;
+    color: var(--oxford-blue);
+}
+
+.demo-login {
+    transition: all 0.3s ease;
+    border-width: 1px !important;
+}
+
+.demo-login:hover {
+    background-color: rgba(0, 33, 71, 0.05) !important;
+    transform: translateY(-2px);
+}
+
+.form-control:focus {
+    border-color: var(--academic-gold) !important;
+    box-shadow: 0 0 0 0.25rem rgba(255, 215, 0, 0.15) !important;
+}
+
+.alert {
+    border-radius: 6px;
+    border: 1px solid transparent;
+}
+
+.alert-success {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: rgba(40, 167, 69, 0.2);
+    color: #155724;
+}
+
+.alert-danger, .alert-error {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.2);
+    color: #721c24;
+}
+
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.1);
+    border-color: rgba(23, 162, 184, 0.2);
+    color: #0c5460;
+}
+
+.alert-warning {
+    background-color: rgba(255, 193, 7, 0.1);
+    border-color: rgba(255, 193, 7, 0.2);
+    color: #856404;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .login-card {
+        margin: 1rem;
+    }
+    
+    .card-body {
+        padding: 2rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .card-body {
+        padding: 1.5rem !important;
+    }
+    
+    .demo-credentials .col-6 {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .demo-credentials .col-6:last-child {
+        margin-bottom: 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Password visibility toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('id_password');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (togglePassword && passwordInput) {
+        togglePassword.addEventListener('click', function() {
+            // Toggle password visibility
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            
+            // Toggle icon
+            if (type === 'text') {
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+                togglePassword.style.backgroundColor = 'rgba(0, 33, 71, 0.1)';
+            } else {
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+                togglePassword.style.backgroundColor = 'rgba(0, 33, 71, 0.05)';
+            }
+        });
+    }
+    
+    // Demo login buttons
+    const demoButtons = document.querySelectorAll('.demo-login');
+    demoButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const email = this.getAttribute('data-email');
+            const password = this.getAttribute('data-password');
+            
+            // Fill the form
+            document.getElementById('id_email').value = email;
+            document.getElementById('id_password').value = password;
+            
+            // Show success message
+            showDemoMessage(this.textContent.trim());
+            
+            // Auto submit after 1 second
+            setTimeout(() => {
+                document.getElementById('loginForm').submit();
+            }, 1000);
+        });
+    });
+    
+    // Show demo login message
+    function showDemoMessage(role) {
+        // Remove any existing messages
+        const existingAlerts = document.querySelectorAll('.alert-demo');
+        existingAlerts.forEach(alert => alert.remove());
+        
+        // Create success message
+        const alertDiv = document.createElement('div');
+        alertDiv.className = 'alert alert-info alert-dismissible fade show alert-demo';
+        alertDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="fas fa-user-check me-2"></i>
+                <div>
+                    <strong>Demo Login:</strong> Logging in as ${role}...
+                    <div class="progress mt-2" style="height: 3px;">
+                        <div class="progress-bar bg-info progress-bar-striped progress-bar-animated" 
+                             style="width: 100%"></div>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // Insert after the form
+        const form = document.getElementById('loginForm');
+        form.parentNode.insertBefore(alertDiv, form.nextSibling);
+    }
+    
+    // Form validation styling
+    const form = document.getElementById('loginForm');
+    const inputs = form.querySelectorAll('input[required]');
+    
+    inputs.forEach(input => {
+        input.addEventListener('blur', function() {
+            if (!this.value) {
+                this.style.borderColor = 'var(--danger, #dc3545)';
+            } else {
+                this.style.borderColor = 'var(--academic-gold)';
+            }
+        });
+        
+        input.addEventListener('input', function() {
+            if (this.value) {
+                this.style.borderColor = 'var(--academic-gold)';
+            }
+        });
+    });
+    
+    // Auto-focus email field
+    const emailField = document.getElementById('id_email');
+    if (emailField) {
+        emailField.focus();
+    }
+});
+</script>
+{% endblock %}
+
+{% block footer %}
+<footer class="footer mt-auto" style="
+    background: linear-gradient(180deg, var(--oxford-blue) 0%, var(--oxford-blue-dark) 100%);
+    color: var(--ivory-white);
+    border-top: 3px solid var(--academic-gold);
+    padding: 3rem 0 1.5rem;
+    font-family: var(--font-sans);
+">
+    <div class="container">
+        
+        <!-- Footer Bottom -->
+        <hr style="
+            border-color: rgba(255, 215, 0, 0.3);
+            margin: 2rem 0;
+            opacity: 0.5;
+        ">
+        
+        <div class="row">
+            <div class="col-md-6">
+                <p style="color: rgba(255, 255, 240, 0.6); margin: 0; font-size: 0.9rem;">
+                    &copy; {% now "Y" %} CampusGuard AI Surveillance System. All rights reserved.
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <p style="color: rgba(255, 255, 240, 0.6); margin: 0; font-size: 0.9rem;">
+                    Designed specifically for Nigerian educational institutions
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<style>
+/* Footer link hover effects */
+.footer a:hover {
+    color: var(--academic-gold) !important;
+    padding-left: 5px;
+}
+
+.social-icon:hover {
+    background: var(--academic-gold) !important;
+    color: var(--oxford-blue) !important;
+    transform: translateY(-3px);
+}
+
+/* Pulse animation for status indicator */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 215, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .footer {
+        text-align: center;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .col-lg-4 {
+        margin-bottom: 2rem;
+    }
+    
+    .col-lg-4:last-child {
+        margin-bottom: 0;
+    }
+}
+</style>
+
+
+{% endblock footer %}

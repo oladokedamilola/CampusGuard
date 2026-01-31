@@ -1,0 +1,31 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_icon %}
+<div class="text-center">
+    <i class="fas fa-exclamation-circle error-icon security-icon"></i>
+</div>
+{% endblock %}
+
+{% block error_details %}
+{% if exception %}
+<div class="error-details">
+    <strong>Technical Details:</strong><br>
+    {{ exception|truncatechars:200 }}
+</div>
+{% endif %}
+
+<p><strong>Common causes:</strong></p>
+<ul>
+    <li>Invalid request parameters</li>
+    <li>Malformed request syntax</li>
+    <li>Session or cookie issues</li>
+    <li>Browser cache problems</li>
+</ul>
+{% endblock %}
+
+{% block error_actions %}
+{{ block.super }}
+<button onclick="location.reload()" class="btn-error btn-secondary-error">
+    <i class="fas fa-sync-alt"></i> Refresh Page
+</button>
+{% endblock %}

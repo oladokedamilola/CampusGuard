@@ -1,51 +1,355 @@
-<footer class="mt-auto">
+<!-- ============================================
+   FOOTER - CAMPUSGUARD AI
+   Professional Academic Brand
+   ============================================ -->
+
+<footer class="footer mt-auto" style="
+    background: linear-gradient(180deg, var(--oxford-blue) 0%, var(--oxford-blue-dark) 100%);
+    color: var(--ivory-white);
+    border-top: 3px solid var(--academic-gold);
+    padding: 3rem 0 1.5rem;
+    font-family: var(--font-sans);
+">
     <div class="container">
-        <div class="row">
-            <div class="col-md-6">
-                <h5 class="brand-footer mb-3">CampusGuard AI</h5>
-                <p class="mb-3">Intelligent security surveillance system for educational institutions.</p>
-                <div class="d-flex gap-3">
-                    <a href="#" class="text-white"><i class="fab fa-twitter fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-facebook fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-linkedin fa-lg"></i></a>
-                    <a href="#" class="text-white"><i class="fab fa-github fa-lg"></i></a>
+        <div class="row g-4">
+            <!-- Brand & Description -->
+            <div class="col-lg-4">
+                <div class="footer-brand mb-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="brand-logo-small me-2" style="
+                            width: 40px;
+                            height: 40px;
+                            background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
+                            border-radius: 8px;
+                            border: 2px solid var(--ivory-white);
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: var(--oxford-blue);
+                            font-size: 1rem;
+                            font-weight: bold;
+                        ">
+                            ⚔️
+                        </div>
+                        <h4 style="
+                            font-family: var(--font-serif);
+                            font-weight: 700;
+                            color: var(--ivory-white);
+                            margin: 0;
+                        ">
+                            CampusGuard<span style="color: var(--academic-gold);"> AI</span>
+                        </h4>
+                    </div>
+                    <p style="color: rgba(255, 255, 240, 0.8); line-height: 1.6;">
+                        Intelligent security surveillance system for Nigerian educational institutions.
+                        Combining artificial intelligence with practical security solutions for safer
+                        learning environments.
+                    </p>
+                </div>
+                
+                <!-- Social Links -->
+                <div class="social-links mt-4">
+                    <h6 style="color: var(--academic-gold); font-family: var(--font-serif); margin-bottom: 1rem;">
+                        <i class="fas fa-share-alt me-2"></i>Connect
+                    </h6>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="social-icon" style="
+                            width: 40px;
+                            height: 40px;
+                            background: rgba(255, 255, 240, 0.1);
+                            border: 1px solid rgba(255, 215, 0, 0.3);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: var(--academic-gold);
+                            text-decoration: none;
+                            transition: all 0.3s ease;
+                        ">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-icon" style="
+                            width: 40px;
+                            height: 40px;
+                            background: rgba(255, 255, 240, 0.1);
+                            border: 1px solid rgba(255, 215, 0, 0.3);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: var(--academic-gold);
+                            text-decoration: none;
+                            transition: all 0.3s ease;
+                        ">
+                            <i class="fab fa-linkedin"></i>
+                        </a>
+                        <a href="#" class="social-icon" style="
+                            width: 40px;
+                            height: 40px;
+                            background: rgba(255, 255, 240, 0.1);
+                            border: 1px solid rgba(255, 215, 0, 0.3);
+                            border-radius: 50%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            color: var(--academic-gold);
+                            text-decoration: none;
+                            transition: all 0.3s ease;
+                        ">
+                            <i class="fab fa-github"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             
-            <div class="col-md-3">
-                <h6 class="text-white mb-3">Quick Links</h6>
-                <ul class="list-unstyled">
-                    <li><a href="{% url 'dashboard:index' %}" class="text-white-50">Dashboard</a></li>
-                    <li><a href="{% url 'cameras:list' %}" class="text-white-50">Cameras</a></li>
-                    <li><a href="{% url 'incidents:list' %}" class="text-white-50">Incidents</a></li>
-                    <li><a href="{% url 'alerts:list' %}" class="text-white-50">Alerts</a></li>
-                </ul>
+            <!-- Quick Links -->
+            <div class="col-lg-4">
+                <h6 style="color: var(--academic-gold); font-family: var(--font-serif); margin-bottom: 1.5rem;">
+                    <i class="fas fa-link me-2"></i>System Navigation
+                </h6>
+                <div class="row">
+                    <div class="col-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2">
+                                <a href="{% url 'dashboard:index' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-tachometer-alt me-2" style="width: 20px;"></i>
+                                    Dashboard
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'cameras:list' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-video me-2" style="width: 20px;"></i>
+                                    Cameras
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'incidents:list' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-exclamation-triangle me-2" style="width: 20px;"></i>
+                                    Incidents
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'alerts:list' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-bell me-2" style="width: 20px;"></i>
+                                    Alerts
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-6">
+                        <ul class="list-unstyled">
+                            {% if user.is_authenticated %}
+                            <li class="mb-2">
+                                <a href="{% url 'accounts:profile' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-user me-2" style="width: 20px;"></i>
+                                    Profile
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'alerts:preferences' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-cog me-2" style="width: 20px;"></i>
+                                    Settings
+                                </a>
+                            </li>
+                            <li class="mb-2">
+                                <a href="{% url 'accounts:logout' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-sign-out-alt me-2" style="width: 20px;"></i>
+                                    Logout
+                                </a>
+                            </li>
+                            {% else %}
+                            <li class="mb-2">
+                                <a href="{% url 'accounts:login' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-sign-in-alt me-2" style="width: 20px;"></i>
+                                    Login
+                                </a>
+                            </li>
+                            {% endif %}
+                            {% if user.is_superuser %}
+                            <li class="mb-2">
+                                <a href="{% url 'admin:index' %}" style="
+                                    color: rgba(255, 255, 240, 0.8);
+                                    text-decoration: none;
+                                    transition: all 0.3s ease;
+                                    display: flex;
+                                    align-items: center;
+                                ">
+                                    <i class="fas fa-cogs me-2" style="width: 20px;"></i>
+                                    Admin
+                                </a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+                </div>
             </div>
             
-            <div class="col-md-3">
-                <h6 class="text-white mb-3">Support</h6>
-                <ul class="list-unstyled">
-                    <li><a href="#" class="text-white-50">Documentation</a></li>
-                    <li><a href="#" class="text-white-50">Help Center</a></li>
-                    <li><a href="#" class="text-white-50">Contact Us</a></li>
-                    <li><a href="#" class="text-white-50">Privacy Policy</a></li>
-                </ul>
+            <!-- System Information -->
+            <div class="col-lg-4">
+                <h6 style="color: var(--academic-gold); font-family: var(--font-serif); margin-bottom: 1.5rem;">
+                    <i class="fas fa-info-circle me-2"></i>System Information
+                </h6>
+                
+                <!-- Status Indicator -->
+                <div class="system-status mb-4 p-3" style="
+                    background: rgba(255, 255, 240, 0.05);
+                    border: 1px solid rgba(255, 215, 0, 0.2);
+                    border-radius: var(--border-radius);
+                ">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="status-indicator me-2" style="
+                            width: 10px;
+                            height: 10px;
+                            background-color: var(--academic-gold);
+                            border-radius: 50%;
+                            animation: pulse 2s infinite;
+                        "></div>
+                        <span style="color: var(--academic-gold); font-weight: 600;">System Status: Operational</span>
+                    </div>
+                    <small style="color: rgba(255, 255, 240, 0.7);">
+                        Last updated: {% now "F j, Y, g:i a" %}
+                    </small>
+                </div>
+                
+                <!-- Compliance Badge -->
+                <div class="compliance-badge mb-4">
+                    <div class="d-flex align-items-center p-3" style="
+                        background: rgba(255, 215, 0, 0.1);
+                        border: 1px solid rgba(255, 215, 0, 0.3);
+                        border-radius: var(--border-radius);
+                    ">
+                        <i class="fas fa-shield-alt fa-2x me-3" style="color: var(--academic-gold);"></i>
+                        <div>
+                            <strong style="color: var(--ivory-white);">Data Protection Compliant</strong>
+                            <div style="font-size: 0.85rem; color: rgba(255, 255, 240, 0.7);">
+                                Nigeria Data Protection Act, 2023
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Version Info -->
+                <div class="version-info">
+                    <small style="color: rgba(255, 255, 240, 0.6);">
+                        <i class="fas fa-code-branch me-1"></i>
+                        Version 1.0.0
+                    </small>
+                </div>
             </div>
         </div>
         
-        <hr class="my-4" style="border-color: rgba(255,255,255,0.1);">
+        <!-- Footer Bottom -->
+        <hr style="
+            border-color: rgba(255, 215, 0, 0.3);
+            margin: 2rem 0;
+            opacity: 0.5;
+        ">
         
         <div class="row">
             <div class="col-md-6">
-                <p class="mb-0 text-white-50">
-                    &copy; {% now "Y" %} CampusGuard AI. All rights reserved.
+                <p style="color: rgba(255, 255, 240, 0.6); margin: 0; font-size: 0.9rem;">
+                    &copy; {% now "Y" %} CampusGuard AI Surveillance System. All rights reserved.
                 </p>
             </div>
             <div class="col-md-6 text-md-end">
-                <p class="mb-0 text-white-50">
-                    Version 1.0.0 | Built for Nigerian Educational Institutions
+                <p style="color: rgba(255, 255, 240, 0.6); margin: 0; font-size: 0.9rem;">
+                    Designed specifically for Nigerian educational institutions
                 </p>
             </div>
         </div>
     </div>
 </footer>
+
+<style>
+/* Footer link hover effects */
+.footer a:hover {
+    color: var(--academic-gold) !important;
+    padding-left: 5px;
+}
+
+.social-icon:hover {
+    background: var(--academic-gold) !important;
+    color: var(--oxford-blue) !important;
+    transform: translateY(-3px);
+}
+
+/* Pulse animation for status indicator */
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.7);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(255, 215, 0, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(255, 215, 0, 0);
+    }
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .footer {
+        text-align: center;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+    
+    .col-lg-4 {
+        margin-bottom: 2rem;
+    }
+    
+    .col-lg-4:last-child {
+        margin-bottom: 0;
+    }
+}
+</style>

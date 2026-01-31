@@ -1,0 +1,34 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_icon %}
+<div class="text-center">
+    <i class="fas fa-map-signs error-icon"></i>
+</div>
+{% endblock %}
+
+{% block error_details %}
+<div class="alert alert-info">
+    <i class="fas fa-search"></i> Requested path: <code>{{ request_path }}</code>
+</div>
+
+<p><strong>What could have caused this?</strong></p>
+<ul>
+    <li>The page may have been moved or deleted</li>
+    <li>You may have typed the URL incorrectly</li>
+    <li>The resource may be temporarily unavailable</li>
+</ul>
+
+<p><strong>What can you do?</strong></p>
+<ul>
+    <li>Double-check the URL for typos</li>
+    <li>Use the navigation menu to find what you're looking for</li>
+    <li>Contact support if you believe this is an error</li>
+</ul>
+{% endblock %}
+
+{% block error_actions %}
+{{ block.super }}
+<button onclick="window.location.reload(true)" class="btn-error btn-secondary-error">
+    <i class="fas fa-redo"></i> Hard Refresh
+</button>
+{% endblock %}

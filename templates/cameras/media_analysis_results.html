@@ -1,0 +1,429 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Analysis Results - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'cameras:media_gallery' %}">Media Gallery</a></li>
+            <li class="breadcrumb-item active">Analysis Results</li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="mb-3">
+                <i class="fas fa-chart-bar me-3"></i>Analysis Results
+            </h1>
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h2 class="h4">{{ media_upload.title }}</h2>
+                    <p class="text-muted mb-0">{{ media_upload.description|default:"No description provided" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Media Preview -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-oxford text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-eye me-2"></i>Media Preview
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    {% if media_upload.is_image %}
+                        <img src="{{ media_upload.original_file.url }}" 
+                             alt="Analyzed Image" 
+                             class="img-fluid rounded" 
+                             style="max-height: 500px;">
+                    {% elif media_upload.is_video %}
+                        <video controls class="w-100 rounded" style="max-height: 500px;">
+                            <source src="{{ media_upload.original_file.url }}" type="{{ media_upload.mime_type }}">
+                            Your browser does not support the video tag.
+                        </video>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-6">{{ analysis_results.total_detections }}</h3>
+                    <p class="mb-0">Total Detections</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-primary text-white h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-6">{{ analysis_results.person_count }}</h3>
+                    <p class="mb-0">Persons Detected</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-dark h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-6">{{ analysis_results.vehicle_count }}</h3>
+                    <p class="mb-0">Vehicles Detected</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white h-100">
+                <div class="card-body text-center">
+                    <h3 class="display-6">{{ analysis_results.suspicious_activity_count }}</h3>
+                    <p class="mb-0">Suspicious Activities</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts and Analysis -->
+    <div class="row mb-4">
+        <!-- Detection Timeline -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-oxford text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-timeline me-2"></i>Detection Timeline
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="timelineChart" style="height: 300px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Detection Heatmap -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header bg-oxford text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-fire me-2"></i>Detection Heatmap
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div id="heatmapContainer" style="height: 300px;">
+                        <canvas id="heatmapCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Detections -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header bg-oxford text-white">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-list me-2"></i>Detailed Detections
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover" id="detectionsTable">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Type</th>
+                                    <th>Confidence</th>
+                                    <th>Position</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for detection in analysis_results.detections_json|slice:":20" %}
+                                <tr>
+                                    <td>{{ detection.timestamp|default:"0" }}s</td>
+                                    <td>
+                                        <span class="badge bg-{{ detection.class|yesno:'primary,warning' }}">
+                                            {{ detection.class|default:"unknown" }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="progress" style="height: 10px;">
+                                            <div class="progress-bar {% if detection.confidence > 0.8 %}bg-success{% elif detection.confidence > 0.5 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                                 role="progressbar" 
+                                                 style="width: {{ detection.confidence|default:0|floatformat:2 }}%">
+                                            </div>
+                                        </div>
+                                        <small>{{ detection.confidence|default:0|floatformat:2 }}%</small>
+                                    </td>
+                                    <td>
+                                        <small>
+                                            ({{ detection.bbox.x1|default:0 }}, {{ detection.bbox.y1|default:0 }})<br>
+                                            ({{ detection.bbox.x2|default:0 }}, {{ detection.bbox.y2|default:0 }})
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" 
+                                                onclick="viewDetectionDetails({{ forloop.counter0 }})">
+                                            <i class="fas fa-info-circle"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted py-4">
+                                        No detections found in this media.
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if analysis_results.detections_json|length > 20 %}
+                    <div class="text-center mt-3">
+                        <button class="btn btn-outline-primary" id="loadMoreBtn">
+                            Load More Detections ({{ analysis_results.detections_json|length|add:"-20" }} remaining)
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <a href="{% url 'cameras:media_gallery' %}" class="btn btn-secondary me-3">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Gallery
+                    </a>
+                    <a href="#" class="btn btn-primary me-3" onclick="exportResults()">
+                        <i class="fas fa-download me-2"></i>Export Results
+                    </a>
+                    <a href="#" class="btn btn-success" onclick="generateReport()">
+                        <i class="fas fa-file-pdf me-2"></i>Generate Report
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Detection Details Modal -->
+<div class="modal fade" id="detectionDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-oxford text-white">
+                <h5 class="modal-title">Detection Details</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="detectionDetailsContent">
+                <!-- Details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .progress {
+        background-color: #e9ecef;
+    }
+    
+    .progress-bar {
+        transition: width 0.3s ease;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Timeline Chart
+    const timelineData = JSON.parse('{{ analysis_results.timeline_data|escapejs }}');
+    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    
+    const timelineChart = new Chart(timelineCtx, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'Detections Over Time',
+                data: timelineData.map(d => ({x: d.time, y: 1})),
+                borderColor: 'rgba(0, 33, 71, 1)',
+                backgroundColor: 'rgba(0, 33, 71, 0.1)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time (seconds)'
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Detections'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Heatmap
+    const heatmapData = JSON.parse('{{ analysis_results.heatmap_data|escapejs }}');
+    const heatmapCtx = document.getElementById('heatmapCanvas').getContext('2d');
+    
+    // Simple heatmap implementation
+    function drawHeatmap() {
+        const canvas = heatmapCtx.canvas;
+        canvas.width = canvas.parentElement.clientWidth;
+        canvas.height = 300;
+        
+        // Draw background
+        heatmapCtx.fillStyle = '#f8f9fa';
+        heatmapCtx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Draw heat points
+        heatmapData.points.forEach(point => {
+            const x = (point.x / 1000) * canvas.width;
+            const y = (point.y / 1000) * canvas.height;
+            
+            const gradient = heatmapCtx.createRadialGradient(x, y, 0, x, y, 30);
+            gradient.addColorStop(0, 'rgba(255, 0, 0, 0.8)');
+            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            
+            heatmapCtx.fillStyle = gradient;
+            heatmapCtx.beginPath();
+            heatmapCtx.arc(x, y, 30, 0, Math.PI * 2);
+            heatmapCtx.fill();
+        });
+    }
+    
+    drawHeatmap();
+    window.addEventListener('resize', drawHeatmap);
+    
+    // Detection Details
+    const detections = JSON.parse('{{ analysis_results.detections_json|escapejs }}');
+    
+    function viewDetectionDetails(index) {
+        const detection = detections[index];
+        const content = `
+            <div class="row">
+                <div class="col-md-6">
+                    <h6>Detection Information</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Type:</th>
+                            <td><span class="badge bg-primary">${detection.class || 'Unknown'}</span></td>
+                        </tr>
+                        <tr>
+                            <th>Confidence:</th>
+                            <td>${(detection.confidence * 100 || 0).toFixed(2)}%</td>
+                        </tr>
+                        <tr>
+                            <th>Timestamp:</th>
+                            <td>${detection.timestamp || 0} seconds</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <h6>Bounding Box</h6>
+                    <table class="table table-sm">
+                        <tr>
+                            <th>Top-Left:</th>
+                            <td>(${detection.bbox?.x1 || 0}, ${detection.bbox?.y1 || 0})</td>
+                        </tr>
+                        <tr>
+                            <th>Bottom-Right:</th>
+                            <td>(${detection.bbox?.x2 || 0}, ${detection.bbox?.y2 || 0})</td>
+                        </tr>
+                        <tr>
+                            <th>Width:</th>
+                            <td>${(detection.bbox?.x2 - detection.bbox?.x1 || 0).toFixed(0)}px</td>
+                        </tr>
+                        <tr>
+                            <th>Height:</th>
+                            <td>${(detection.bbox?.y2 - detection.bbox?.y1 || 0).toFixed(0)}px</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            ${detection.additional_info ? `
+            <div class="mt-3">
+                <h6>Additional Information</h6>
+                <pre class="bg-light p-3 rounded">${JSON.stringify(detection.additional_info, null, 2)}</pre>
+            </div>
+            ` : ''}
+        `;
+        
+        document.getElementById('detectionDetailsContent').innerHTML = content;
+        new bootstrap.Modal(document.getElementById('detectionDetailsModal')).show();
+    }
+    
+    // Load More Detections
+    document.getElementById('loadMoreBtn')?.addEventListener('click', function() {
+        // Implement AJAX loading of more detections
+        this.disabled = true;
+        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+        
+        // Simulate loading
+        setTimeout(() => {
+            // In real implementation, fetch more data from server
+            alert('Load more functionality would fetch additional detections here.');
+            this.disabled = false;
+            this.innerHTML = 'Load More Detections';
+        }, 1000);
+    });
+    
+    // Export Results
+    function exportResults() {
+        const data = {
+            media_info: {
+                title: '{{ media_upload.title|escapejs }}',
+                type: '{{ media_upload.get_media_type_display|escapejs }}',
+                uploaded: '{{ media_upload.uploaded_at|date:"Y-m-d H:i:s" }}'
+            },
+            analysis: {
+                summary: {
+                    total_detections: {{ analysis_results.total_detections }},
+                    person_count: {{ analysis_results.person_count }},
+                    vehicle_count: {{ analysis_results.vehicle_count }},
+                    suspicious_count: {{ analysis_results.suspicious_activity_count }}
+                },
+                detections: detections.slice(0, 100) // Limit for export
+            }
+        };
+        
+        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'analysis_results_{{ media_upload.id }}.json';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+    
+    // Generate Report
+    function generateReport() {
+        alert('Report generation would create a PDF report with all analysis results.');
+        // In implementation: Make AJAX request to generate PDF report
+    }
+</script>
+{% endblock %}

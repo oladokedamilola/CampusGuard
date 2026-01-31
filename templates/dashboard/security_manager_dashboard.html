@@ -1,0 +1,36 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Security Manager Dashboard - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="dashboard-header mb-4">
+        <h1 class="h2 mb-2">
+            <i class="fas fa-shield-alt me-2 text-warning"></i>Security Operations Center
+        </h1>
+        <p class="text-muted mb-0">Security management and incident monitoring</p>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Security Overview</h5>
+                </div>
+                <div class="card-body">
+                    <p>Welcome to the Security Manager Dashboard. Features coming soon:</p>
+                    <ul>
+                        <li>Incident monitoring and management</li>
+                        <li>Team coordination and shift management</li>
+                        <li>Security report generation</li>
+                        <li>Real-time camera monitoring</li>
+                    </ul>
+                    <a href="{% url 'cameras:list' %}" class="btn btn-warning">
+                        <i class="fas fa-video me-1"></i> Manage Cameras
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

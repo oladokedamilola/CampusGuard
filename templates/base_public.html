@@ -1,5 +1,7 @@
+<!--templates/base_public.html-->
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+{% load static %}
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,42 +16,397 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Inter Font -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     
     {% block extra_css %}{% endblock %}
+    
+<style>
+/* Center-aligned Flash Messages for Public (Light Theme) */
+.flash-messages-container {
+    position: fixed;
+    top: 80px; /* Below the navigation */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1050; /* Higher than Bootstrap modals (1050) */
+    width: auto;
+    max-width: 90%;
+    min-width: 350px;
+    pointer-events: none; /* Allow clicks to pass through */
+}
+
+.flash-message {
+    background: linear-gradient(135deg, var(--ivory-white), var(--ivory-white-dark));
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 33, 71, 0.25), 
+                0 0 0 2px rgba(255, 215, 0, 0.3);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transform: translateY(-100px);
+    opacity: 0;
+    animation: flashDropIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    position: relative;
+    border-left: 6px solid;
+    pointer-events: auto; /* Re-enable clicks on the message itself */
+    color: var(--oxford-blue-dark);
+    font-weight: 500;
+    border-top: 1px solid rgba(255, 255, 255, 0.8);
+    border-right: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.flash-content {
+    display: flex;
+    align-items: flex-start;
+    padding: 18px;
+    padding-right: 45px;
+}
+
+.flash-icon {
+    margin-right: 14px;
+    font-size: 1.6rem;
+    margin-top: 2px;
+    flex-shrink: 0;
+}
+
+.flash-body {
+    flex: 1;
+}
+
+.flash-title {
+    margin: 0 0 6px 0;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    font-family: var(--font-serif);
+}
+
+.flash-text {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--oxford-blue);
+    font-family: var(--font-sans);
+}
+
+.flash-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: var(--slate-gray);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 6px;
+    font-size: 1.1rem;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.flash-close:hover {
+    opacity: 1;
+    color: var(--oxford-blue);
+    background: rgba(0, 33, 71, 0.1);
+}
+
+.flash-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 33, 71, 0.1);
+    transform-origin: left;
+    transform: scaleX(1);
+}
+
+/* Message Type Colors using Oxford Blue theme */
+.flash-success {
+    border-left-color: #198754;
+    background: linear-gradient(135deg, #e8f5e9, #d4edda);
+}
+
+.flash-success .flash-icon {
+    color: #198754;
+}
+
+.flash-success .flash-title {
+    color: #0f5132;
+}
+
+.flash-error, .flash-danger {
+    border-left-color: #dc3545;
+    background: linear-gradient(135deg, #fdecea, #f8d7da);
+}
+
+.flash-error .flash-icon,
+.flash-danger .flash-icon {
+    color: #dc3545;
+}
+
+.flash-error .flash-title,
+.flash-danger .flash-title {
+    color: #842029;
+}
+
+.flash-warning {
+    border-left-color: var(--academic-gold);
+    background: linear-gradient(135deg, #fff8e1, #fff3cd);
+}
+
+.flash-warning .flash-icon {
+    color: var(--academic-gold-dark);
+}
+
+.flash-warning .flash-title {
+    color: #856404;
+}
+
+.flash-info {
+    border-left-color: var(--oxford-blue);
+    background: linear-gradient(135deg, #e8f4f8, #d1ecf1);
+}
+
+.flash-info .flash-icon {
+    color: var(--oxford-blue);
+}
+
+.flash-info .flash-title {
+    color: var(--oxford-blue);
+}
+
+/* Special progress bar colors */
+.flash-success .flash-progress {
+    background: linear-gradient(90deg, #198754, rgba(25, 135, 84, 0.3));
+}
+
+.flash-error .flash-progress,
+.flash-danger .flash-progress {
+    background: linear-gradient(90deg, #dc3545, rgba(220, 53, 69, 0.3));
+}
+
+.flash-warning .flash-progress {
+    background: linear-gradient(90deg, var(--academic-gold), rgba(255, 215, 0, 0.3));
+}
+
+.flash-info .flash-progress {
+    background: linear-gradient(90deg, var(--oxford-blue), rgba(0, 33, 71, 0.3));
+}
+
+/* Animations */
+@keyframes flashDropIn {
+    0% {
+        transform: translateY(-100px) scale(0.9);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(10px) scale(1.02);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes flashProgress {
+    from {
+        transform: scaleX(1);
+    }
+    to {
+        transform: scaleX(0);
+    }
+}
+
+.flash-exiting {
+    animation: flashPopOut 0.3s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+}
+
+@keyframes flashPopOut {
+    to {
+        transform: scale(0.8) translateY(-50px);
+        opacity: 0;
+    }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .flash-messages-container {
+        top: 70px;
+        max-width: 95%;
+        min-width: 280px;
+    }
+    
+    .flash-message {
+        min-width: 280px;
+    }
+    
+    .flash-content {
+        padding: 14px;
+        padding-right: 40px;
+    }
+    
+    .flash-icon {
+        font-size: 1.4rem;
+        margin-right: 12px;
+    }
+    
+    .flash-title {
+        font-size: 0.95rem;
+    }
+    
+    .flash-text {
+        font-size: 0.9rem;
+    }
+}
+</style>
 </head>
 <body class="d-flex flex-column min-vh-100">
     <!-- Public Navigation -->
     {% include 'base/navigation_public.html' %}
     
     <!-- Main Content -->
-    <main class="flex-grow-1">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-dismissible fade show m-3" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <main class="flex-grow-1 position-relative">
+        <!-- Flash Messages Container (Center Top) -->
+        <div id="flash-messages-container" class="flash-messages-container">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="flash-message flash-{{ message.tags }}" 
+                     role="alert" 
+                     data-message-id="{{ forloop.counter }}"
+                     data-auto-dismiss="true">
+                    <div class="flash-content">
+                        <div class="flash-icon">
+                            {% if message.tags == 'success' %}
+                                <i class="fas fa-check-circle"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i class="fas fa-exclamation-circle"></i>
+                            {% elif message.tags == 'warning' %}
+                                <i class="fas fa-exclamation-triangle"></i>
+                            {% elif message.tags == 'info' %}
+                                <i class="fas fa-info-circle"></i>
+                            {% else %}
+                                <i class="fas fa-bell"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flash-body">
+                            <h6 class="flash-title">
+                                {% if message.tags == 'success' %}
+                                    Success
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                    Error
+                                {% elif message.tags == 'warning' %}
+                                    Warning
+                                {% elif message.tags == 'info' %}
+                                    Information
+                                {% else %}
+                                    Notification
+                                {% endif %}
+                            </h6>
+                            <p class="flash-text">{{ message }}</p>
+                        </div>
+                    </div>
+                    <button type="button" class="flash-close" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    <div class="flash-progress"></div>
                 </div>
-            {% endfor %}
-        {% endif %}
+                {% endfor %}
+            {% endif %}
+        </div>
         
         {% block content %}{% endblock %}
     </main>
     
     <!-- Footer -->
-    {% include 'base/footer.html' %}
+    {% block footer %}
+        {% include 'base/footer.html' %}
+    {% endblock footer %}
     
     <!-- Bootstrap JS Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <!-- Custom JS -->
     <script src="{% static 'js/main.js' %}"></script>
+    
+    <script>
+    // Flash Messages JavaScript (Centered Version)
+    document.addEventListener('DOMContentLoaded', function() {
+        const flashMessagesContainer = document.getElementById('flash-messages-container');
+        const flashMessages = document.querySelectorAll('.flash-message');
+        
+        // Function to remove a flash message
+        function removeFlashMessage(messageElement) {
+            messageElement.classList.add('flash-exiting');
+            setTimeout(() => {
+                if (messageElement.parentNode) {
+                    messageElement.parentNode.removeChild(messageElement);
+                }
+                // Remove container if empty
+                if (flashMessagesContainer && flashMessagesContainer.children.length === 0) {
+                    flashMessagesContainer.classList.remove('has-messages');
+                }
+            }, 300);
+        }
+        
+        // Add click event to close buttons
+        document.querySelectorAll('.flash-close').forEach(button => {
+            button.addEventListener('click', function() {
+                const messageElement = this.closest('.flash-message');
+                if (messageElement) {
+                    removeFlashMessage(messageElement);
+                }
+            });
+        });
+        
+        // Auto-dismiss messages after 7 seconds
+        flashMessages.forEach(message => {
+            const autoDismiss = message.getAttribute('data-auto-dismiss') === 'true';
+            
+            if (autoDismiss) {
+                // Start progress bar animation
+                const progressBar = message.querySelector('.flash-progress');
+                if (progressBar) {
+                    progressBar.style.animation = 'flashProgress 7s linear forwards';
+                }
+                
+                // Auto remove after 7 seconds
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        removeFlashMessage(message);
+                    }
+                }, 7000);
+            }
+        });
+        
+        // Keyboard support (ESC to close all)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.flash-message').forEach(message => {
+                    removeFlashMessage(message);
+                });
+            }
+        });
+        
+        // Add container class if there are messages
+        if (flashMessagesContainer && flashMessages.length > 0) {
+            flashMessagesContainer.classList.add('has-messages');
+            
+            // Stagger animation for multiple messages
+            flashMessages.forEach((message, index) => {
+                message.style.animationDelay = `${index * 0.1}s`;
+            });
+        }
+        
+        // Prevent clicks on messages from propagating to elements behind
+        document.querySelectorAll('.flash-message').forEach(message => {
+            message.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
+    });
+    </script>
     
     {% block extra_js %}{% endblock %}
 </body>

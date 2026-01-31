@@ -1,3 +1,4 @@
+# smart_surveillance/alerts/services.py
 import logging
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
@@ -303,25 +304,34 @@ class UserNotificationService:
     @staticmethod
     def get_unread_alerts(user):
         """Get unread in-app alerts for a user."""
-        return Alert.objects.filter(
+        # Get all unread alerts for the user
+        all_unread = Alert.objects.filter(
             recipient=user,
-            channels__contains='in_app',
             is_read=False
         ).order_by('-created_at')
+        
+        # Filter in Python to find alerts with 'in_app' channel
+        in_app_unread = []
+        for alert in all_unread:
+            # Check if 'in_app' is in channels list
+            if 'in_app' in alert.channels:
+                in_app_unread.append(alert)
+        
+        # Return as queryset-like list
+        return in_app_unread
     
     @staticmethod
-    def get_recent_alerts(user, limit=10):
-        """Get recent alerts for a user."""
-        return Alert.objects.filter(
-            recipient=user
-        ).order_by('-created_at')[:limit]
-    
-    @staticmethod
-    def mark_all_as_read(user):
-        """Mark all user's alerts as read."""
-        updated = Alert.objects.filter(
+    def get_unread_alerts_count(user):
+        """Get count of unread in-app alerts for a user."""
+        # Efficient count using Django ORM with Python filtering
+        alerts = Alert.objects.filter(
             recipient=user,
             is_read=False
-        ).update(is_read=True, read_at=timezone.now())
+        ).only('channels')  # Only fetch channels field
         
-        return updated
+        count = 0
+        for alert in alerts:
+            if 'in_app' in alert.channels:
+                count += 1
+        
+        return count

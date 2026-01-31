@@ -1,0 +1,510 @@
+{% extends 'base_app.html' %}
+
+{% block title %}Configure Camera - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="mb-4">
+                <i class="fas fa-video me-3"></i>Configure Live Camera
+            </h1>
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'media_selection' %}">Media Analysis</a></li>
+                    <li class="breadcrumb-item active">Configure Camera</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Left Column: Configuration Form -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-lg h-100">
+                <div class="card-header bg-oxford text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-sliders-h me-2"></i>Camera Settings
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form id="cameraConfigForm">
+                        <!-- Connection Type -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-link me-2"></i>Connection Type
+                            </label>
+                            <select class="form-select form-select-lg" id="connectionType">
+                                <option value="ip">IP Camera (RTSP/HTTP)</option>
+                                <option value="usb">USB Webcam</option>
+                                <option value="network">Network Stream</option>
+                                <option value="dvr">DVR/NVR System</option>
+                            </select>
+                        </div>
+
+                        <!-- Connection Details -->
+                        <div id="connectionDetails">
+                            <!-- IP Camera Settings -->
+                            <div class="connection-section" id="ipSettings">
+                                <div class="mb-3">
+                                    <label class="form-label">Camera IP Address</label>
+                                    <input type="text" class="form-control" placeholder="192.168.1.100" value="192.168.1.100">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Port</label>
+                                    <input type="number" class="form-control" placeholder="554" value="554">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Stream URL</label>
+                                    <input type="text" class="form-control" placeholder="rtsp://username:password@ip:port/stream" 
+                                           value="rtsp://admin:password@192.168.1.100:554/stream">
+                                </div>
+                            </div>
+
+                            <!-- USB Camera Settings -->
+                            <div class="connection-section d-none" id="usbSettings">
+                                <div class="mb-3">
+                                    <label class="form-label">Device ID</label>
+                                    <select class="form-select">
+                                        <option value="0">Camera 0 (Primary)</option>
+                                        <option value="1">Camera 1</option>
+                                        <option value="2">Camera 2</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Resolution</label>
+                                    <select class="form-select">
+                                        <option value="hd">HD (1280x720)</option>
+                                        <option value="fullhd">Full HD (1920x1080)</option>
+                                        <option value="4k">4K (3840x2160)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Camera Information -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-info-circle me-2"></i>Camera Information
+                            </label>
+                            <input type="text" class="form-control mb-3" placeholder="Camera Name (e.g., Main Entrance)" value="Main Entrance Camera">
+                            <textarea class="form-control" rows="3" placeholder="Location details (e.g., Building A, North Wing)">Main gate entrance, facing parking lot</textarea>
+                        </div>
+
+                        <!-- Detection Settings -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-bell me-2"></i>Detection Settings
+                            </label>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="motionDetection" checked>
+                                <label class="form-check-label" for="motionDetection">
+                                    Enable Motion Detection
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="personDetection" checked>
+                                <label class="form-check-label" for="personDetection">
+                                    Enable Person Detection
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="vehicleDetection">
+                                <label class="form-check-label" for="vehicleDetection">
+                                    Enable Vehicle Detection
+                                </label>
+                            </div>
+                            <div class="form-check mb-2">
+                                <input class="form-check-input" type="checkbox" id="suspiciousBehavior" checked>
+                                <label class="form-check-label" for="suspiciousBehavior">
+                                    Detect Suspicious Behavior
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Alert Settings -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Alert Settings
+                            </label>
+                            <div class="mb-3">
+                                <label class="form-label">Alert Sensitivity</label>
+                                <select class="form-select">
+                                    <option value="low">Low (Fewer alerts)</option>
+                                    <option value="medium" selected>Medium (Recommended)</option>
+                                    <option value="high">High (More alerts)</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Notification Method</label>
+                                <select class="form-select" multiple>
+                                    <option value="in-app" selected>In-App Notification</option>
+                                    <option value="email" selected>Email Alert</option>
+                                    <option value="sms">SMS Alert</option>
+                                    <option value="push">Push Notification</option>
+                                </select>
+                                <small class="form-text text-muted">Hold Ctrl to select multiple options</small>
+                            </div>
+                        </div>
+
+                        <!-- Recording Settings -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="fas fa-record-vinyl me-2"></i>Recording Settings
+                            </label>
+                            <div class="mb-3">
+                                <label class="form-label">Recording Mode</label>
+                                <select class="form-select">
+                                    <option value="continuous">Continuous Recording</option>
+                                    <option value="motion" selected>Motion-Activated Recording</option>
+                                    <option value="scheduled">Scheduled Recording</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Retention Period</label>
+                                <select class="form-select">
+                                    <option value="7">7 days</option>
+                                    <option value="14">14 days</option>
+                                    <option value="30" selected>30 days</option>
+                                    <option value="90">90 days</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Preview & Status -->
+        <div class="col-lg-6 mb-4">
+            <!-- Live Preview -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-success text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-play-circle me-2"></i>Live Preview
+                    </h3>
+                </div>
+                <div class="card-body text-center">
+                    <div class="camera-preview mb-3" id="cameraPreview">
+                        <div class="preview-placeholder bg-dark rounded d-flex align-items-center justify-content-center" 
+                             style="height: 300px;">
+                            <div class="text-center">
+                                <i class="fas fa-video fa-4x text-secondary mb-3"></i>
+                                <p class="text-light">Camera feed will appear here</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-success" onclick="startPreview()">
+                            <i class="fas fa-play me-2"></i>Start Preview
+                        </button>
+                        <button class="btn btn-danger" onclick="stopPreview()" disabled id="stopBtn">
+                            <i class="fas fa-stop me-2"></i>Stop Preview
+                        </button>
+                        <button class="btn btn-warning" onclick="refreshPreview()">
+                            <i class="fas fa-sync-alt me-2"></i>Refresh
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Connection Status -->
+            <div class="card shadow-lg mb-4">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-signal me-2"></i>Connection Status
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator status-active me-2"></div>
+                                <span>Connection</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator status-active me-2"></div>
+                                <span>Video Stream</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator status-inactive me-2"></div>
+                                <span>Motion Detection</span>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator status-inactive me-2"></div>
+                                <span>AI Analysis</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator status-active me-2"></div>
+                                <span>Recording</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="status-indicator status-active me-2"></div>
+                                <span>Alerts</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: 75%;" role="progressbar"></div>
+                        </div>
+                        <small class="text-muted">System Health: 75%</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>Quick Actions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-6">
+                            <button class="btn btn-outline-primary w-100" onclick="testConnection()">
+                                <i class="fas fa-network-wired me-2"></i>Test Connection
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-warning w-100" onclick="saveConfiguration()">
+                                <i class="fas fa-save me-2"></i>Save Config
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-success w-100" onclick="startMonitoring()">
+                                <i class="fas fa-shield-alt me-2"></i>Start Monitoring
+                            </button>
+                        </div>
+                        <div class="col-6">
+                            <button class="btn btn-outline-danger w-100" onclick="resetConfiguration()">
+                                <i class="fas fa-redo me-2"></i>Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-body text-center">
+                    <button class="btn btn-secondary btn-lg me-3" onclick="window.history.back()">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </button>
+                    <button class="btn btn-primary btn-lg me-3" onclick="saveAndConnect()">
+                        <i class="fas fa-save me-2"></i>Save Configuration
+                    </button>
+                    <button class="btn btn-success btn-lg" onclick="connectAndMonitor()">
+                        <i class="fas fa-play-circle me-2"></i>Connect & Start Monitoring
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Test Connection Modal -->
+<div class="modal fade" id="testConnectionModal" tabindex="-1" aria-labelledby="testConnectionModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="testConnectionModalLabel">
+                    <i class="fas fa-network-wired me-2"></i>Testing Connection
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div class="spinner mb-3"></div>
+                <h5>Testing camera connection...</h5>
+                <p id="testStatus">Please wait while we test the connection to your camera.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .connection-section {
+        padding: 1rem;
+        background-color: rgba(0, 33, 71, 0.05);
+        border-radius: var(--border-radius);
+        margin-bottom: 1rem;
+        border-left: 3px solid var(--academic-gold);
+    }
+    
+    .camera-preview {
+        position: relative;
+    }
+    
+    .preview-placeholder {
+        transition: all 0.3s ease;
+    }
+    
+    .preview-active {
+        background-color: transparent;
+    }
+    
+    .status-indicator {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+        margin-right: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Connection type switching
+    document.getElementById('connectionType').addEventListener('change', function() {
+        // Hide all sections
+        document.querySelectorAll('.connection-section').forEach(section => {
+            section.classList.add('d-none');
+        });
+        
+        // Show selected section
+        const selectedType = this.value;
+        document.getElementById(selectedType + 'Settings').classList.remove('d-none');
+    });
+
+    // Initialize with IP settings visible
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('ipSettings').classList.remove('d-none');
+    });
+
+    let previewInterval = null;
+
+    function startPreview() {
+        const preview = document.querySelector('.preview-placeholder');
+        preview.innerHTML = `
+            <div class="text-center">
+                <div class="spinner-border text-success mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="text-light">Connecting to camera...</p>
+            </div>
+        `;
+        
+        // Simulate connection
+        setTimeout(() => {
+            preview.innerHTML = `
+                <div class="text-center text-light">
+                    <i class="fas fa-video fa-4x text-success mb-3"></i>
+                    <p>Live feed active</p>
+                    <small class="text-muted">Preview simulation mode</small>
+                </div>
+            `;
+            preview.classList.add('preview-active');
+            
+            // Enable stop button
+            document.getElementById('stopBtn').disabled = false;
+            
+            // Simulate live updates
+            previewInterval = setInterval(() => {
+                // This would be where actual camera feed updates
+                console.log('Preview updating...');
+            }, 1000);
+        }, 2000);
+    }
+
+    function stopPreview() {
+        const preview = document.querySelector('.preview-placeholder');
+        preview.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-video-slash fa-4x text-secondary mb-3"></i>
+                <p class="text-light">Preview stopped</p>
+            </div>
+        `;
+        preview.classList.remove('preview-active');
+        
+        // Disable stop button
+        document.getElementById('stopBtn').disabled = true;
+        
+        // Clear interval
+        if (previewInterval) {
+            clearInterval(previewInterval);
+            previewInterval = null;
+        }
+    }
+
+    function refreshPreview() {
+        stopPreview();
+        setTimeout(startPreview, 500);
+    }
+
+    function testConnection() {
+        const modal = new bootstrap.Modal(document.getElementById('testConnectionModal'));
+        const testStatus = document.getElementById('testStatus');
+        
+        modal.show();
+        
+        // Simulate connection test
+        let progress = 0;
+        const testInterval = setInterval(() => {
+            progress += 25;
+            
+            if (progress === 25) {
+                testStatus.textContent = 'Pinging camera IP...';
+            } else if (progress === 50) {
+                testStatus.textContent = 'Establishing RTSP connection...';
+            } else if (progress === 75) {
+                testStatus.textContent = 'Authenticating credentials...';
+            } else if (progress >= 100) {
+                clearInterval(testInterval);
+                testStatus.innerHTML = `
+                    <span class="text-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Connection successful!
+                    </span>
+                    <br>
+                    <small class="text-muted">Camera is ready for monitoring</small>
+                `;
+                
+                setTimeout(() => {
+                    modal.hide();
+                }, 2000);
+            }
+        }, 1000);
+    }
+
+    function saveConfiguration() {
+        alert('Configuration saved successfully!');
+        // Here you would typically send the configuration to the backend
+    }
+
+    function startMonitoring() {
+        alert('Starting live monitoring... Redirecting to monitoring dashboard.');
+        // Redirect to monitoring page
+        window.location.href = "{% url 'live_monitoring' %}";
+    }
+
+    function resetConfiguration() {
+        if (confirm('Are you sure you want to reset all configuration settings?')) {
+            document.getElementById('cameraConfigForm').reset();
+            stopPreview();
+            alert('Configuration reset to defaults.');
+        }
+    }
+
+    function saveAndConnect() {
+        saveConfiguration();
+        startPreview();
+        alert('Configuration saved and camera preview started.');
+    }
+
+    function connectAndMonitor() {
+        saveConfiguration();
+        startMonitoring();
+    }
+</script>
+{% endblock %}

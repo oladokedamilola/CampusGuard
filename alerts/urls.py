@@ -1,3 +1,4 @@
+# smart_surveillance/alerts/urls.py
 from django.urls import path
 from . import views
 

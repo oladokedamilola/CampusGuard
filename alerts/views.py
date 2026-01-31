@@ -1,3 +1,4 @@
+# smart_surveillance/alerts/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -9,7 +10,9 @@ from django.http import JsonResponse
 from django.views.generic import ListView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
-
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.urls import reverse
 from .models import Alert, AlertRule, NotificationPreference
 from .forms import AlertRuleForm, NotificationPreferenceForm, AlertFilterForm
 from .services import UserNotificationService
@@ -211,13 +214,13 @@ def toggle_alert_rule(request, pk):
 @login_required
 def get_unread_alerts_count(request):
     """Get count of unread alerts (AJAX endpoint)."""
-    count = UserNotificationService.get_unread_alerts(request.user).count()
+    count = len(UserNotificationService.get_unread_alerts(request.user))
     return JsonResponse({'count': count})
 
 @login_required
 def get_recent_alerts(request):
     """Get recent alerts for notification dropdown (AJAX endpoint)."""
-    alerts = UserNotificationService.get_recent_alerts(request.user, limit=5)
+    alerts = UserNotificationService.get_unread_alerts(request.user)[:5]
     
     alerts_data = []
     for alert in alerts:
@@ -228,7 +231,7 @@ def get_recent_alerts(request):
             'created_at': alert.created_at.strftime('%H:%M'),
             'is_read': alert.is_read,
             'severity_color': alert.get_severity_color(),
-            'url': reverse_lazy('alerts:detail', kwargs={'pk': alert.pk}),
+            'url': reverse('alerts:detail', kwargs={'pk': alert.pk}),  # CHANGED: reverse() not reverse_lazy()
         })
     
     return JsonResponse({'alerts': alerts_data})

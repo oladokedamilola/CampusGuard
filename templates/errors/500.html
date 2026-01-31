@@ -1,0 +1,40 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_icon %}
+<div class="text-center">
+    <i class="fas fa-server error-icon server-icon"></i>
+</div>
+{% endblock %}
+
+{% block error_details %}
+<div class="alert alert-danger">
+    <i class="fas fa-bug"></i> <strong>Our team has been notified about this error.</strong><br>
+    <small>We apologize for the inconvenience. Please try again later.</small>
+</div>
+
+<p><strong>What happened?</strong></p>
+<ul>
+    <li>An unexpected server error occurred</li>
+    <li>Our technical team is working to resolve it</li>
+    <li>No action is required from your side</li>
+</ul>
+
+<p><strong>What can you do?</strong></p>
+<ul>
+    <li>Try refreshing the page in a few minutes</li>
+    <li>Clear your browser cache and cookies</li>
+    <li>Contact support if the problem persists</li>
+</ul>
+{% endblock %}
+
+{% block error_actions %}
+<a href="/" class="btn-error btn-primary-error">
+    <i class="fas fa-home"></i> Go to Homepage
+</a>
+<a href="javascript:history.back()" class="btn-error btn-secondary-error">
+    <i class="fas fa-arrow-left"></i> Go Back
+</a>
+<button onclick="location.reload()" class="btn-error btn-secondary-error">
+    <i class="fas fa-sync-alt"></i> Try Again
+</button>
+{% endblock %}

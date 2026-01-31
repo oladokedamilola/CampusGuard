@@ -1,0 +1,232 @@
+{% extends 'base_app.html' %}
+{% load i18n static %}
+
+{% block title %}{% trans "Media Gallery" %}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{% trans "Media Gallery" %}</h1>
+            <p class="lead">{% trans "View all your uploaded media files and their analysis results." %}</p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'cameras:media_selection' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> {% trans "Upload New Media" %}
+            </a>
+        </div>
+    </div>
+
+    {% if messages %}
+    <div class="row mb-3">
+        <div class="col-12">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">{% trans "All Media Uploads" %}</h5>
+                </div>
+                <div class="card-body">
+                    {% if media_uploads %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>{% trans "Thumbnail" %}</th>
+                                    <th>{% trans "Title" %}</th>
+                                    <th>{% trans "Type" %}</th>
+                                    <th>{% trans "Status" %}</th>
+                                    <th>{% trans "Uploaded" %}</th>
+                                    <th>{% trans "Actions" %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for media in media_uploads %}
+                                <tr>
+                                    <td>
+                                        {% if media.thumbnail %}
+                                        <img src="{{ media.thumbnail.url }}" alt="{{ media.title }}" 
+                                             class="img-thumbnail" style="max-width: 80px;">
+                                        {% else %}
+                                        <div class="bg-light rounded d-flex align-items-center justify-content-center" 
+                                             style="width: 80px; height: 60px;">
+                                            {% if media.is_image %}
+                                            <i class="fas fa-image text-muted"></i>
+                                            {% elif media.is_video %}
+                                            <i class="fas fa-video text-muted"></i>
+                                            {% endif %}
+                                        </div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <strong>{{ media.title }}</strong><br>
+                                        <small class="text-muted">{{ media.get_file_size_mb }} MB</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if media.is_image %}bg-info{% else %}bg-warning{% endif %}">
+                                            {{ media.get_media_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if media.processing_status == 'completed' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check"></i> {% trans "Completed" %}
+                                        </span>
+                                        {% elif media.processing_status == 'processing' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-sync fa-spin"></i> {% trans "Processing" %} ({{ media.get_progress_percentage }}%)
+                                        </span>
+                                        {% elif media.processing_status == 'failed' %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-exclamation-triangle"></i> {% trans "Failed" %}
+                                        </span>
+                                        {% elif media.processing_status == 'pending' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-clock"></i> {% trans "Pending" %}
+                                        </span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ media.get_processing_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ media.uploaded_at|date:"Y-m-d H:i" }}<br>
+                                        <small class="text-muted">
+                                            {% blocktrans with user=media.uploaded_by %}by {{ user }}{% endblocktrans %}
+                                        </small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            {% if media.processing_status == 'completed' %}
+                                            <a href="{% url 'cameras:media_analysis_results' media.id %}" 
+                                               class="btn btn-success" title="{% trans 'View Results' %}">
+                                                <i class="fas fa-chart-bar"></i>
+                                            </a>
+                                            {% elif media.processing_status == 'processing' %}
+                                            <a href="{% url 'cameras:media_processing_status' media.id %}" 
+                                               class="btn btn-warning" title="{% trans 'View Progress' %}">
+                                                <i class="fas fa-sync fa-spin"></i>
+                                            </a>
+                                            {% endif %}
+                                            
+                                            <a href="{{ media.original_file.url }}" 
+                                               class="btn btn-info" target="_blank" title="{% trans 'Download Original' %}">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                            
+                                            <button type="button" class="btn btn-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ media.id }}"
+                                                    title="{% trans 'Delete' %}">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Delete Modal -->
+                                        <div class="modal fade" id="deleteModal{{ media.id }}" tabindex="-1">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">{% trans "Confirm Delete" %}</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        <p>{% trans "Are you sure you want to delete" %} <strong>{{ media.title }}</strong>?</p>
+                                                        <p class="text-danger">{% trans "This action cannot be undone." %}</p>
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" 
+                                                                data-bs-dismiss="modal">{% trans "Cancel" %}</button>
+                                                        <form method="post" action="{% url 'cameras:media_delete' media.id %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-danger">
+                                                                <i class="fas fa-trash"></i> {% trans "Delete" %}
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-images fa-4x text-muted mb-3"></i>
+                        <h4>{% trans "No media uploads yet" %}</h4>
+                        <p class="text-muted">{% trans "Upload your first image or video for analysis." %}</p>
+                        <a href="{% url 'cameras:media_selection' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> {% trans "Upload Media" %}
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if media_uploads.paginator.num_pages > 1 %}
+                <div class="card-footer">
+                    <nav aria-label="{% trans 'Page navigation' %}">
+                        <ul class="pagination justify-content-center mb-0">
+                            {% if media_uploads.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ media_uploads.previous_page_number }}">{% trans "Previous" %}</a>
+                            </li>
+                            {% endif %}
+                            
+                            {% for num in media_uploads.paginator.page_range %}
+                            <li class="page-item {% if media_uploads.number == num %}active{% endif %}">
+                                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                            </li>
+                            {% endfor %}
+                            
+                            {% if media_uploads.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ media_uploads.next_page_number }}">{% trans "Next" %}</a>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.img-thumbnail {
+    object-fit: cover;
+    width: 80px;
+    height: 60px;
+}
+.badge {
+    font-size: 0.8em;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh page every 30 seconds if there are processing items
+document.addEventListener('DOMContentLoaded', function() {
+    const hasProcessing = document.querySelector('.badge.bg-warning');
+    if (hasProcessing) {
+        setTimeout(function() {
+            window.location.reload();
+        }, 30000); // 30 seconds
+    }
+});
+</script>
+{% endblock %}

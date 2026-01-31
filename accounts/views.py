@@ -1,3 +1,4 @@
+# smart_surveillance/accounts/views.py
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.decorators import login_required
@@ -13,7 +14,7 @@ from .models import User
 def login_view(request):
     """Custom login view using email."""
     if request.user.is_authenticated:
-        return redirect('dashboard:index')
+        return redirect('dashboard:index') 
     
     if request.method == 'POST':
         form = LoginForm(request.POST)
@@ -22,6 +23,7 @@ def login_view(request):
             password = form.cleaned_data['password']
             remember_me = form.cleaned_data['remember_me']
             
+            # Use the custom authentication backend
             user = authenticate(request, email=email, password=password)
             
             if user is not None:
@@ -31,24 +33,27 @@ def login_view(request):
                 if not remember_me:
                     request.session.set_expiry(0)  # Browser close
                 
-                # Redirect based on role
-                if user.is_superuser or user.is_staff:
-                    messages.success(request, _('Welcome, Administrator!'))
-                    return redirect('admin:index')
+                messages.success(request, _('Login successful!'))
+                
+                # Redirect based on user role
+                if user.role == User.Role.VIEWER:
+                    return redirect('dashboard:viewer_dashboard')
                 else:
-                    messages.success(request, _('Login successful!'))
                     return redirect('dashboard:index')
             else:
                 messages.error(request, _('Invalid email or password.'))
+        else:
+            messages.error(request, _('Please correct the errors below.'))
     else:
         form = LoginForm()
     
     return render(request, 'accounts/login.html', {'form': form})
 
+@login_required
 def logout_view(request):
     """Logout view."""
     logout(request)
-    messages.success(request, _('You have been logged out successfully.'))
+    messages.success(request, _('You have been logged out.'))
     return redirect('accounts:login')
 
 @login_required

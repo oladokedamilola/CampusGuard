@@ -1,4 +1,4 @@
-from datetime import timezone
+from django.utils import timezone
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
@@ -8,18 +8,24 @@ from django.db.models import Q, Count, Avg
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
-
-from .models import Camera, CameraGroup, CameraHealthLog
-from .forms import CameraForm, CameraGroupForm, CameraFilterForm
-from core.models import Location
-
+from django.http import JsonResponse, HttpResponse
+from django.views.decorators.http import require_http_methods
+import mimetypes
 import os
+import json
 import threading
 from django.core.files.storage import default_storage
-from django.http import JsonResponse
-from .models import VideoFile
-from .forms import VideoUploadForm, VideoProcessingForm
+import logging
+from .models import Camera, CameraGroup, CameraHealthLog, MediaUpload, MediaAnalysisResult, VideoFile
+from .forms import CameraForm, CameraGroupForm, CameraFilterForm, VideoUploadForm, VideoProcessingForm
+from core.models import Location
+from .services.media_processor import MediaProcessor
 
+logger = logging.getLogger(__name__)
+
+# ============================================
+# CAMERA VIEWS (Existing functionality)
+# ============================================
 
 class CameraListView(LoginRequiredMixin, ListView):
     """List all cameras with filtering."""
@@ -94,9 +100,6 @@ class CameraDetailView(LoginRequiredMixin, UserPassesTestMixin, DetailView):
         
         # Get recent health logs
         context['health_logs'] = self.object.health_logs.all()[:10]
-        
-        # Get incidents for this camera (when incidents app is created)
-        # context['recent_incidents'] = self.object.incidents.all()[:5]
         
         return context
 
@@ -239,6 +242,61 @@ def toggle_camera_status(request, pk):
     return redirect('cameras:detail', pk=camera.pk)
 
 @login_required
+@require_http_methods(['POST'])
+def bulk_toggle_cameras(request):
+    """Bulk toggle camera active/inactive status."""
+    if not request.user.can_manage_cameras():
+        return JsonResponse({
+            'success': False,
+            'message': _('You do not have permission to perform this action.')
+        }, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        camera_ids = data.get('camera_ids', [])
+        action = data.get('action', 'activate')  # 'activate' or 'deactivate'
+        
+        if not camera_ids:
+            return JsonResponse({
+                'success': False,
+                'message': _('No cameras selected.')
+            }, status=400)
+        
+        # Get cameras
+        cameras = Camera.objects.filter(id__in=camera_ids)
+        
+        # Update status based on action
+        if action == 'activate':
+            cameras.update(
+                is_active=True,
+                status=Camera.Status.ACTIVE
+            )
+            message = f'{cameras.count()} cameras activated.'
+        else:  # deactivate
+            cameras.update(
+                is_active=False,
+                status=Camera.Status.INACTIVE
+            )
+            message = f'{cameras.count()} cameras deactivated.'
+        
+        return JsonResponse({
+            'success': True,
+            'message': message,
+            'updated_count': cameras.count()
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': _('Invalid JSON data.')
+        }, status=400)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': str(e)
+        }, status=500)
+
+@login_required
 def camera_health_check(request, pk):
     """Perform health check on a camera."""
     if not request.user.can_manage_cameras():
@@ -292,6 +350,190 @@ def camera_health_check(request, pk):
     messages.info(request, message)
     
     return redirect('cameras:detail', pk=camera.pk)
+
+@login_required
+def export_cameras(request):
+    """Export cameras data in various formats."""
+    if not request.user.can_manage_cameras():
+        messages.error(request, _('You do not have permission to export data.'))
+        return redirect('cameras:list')
+    
+    format_type = request.GET.get('format', 'csv')
+    queryset = Camera.objects.select_related('location').all()
+    
+    # Apply filters if any (same as list view)
+    form = CameraFilterForm(request.GET)
+    if form.is_valid():
+        status = form.cleaned_data.get('status')
+        camera_type = form.cleaned_data.get('camera_type')
+        location = form.cleaned_data.get('location')
+        is_active = form.cleaned_data.get('is_active')
+        search = form.cleaned_data.get('search')
+        
+        if status:
+            queryset = queryset.filter(status=status)
+        if camera_type:
+            queryset = queryset.filter(camera_type=camera_type)
+        if location:
+            queryset = queryset.filter(location=location)
+        if is_active:
+            is_active_bool = is_active == 'true'
+            queryset = queryset.filter(is_active=is_active_bool)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search) |
+                Q(camera_id__icontains=search) |
+                Q(ip_address__icontains=search) |
+                Q(serial_number__icontains=search) |
+                Q(location__name__icontains=search)
+            )
+    
+    # Prepare data
+    data = []
+    for camera in queryset:
+        data.append({
+            'ID': camera.camera_id,
+            'Name': camera.name,
+            'Location': camera.location.name if camera.location else '',
+            'Type': camera.get_camera_type_display(),
+            'Status': camera.get_status_display(),
+            'IP Address': camera.ip_address or '',
+            'Port': camera.port,
+            'Protocol': camera.get_connection_protocol_display(),
+            'Resolution': camera.resolution,
+            'FPS': camera.fps,
+            'Active': 'Yes' if camera.is_active else 'No',
+            'Motion Detection': 'Yes' if camera.motion_detection_enabled else 'No',
+            'Recording': 'Yes' if camera.recording_enabled else 'No',
+            'Manufacturer': camera.manufacturer or '',
+            'Model': camera.model or '',
+            'Serial Number': camera.serial_number or '',
+            'Installation Date': camera.installation_date or '',
+            'Last Maintenance': camera.last_maintenance or '',
+            'Created At': camera.created_at,
+            'Updated At': camera.updated_at,
+        })
+    
+    if format_type == 'csv':
+        import csv
+        from django.http import HttpResponse
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="cameras_export.csv"'
+        
+        if data:
+            writer = csv.DictWriter(response, fieldnames=data[0].keys())
+            writer.writeheader()
+            for row in data:
+                writer.writerow(row)
+        
+        return response
+    
+    elif format_type == 'json':
+        import json
+        from django.http import JsonResponse
+        
+        return JsonResponse(data, safe=False)
+    
+    else:
+        messages.error(request, _('Unsupported export format.'))
+        return redirect('cameras:list')
+    
+    
+@login_required
+def configure_camera(request, camera_id=None):
+    """
+    Configure a camera for live analysis/streaming.
+    If camera_id is provided, configure that specific camera.
+    If not, show a list of cameras to choose from.
+    """
+    if not request.user.can_manage_cameras():
+        messages.error(request, _('You do not have permission to configure cameras.'))
+        return redirect('cameras:list')
+    
+    if camera_id:
+        # Configure specific camera
+        camera = get_object_or_404(Camera, id=camera_id)
+        
+        if request.method == 'POST':
+            # Process configuration
+            detection_types = request.POST.getlist('detection_types', ['person', 'vehicle'])
+            analysis_mode = request.POST.get('analysis_mode', 'realtime')
+            save_output = request.POST.get('save_output', 'false') == 'true'
+            alert_on_detection = request.POST.get('alert_on_detection', 'false') == 'true'
+            
+            # Store configuration (you might want to save this to a model)
+            config_data = {
+                'detection_types': detection_types,
+                'analysis_mode': analysis_mode,
+                'save_output': save_output,
+                'alert_on_detection': alert_on_detection,
+                'configured_by': request.user.id,
+                'configured_at': timezone.now().isoformat()
+            }
+            
+            # Here you would typically:
+            # 1. Save configuration to database
+            # 2. Start a background task for live analysis
+            # 3. Connect to the camera stream
+            
+            messages.success(request, f'Camera "{camera.name}" configured for live analysis!')
+            return redirect('cameras:live_stream', camera_id=camera.id)
+        
+        # GET request - show configuration form
+        context = {
+            'camera': camera,
+            'title': f'Configure {camera.name}',
+        }
+        return render(request, 'cameras/configure_camera.html', context)
+    
+    else:
+        # Show list of cameras to configure
+        cameras = Camera.objects.filter(
+            is_active=True,
+            status=Camera.Status.ACTIVE
+        ).select_related('location')
+        
+        context = {
+            'cameras': cameras,
+            'title': 'Select Camera to Configure',
+        }
+        return render(request, 'cameras/select_camera.html', context)
+
+@login_required
+def live_stream(request, camera_id):
+    """
+    Live stream and analysis view for a configured camera.
+    """
+    if not request.user.can_manage_cameras():
+        messages.error(request, _('You do not have permission to view live streams.'))
+        return redirect('cameras:list')
+    
+    camera = get_object_or_404(Camera, id=camera_id)
+    
+    context = {
+        'camera': camera,
+        'title': f'Live: {camera.name}',
+        'stream_url': camera.get_stream_url_with_auth() or '',
+        'ws_url': f'ws://{request.get_host()}/ws/camera/{camera.id}/',  # Example WebSocket URL
+    }
+    
+    return render(request, 'cameras/live_stream.html', context)
+
+
+@login_required
+def analysis_results_redirect(request, upload_id=None):
+    """
+    Redirect for backward compatibility from 'analysis_results' to 'media_analysis_results'.
+    """
+    if upload_id:
+        # Redirect to specific media analysis result
+        return redirect('cameras:media_analysis_results', upload_id=upload_id)
+    else:
+        # No specific ID - redirect to media gallery
+        messages.info(request, _('Please select a media upload to view results.'))
+        return redirect('cameras:media_gallery')
+    
 
 # Camera Group Views
 class CameraGroupListView(LoginRequiredMixin, ListView):
@@ -351,11 +593,14 @@ class CameraGroupDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView)
         response = super().form_valid(form)
         messages.success(self.request, _(f'Camera group "{group_name}" deleted!'))
         return response
-    
-    
+
+# ============================================
+# LEGACY VIDEO PROCESSING (Old system - keep for backward compatibility)
+# ============================================
+
 @login_required
 def video_upload_view(request):
-    """Upload video file for processing."""
+    """Legacy video upload view (for backward compatibility)."""
     if not request.user.can_manage_cameras():
         messages.error(request, _('You do not have permission to upload videos.'))
         return redirect('cameras:list')
@@ -368,20 +613,20 @@ def video_upload_view(request):
             video.file_size = video.video_file.size
             video.save()
             
-            messages.success(request, _('Video uploaded successfully! Processing will start soon.'))
+            messages.success(request, _('Video uploaded successfully! Please use the new media upload system for processing.'))
             return redirect('cameras:video_detail', pk=video.pk)
     else:
         form = VideoUploadForm()
     
     context = {
         'form': form,
-        'title': _('Upload Video for Analysis'),
+        'title': _('Upload Video (Legacy System)'),
     }
     return render(request, 'cameras/video_upload.html', context)
 
 @login_required
 def video_list_view(request):
-    """List all uploaded videos."""
+    """Legacy video list view."""
     if not request.user.can_manage_cameras():
         messages.error(request, _('You do not have permission to view videos.'))
         return redirect('cameras:list')
@@ -390,13 +635,13 @@ def video_list_view(request):
     
     context = {
         'videos': videos,
-        'title': _('My Uploaded Videos'),
+        'title': _('Legacy Video Uploads'),
     }
     return render(request, 'cameras/video_list.html', context)
 
 @login_required
 def video_detail_view(request, pk):
-    """View video details and processing results."""
+    """Legacy video detail view."""
     video = get_object_or_404(VideoFile, pk=pk)
     
     # Check permission
@@ -404,31 +649,15 @@ def video_detail_view(request, pk):
         messages.error(request, _('You do not have permission to view this video.'))
         return redirect('cameras:video_list')
     
-    if request.method == 'POST' and video.processing_status == VideoFile.ProcessingStatus.PENDING:
-        form = VideoProcessingForm(request.POST)
-        if form.is_valid():
-            # Start processing in background
-            from .tasks import process_video_task
-            process_video_task.delay(video.pk, form.cleaned_data)
-            
-            video.processing_status = VideoFile.ProcessingStatus.PROCESSING
-            video.save()
-            
-            messages.info(request, _('Video processing started in the background.'))
-            return redirect('cameras:video_detail', pk=video.pk)
-    else:
-        form = VideoProcessingForm()
-    
     context = {
         'video': video,
-        'form': form,
         'results': video.results_json if video.results_json else {},
     }
     return render(request, 'cameras/video_detail.html', context)
 
 @login_required
 def video_processing_status(request, pk):
-    """Get video processing status (AJAX endpoint)."""
+    """Legacy video processing status (AJAX endpoint)."""
     video = get_object_or_404(VideoFile, pk=pk)
     
     if video.uploaded_by != request.user and not request.user.is_superuser:
@@ -443,26 +672,249 @@ def video_processing_status(request, pk):
         'is_completed': video.processing_status == VideoFile.ProcessingStatus.COMPLETED,
     })
 
+# ============================================
+# NEW MEDIA UPLOAD SYSTEM (with FastAPI integration)
+# ============================================
 @login_required
-def start_video_processing(request, pk):
-    """Start processing a video manually."""
-    video = get_object_or_404(VideoFile, pk=pk)
+def media_selection(request):
+    """
+    Page for selecting upload or live camera.
+    """
+    return render(request, 'cameras/media_selection.html')
+
+@login_required
+def upload_media(request):
+    """
+    Handle media upload (both images and videos) for FastAPI processing.
+    """
+    if request.method == 'POST':
+        # Check if this is an AJAX request
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        # Handle file upload
+        if 'media_file' not in request.FILES:
+            if is_ajax:
+                return JsonResponse({'error': 'No file selected'}, status=400)
+            messages.error(request, 'No file selected')
+            return redirect('cameras:upload_media')
+        
+        media_file = request.FILES['media_file']
+        media_type = request.POST.get('media_type', 'image')
+        title = request.POST.get('title', f'Uploaded {media_type}')
+        description = request.POST.get('description', '')
+        detection_types = request.POST.getlist('detection_types', ['person', 'vehicle'])
+        
+        # Determine MIME type
+        mime_type = media_file.content_type
+        if not mime_type:
+            mime_type = mimetypes.guess_type(media_file.name)[0]
+        
+        # Validate file size
+        max_size = 500 * 1024 * 1024  # 500MB
+        if media_file.size > max_size:
+            if is_ajax:
+                return JsonResponse({'error': 'File size exceeds maximum limit (500MB)'}, status=400)
+            messages.error(request, 'File size exceeds maximum limit (500MB)')
+            return redirect('cameras:upload_media')
+        
+        # Validate file type
+        if media_type == 'image':
+            valid_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif']
+            ext = os.path.splitext(media_file.name)[1].lower()
+            if ext not in valid_extensions:
+                if is_ajax:
+                    return JsonResponse({'error': f'Invalid image format. Supported formats: {", ".join(valid_extensions)}'}, status=400)
+                messages.error(request, f'Invalid image format. Supported formats: {", ".join(valid_extensions)}')
+                return redirect('cameras:upload_media')
+        elif media_type == 'video':
+            valid_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.webm']
+            ext = os.path.splitext(media_file.name)[1].lower()
+            if ext not in valid_extensions:
+                if is_ajax:
+                    return JsonResponse({'error': f'Invalid video format. Supported formats: {", ".join(valid_extensions)}'}, status=400)
+                messages.error(request, f'Invalid video format. Supported formats: {", ".join(valid_extensions)}')
+                return redirect('cameras:upload_media')
+        
+        try:
+            # Create MediaUpload instance
+            media_upload = MediaUpload.objects.create(
+                title=title,
+                description=description,
+                media_type=media_type,
+                original_file=media_file,
+                uploaded_by=request.user,
+                mime_type=mime_type,
+                file_size=media_file.size,
+                processing_status=MediaUpload.ProcessingStatus.PENDING,
+                request_data={
+                    'detection_types': detection_types,
+                    'original_filename': media_file.name,
+                    'upload_timestamp': timezone.now().isoformat()
+                }
+            )
+            
+            # Try to generate thumbnail
+            processor = MediaProcessor()
+            processor.generate_thumbnail(media_upload)
+            
+            # Start processing
+            success = processor.process_media_upload(media_upload, detection_types)
+            
+            if success:
+                if is_ajax:
+                    return JsonResponse({
+                        'success': True,
+                        'message': f'{media_type.capitalize()} uploaded successfully and processing started!',
+                        'upload_id': media_upload.id
+                    })
+                messages.success(request, f'{media_type.capitalize()} uploaded successfully and processing started!')
+                return redirect('cameras:media_processing_status', upload_id=media_upload.id)
+            else:
+                if is_ajax:
+                    return JsonResponse({'error': 'Failed to start processing. Please try again.'}, status=500)
+                messages.error(request, 'Failed to start processing. Please try again.')
+                return redirect('cameras:upload_media')
+                
+        except Exception as e:
+            logger.error(f"Error in upload_media: {str(e)}")
+            if is_ajax:
+                return JsonResponse({'error': f'Server error: {str(e)}'}, status=500)
+            messages.error(request, f'Error uploading file: {str(e)}')
+            return redirect('cameras:upload_media')
     
-    if video.uploaded_by != request.user and not request.user.is_superuser:
-        messages.error(request, _('You do not have permission to process this video.'))
-        return redirect('cameras:video_list')
+    # GET request - show upload form
+    return render(request, 'cameras/upload_media.html', {
+        'max_file_size': 500  # MB
+    })
+
+@login_required
+def media_processing_status(request, upload_id):
+    """
+    Show processing status for a media upload.
+    """
+    media_upload = get_object_or_404(MediaUpload, id=upload_id, uploaded_by=request.user)
     
-    if video.processing_status != VideoFile.ProcessingStatus.PENDING:
-        messages.warning(request, _('Video is already being processed or completed.'))
-        return redirect('cameras:video_detail', pk=video.pk)
+    return render(request, 'cameras/media_processing_status.html', {
+        'media_upload': media_upload,
+        'progress_percentage': media_upload.get_progress_percentage()
+    })
+
+@login_required
+def media_analysis_results(request, upload_id):
+    """
+    Show analysis results for completed media upload.
+    """
+    media_upload = get_object_or_404(MediaUpload, id=upload_id, uploaded_by=request.user)
     
-    # This would start actual OpenCV processing
-    # For now, we'll simulate it
-    video.processing_status = VideoFile.ProcessingStatus.PROCESSING
-    video.processing_started = timezone.now()
-    video.save()
+    # Check if processing is complete
+    if media_upload.processing_status != MediaUpload.ProcessingStatus.COMPLETED:
+        messages.warning(request, 'Analysis is still in progress. Please wait.')
+        return redirect('cameras:media_processing_status', upload_id=upload_id)
     
-    # In Phase 4, this will call OpenCV processing
-    messages.info(request, _('Video processing started. Check back for results.'))
+    # Get analysis results
+    try:
+        analysis_results = media_upload.analysis_results
+    except MediaAnalysisResult.DoesNotExist:
+        # Try to create from response data
+        processor = MediaProcessor()
+        processor._create_analysis_results(media_upload, media_upload.response_data)
+        analysis_results = media_upload.analysis_results
     
-    return redirect('cameras:video_detail', pk=video.pk)
+    return render(request, 'cameras/media_analysis_results.html', {
+        'media_upload': media_upload,
+        'analysis_results': analysis_results
+    })
+
+@login_required
+@require_http_methods(['GET'])
+def get_processing_status(request, upload_id):
+    """
+    AJAX endpoint to get processing status.
+    """
+    media_upload = get_object_or_404(MediaUpload, id=upload_id, uploaded_by=request.user)
+    
+    return JsonResponse({
+        'status': media_upload.processing_status,
+        'progress': media_upload.get_progress_percentage(),
+        'job_id': media_upload.job_id,
+        'has_results': hasattr(media_upload, 'analysis_results'),
+        'can_view_results': media_upload.processing_status == MediaUpload.ProcessingStatus.COMPLETED
+    })
+
+@login_required
+def media_gallery(request):
+    """
+    Show gallery of all media uploads by user.
+    """
+    media_uploads = MediaUpload.objects.filter(
+        uploaded_by=request.user
+    ).order_by('-uploaded_at')
+    
+    return render(request, 'cameras/media_gallery.html', {
+        'media_uploads': media_uploads
+    })
+
+@login_required
+def delete_media_upload(request, upload_id):
+    """
+    Delete a media upload and associated files.
+    """
+    media_upload = get_object_or_404(MediaUpload, id=upload_id, uploaded_by=request.user)
+    
+    if request.method == 'POST':
+        title = media_upload.title
+        media_upload.delete()
+        messages.success(request, f'Media "{title}" deleted successfully.')
+        return redirect('cameras:media_gallery')
+    
+    return render(request, 'cameras/media_confirm_delete.html', {
+        'media_upload': media_upload
+    })
+
+@login_required
+def fastapi_health_check(request):
+    """
+    Check FastAPI server health.
+    """
+    processor = MediaProcessor()
+    is_healthy = processor.fastapi_client.check_health()
+    
+    return JsonResponse({
+        'healthy': is_healthy,
+        'server_url': processor.fastapi_client.base_url
+    })
+
+# Add this missing function for the legacy redirect URL
+@login_required
+def analysis_results_redirect(request, upload_id=None):
+    """
+    Redirect for backward compatibility from 'analysis_results' to 'media_analysis_results'.
+    """
+    if upload_id:
+        # Redirect to specific media analysis result
+        return redirect('cameras:media_analysis_results', upload_id=upload_id)
+    else:
+        # No specific ID - redirect to media gallery
+        messages.info(request, 'Please select a media upload to view results.')
+        return redirect('cameras:media_gallery')
+    
+from django.conf import settings    
+    
+@login_required
+def test_fastapi_connection(request):
+    """Test FastAPI connection and API key."""
+    from .services.fastapi_client import FastAPIClient
+    
+    client = FastAPIClient()
+    
+    # Test connection
+    is_healthy = client.check_health()
+    
+    return JsonResponse({
+        'fastapi_url': client.base_url,
+        'api_key_first_10': client.api_key[:10] + '...' if client.api_key else 'None',
+        'api_key_length': len(client.api_key) if client.api_key else 0,
+        'is_healthy': is_healthy,
+        'settings_fastapi_key': settings.FASTAPI_API_KEY,
+        'settings_fastapi_url': settings.FASTAPI_BASE_URL,
+    })

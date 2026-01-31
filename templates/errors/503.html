@@ -1,0 +1,46 @@
+{% extends 'errors/base_error.html' %}
+
+{% block error_icon %}
+<div class="text-center">
+    <i class="fas fa-tools error-icon maintenance-icon"></i>
+</div>
+{% endblock %}
+
+{% block error_details %}
+<div class="alert alert-warning">
+    <i class="fas fa-clock"></i> <strong>System Maintenance in Progress</strong><br>
+    {% if maintenance_message %}
+    <p class="mt-2">{{ maintenance_message }}</p>
+    {% endif %}
+    {% if estimated_downtime %}
+    <p><strong>Estimated downtime:</strong> {{ estimated_downtime }}</p>
+    {% endif %}
+</div>
+
+<p><strong>Why is this happening?</strong></p>
+<ul>
+    <li>Scheduled maintenance and updates</li>
+    <li>System upgrades for improved performance</li>
+    <li>Security patches and enhancements</li>
+</ul>
+
+<p><strong>We're working to:</strong></p>
+<ul>
+    <li>Improve system performance</li>
+    <li>Add new features</li>
+    <li>Enhance security measures</li>
+    <li>Fix any existing issues</li>
+</ul>
+{% endblock %}
+
+{% block error_actions %}
+<a href="/" class="btn-error btn-primary-error">
+    <i class="fas fa-home"></i> Try Homepage
+</a>
+<button onclick="location.reload()" class="btn-error btn-secondary-error">
+    <i class="fas fa-sync-alt"></i> Check Again
+</button>
+<a href="mailto:support@campusguard.ai" class="btn-error btn-secondary-error">
+    <i class="fas fa-envelope"></i> Contact Support
+</a>
+{% endblock %}

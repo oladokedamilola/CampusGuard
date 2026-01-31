@@ -1,3 +1,4 @@
+# smart_surveillance/cameras/models.py
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -385,8 +386,286 @@ class CameraHealthLog(models.Model):
         )
         
         
-# Add to cameras/models.py after CameraHealthLog
+        
+        
+# Add these models to your existing cameras/models.py
 
+class MediaUpload(models.Model):
+    """
+    Base model for all media uploads (both images and videos)
+    """
+    class MediaType(models.TextChoices):
+        IMAGE = 'image', _('Image')
+        VIDEO = 'video', _('Video')
+    
+    class ProcessingStatus(models.TextChoices):
+        UPLOADING = 'uploading', _('Uploading')
+        PENDING = 'pending', _('Pending Analysis')
+        PROCESSING = 'processing', _('Processing')
+        COMPLETED = 'completed', _('Completed')
+        FAILED = 'failed', _('Failed')
+    
+    # Basic Information
+    title = models.CharField(
+        max_length=200,
+        verbose_name=_('Media Title'),
+        help_text=_('Descriptive name for the media')
+    )
+    
+    description = models.TextField(
+        blank=True,
+        verbose_name=_('Description'),
+        help_text=_('What this media contains or what to analyze')
+    )
+    
+    media_type = models.CharField(
+        max_length=20,
+        choices=MediaType.choices,
+        verbose_name=_('Media Type')
+    )
+    
+    # File Information
+    original_file = models.FileField(
+        upload_to='media/uploads/%Y/%m/%d/',
+        verbose_name=_('Original File'),
+        help_text=_('Uploaded media file')
+    )
+    
+    thumbnail = models.ImageField(
+        upload_to='media/thumbnails/%Y/%m/%d/',
+        null=True,
+        blank=True,
+        verbose_name=_('Thumbnail')
+    )
+    
+    # Processing Information
+    processing_status = models.CharField(
+        max_length=50,
+        choices=ProcessingStatus.choices,
+        default=ProcessingStatus.UPLOADING,
+        verbose_name=_('Processing Status')
+    )
+    
+    job_id = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name=_('Job ID'),
+        help_text=_('FastAPI processing job ID')
+    )
+    
+    # FastAPI Processing Data
+    fastapi_endpoint = models.CharField(
+        max_length=200,
+        blank=True,
+        verbose_name=_('FastAPI Endpoint'),
+        help_text=_('Endpoint used for processing')
+    )
+    
+    request_data = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_('Request Data'),
+        help_text=_('Data sent to FastAPI')
+    )
+    
+    response_data = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_('Response Data'),
+        help_text=_('Response from FastAPI')
+    )
+    
+    # User Information
+    uploaded_by = models.ForeignKey(
+        'accounts.User',
+        on_delete=models.CASCADE,
+        related_name='uploaded_media',
+        verbose_name=_('Uploaded By')
+    )
+    
+    uploaded_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_('Uploaded At')
+    )
+    
+    # Processing Timeline
+    processing_started = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Processing Started')
+    )
+    
+    processing_completed = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Processing Completed')
+    )
+    
+    # Metadata
+    duration = models.FloatField(
+        default=0.0,
+        verbose_name=_('Duration (seconds)')
+    )
+    
+    resolution = models.CharField(
+        max_length=20,
+        blank=True,
+        verbose_name=_('Resolution')
+    )
+    
+    fps = models.FloatField(
+        default=0.0,
+        verbose_name=_('Frames Per Second')
+    )
+    
+    file_size = models.BigIntegerField(
+        default=0,
+        verbose_name=_('File Size (bytes)')
+    )
+    
+    mime_type = models.CharField(
+        max_length=100,
+        blank=True,
+        verbose_name=_('MIME Type')
+    )
+    
+    class Meta:
+        verbose_name = _('Media Upload')
+        verbose_name_plural = _('Media Uploads')
+        ordering = ['-uploaded_at']
+        indexes = [
+            models.Index(fields=['processing_status']),
+            models.Index(fields=['uploaded_by', 'uploaded_at']),
+        ]
+    
+    def __str__(self):
+        return f"{self.title} ({self.get_media_type_display()})"
+    
+    def get_file_size_mb(self):
+        """Get file size in megabytes."""
+        return round(self.file_size / (1024 * 1024), 2)
+    
+    def get_progress_percentage(self):
+        """Get processing progress percentage."""
+        if self.processing_status == self.ProcessingStatus.COMPLETED:
+            return 100
+        elif self.processing_status == self.ProcessingStatus.PROCESSING:
+            return 50  # You could implement actual progress tracking
+        elif self.processing_status == self.ProcessingStatus.PENDING:
+            return 25
+        return 0
+    
+    def get_processing_time(self):
+        """Get processing time in seconds."""
+        if self.processing_started and self.processing_completed:
+            return (self.processing_completed - self.processing_started).total_seconds()
+        return None
+    
+    def is_image(self):
+        return self.media_type == self.MediaType.IMAGE
+    
+    def is_video(self):
+        return self.media_type == self.MediaType.VIDEO
+
+class MediaAnalysisResult(models.Model):
+    """
+    Stores detailed analysis results from FastAPI processing
+    """
+    media_upload = models.OneToOneField(
+        MediaUpload,
+        on_delete=models.CASCADE,
+        related_name='analysis_results',
+        verbose_name=_('Media Upload')
+    )
+    
+    # Detection Statistics
+    total_detections = models.IntegerField(
+        default=0,
+        verbose_name=_('Total Detections')
+    )
+    
+    person_count = models.IntegerField(
+        default=0,
+        verbose_name=_('Person Count')
+    )
+    
+    vehicle_count = models.IntegerField(
+        default=0,
+        verbose_name=_('Vehicle Count')
+    )
+    
+    suspicious_activity_count = models.IntegerField(
+        default=0,
+        verbose_name=_('Suspicious Activities')
+    )
+    
+    # Analysis Data
+    detections_json = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name=_('Detections Data'),
+        help_text=_('Detailed detection information')
+    )
+    
+    timestamps_json = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name=_('Timestamps Data'),
+        help_text=_('Timeline of detections')
+    )
+    
+    # Charts and Visualizations
+    heatmap_data = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_('Heatmap Data')
+    )
+    
+    timeline_data = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name=_('Timeline Data')
+    )
+    
+    # Generated Output Files
+    annotated_media_path = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name=_('Annotated Media Path'),
+        help_text=_('Path to media with detection boxes')
+    )
+    
+    analysis_report_path = models.CharField(
+        max_length=500,
+        blank=True,
+        verbose_name=_('Analysis Report Path'),
+        help_text=_('Path to generated report (PDF/HTML)')
+    )
+    
+    # Generated At
+    generated_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_('Generated At')
+    )
+    
+    class Meta:
+        verbose_name = _('Media Analysis Result')
+        verbose_name_plural = _('Media Analysis Results')
+    
+    def __str__(self):
+        return f"Analysis for {self.media_upload.title}"
+    
+    def get_detection_summary(self):
+        """Get summary of detections."""
+        return {
+            'total': self.total_detections,
+            'persons': self.person_count,
+            'vehicles': self.vehicle_count,
+            'suspicious': self.suspicious_activity_count,
+        }
+        
+        
+        
 class VideoFile(models.Model):
     """
     Model for uploaded video files for processing and analysis.

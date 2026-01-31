@@ -1,0 +1,486 @@
+<!-- templates/dashboard/admin_dashboard.html -->
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}System Administrator Dashboard - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Dashboard Header -->
+    <div class="dashboard-header mb-4">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h1 class="h2 mb-2 text-primary">
+                    <i class="fas fa-tachometer-alt me-2"></i>Administrator Dashboard
+                </h1>
+                <p class="text-muted mb-0">Complete system oversight and management dashboard</p>
+                <div class="mt-2">
+                    <span class="badge bg-danger fs-6 px-3 py-2">
+                        <i class="fas fa-user-shield me-1"></i>Superuser Access
+                    </span>
+                    <span class="badge bg-info ms-2 fs-6 px-3 py-2">
+                        <i class="fas fa-clock me-1"></i>{% now "F j, Y - H:i" %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-primary" onclick="location.reload()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                    <a href="{% url 'admin:index' %}" target="_blank" class="btn btn-warning">
+                        <i class="fas fa-cogs"></i> Django Admin
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Overview Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-primary text-uppercase mb-1">
+                                Total Users
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.total_users }}</div>
+                            <div class="mt-2 mb-0 text-muted text-sm">
+                                <span class="text-success mr-2">
+                                    <i class="fas fa-arrow-up"></i> {{ stats.recent_users }} new (7 days)
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                        <i class="fas fa-user-plus me-1"></i> Add User
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-success text-uppercase mb-1">
+                                Active Cameras
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">{{ stats.active_cameras }}/{{ stats.total_cameras }}</div>
+                            <div class="mt-2 mb-0 text-muted text-sm">
+                                {% if stats.offline_cameras > 0 %}
+                                <span class="text-danger mr-2">
+                                    <i class="fas fa-exclamation-circle"></i> {{ stats.offline_cameras }} offline
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-video fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="{% url 'cameras:list' %}" class="btn btn-sm btn-outline-success w-100">
+                        <i class="fas fa-eye me-1"></i> Manage Cameras
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-warning text-uppercase mb-1">
+                                System Health
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">Excellent</div>
+                            <div class="mt-2 mb-0 text-muted text-sm">
+                                <span class="text-success mr-2">
+                                    <i class="fas fa-check-circle"></i> All systems operational
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-heartbeat fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="#" class="btn btn-sm btn-outline-warning w-100">
+                        <i class="fas fa-chart-line me-1"></i> View Analytics
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs fw-bold text-info text-uppercase mb-1">
+                                Storage Usage
+                            </div>
+                            <div class="h5 mb-0 fw-bold text-gray-800">64%</div>
+                            <div class="mt-2 mb-0 text-muted text-sm">
+                                <span class="text-info mr-2">
+                                    <i class="fas fa-database"></i> 1.2TB of 2TB used
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hdd fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer bg-transparent">
+                    <a href="#" class="btn btn-sm btn-outline-info w-100">
+                        <i class="fas fa-archive me-1"></i> Cleanup
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-bolt me-2"></i>Quick Access
+                    </h6>
+                    <small class="text-muted">Frequently used actions</small>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <!-- Camera Management -->
+                        <div class="col-md-2 col-sm-4 col-6">
+                            <a href="{% url 'cameras:list' %}" 
+                               class="btn btn-primary btn-icon w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                <div class="mb-2">
+                                    <i class="fas fa-video fa-2x"></i>
+                                </div>
+                                <div class="fw-bold">Manage Cameras</div>
+                            </a>
+                        </div>
+                        
+                        <!-- Media Analysis -->
+                        <div class="col-md-2 col-sm-4 col-6">
+                            <a href="{% url 'cameras:media_selection' %}" 
+                               class="btn btn-success btn-icon w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                <div class="mb-2">
+                                    <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                                </div>
+                                <div class="fw-bold">Upload Media</div>
+                            </a>
+                        </div>
+                        
+                        <!-- Media Gallery -->
+                        <div class="col-md-2 col-sm-4 col-6">
+                            <a href="{% url 'cameras:media_gallery' %}" 
+                               class="btn btn-info btn-icon w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                <div class="mb-2">
+                                    <i class="fas fa-photo-video fa-2x"></i>
+                                </div>
+                                <div class="fw-bold">Media Gallery</div>
+                            </a>
+                        </div>
+                        
+                        <!-- Django Admin -->
+                        <div class="col-md-2 col-sm-4 col-6">
+                            <a href="{% url 'admin:index' %}" target="_blank"
+                               class="btn btn-warning btn-icon w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                <div class="mb-2">
+                                    <i class="fas fa-cogs fa-2x"></i>
+                                </div>
+                                <div class="fw-bold">Django Admin</div>
+                            </a>
+                        </div>
+                        
+                        <!-- System Settings -->
+                        <div class="col-md-2 col-sm-4 col-6">
+                            <a href="#" 
+                               class="btn btn-secondary btn-icon w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                <div class="mb-2">
+                                    <i class="fas fa-sliders-h fa-2x"></i>
+                                </div>
+                                <div class="fw-bold">Settings</div>
+                            </a>
+                        </div>
+                        
+                        <!-- Reports -->
+                        <div class="col-md-2 col-sm-4 col-6">
+                            <a href="#" 
+                               class="btn btn-dark btn-icon w-100 h-100 py-4 d-flex flex-column align-items-center justify-content-center text-decoration-none">
+                                <div class="mb-2">
+                                    <i class="fas fa-chart-bar fa-2x"></i>
+                                </div>
+                                <div class="fw-bold">Reports</div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & System Info -->
+    <div class="row">
+        <!-- Recent Activity -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-history me-2"></i>Recent Activity
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        {% for activity in recent_activities %}
+                        <div class="timeline-item mb-3">
+                            <div class="timeline-marker bg-{% if activity.type == 'login' %}success{% elif activity.type == 'system' %}info{% elif activity.type == 'security' %}warning{% else %}primary{% endif %}"></div>
+                            <div class="timeline-content ms-4">
+                                <div class="d-flex justify-content-between">
+                                    <h6 class="mb-1">{{ activity.action }}</h6>
+                                    <small class="text-muted">{{ activity.time }}</small>
+                                </div>
+                                <small class="text-muted">
+                                    <i class="fas fa-{% if activity.type == 'login' %}sign-in-alt{% elif activity.type == 'system' %}cog{% elif activity.type == 'security' %}shield-alt{% else %}camera{% endif %} me-1"></i>
+                                    {{ activity.type|title }}
+                                </small>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <p class="text-muted">No recent activities</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="#" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-list me-1"></i> View All Activities
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Information -->
+        <div class="col-lg-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="fas fa-info-circle me-2"></i>System Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="system-info">
+                        <div class="info-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="fas fa-database me-2"></i>Database
+                                </span>
+                                <span class="badge bg-success">Healthy</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="fas fa-plug me-2"></i>API Connection
+                                </span>
+                                <span class="badge bg-success">
+                                    Connected
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="fas fa-hdd me-2"></i>Storage
+                                </span>
+                                <span>85% used</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="fas fa-shield-alt me-2"></i>Security
+                                </span>
+                                <span class="badge bg-success">Secure</span>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item mb-3">
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">
+                                    <i class="fas fa-history me-2"></i>Last Backup
+                                </span>
+                                <span>{% now "Y-m-d H:i" %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <!-- Quick Stats -->
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <div class="border rounded p-3 mb-3">
+                                <div class="text-muted small">Uptime</div>
+                                <div class="h4 fw-bold">99.8%</div>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="border rounded p-3 mb-3">
+                                <div class="text-muted small">Response Time</div>
+                                <div class="h4 fw-bold">0.2s</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Getting Started Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="m-0 fw-bold">
+                        <i class="fas fa-rocket me-2"></i>Getting Started
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-4 h-100 text-center">
+                                <i class="fas fa-video fa-3x text-primary mb-3"></i>
+                                <h5>Setup Cameras</h5>
+                                <p class="text-muted">Add and configure surveillance cameras for monitoring</p>
+                                <a href="{% url 'cameras:create' %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-plus me-1"></i> Add Camera
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-4 h-100 text-center">
+                                <i class="fas fa-users fa-3x text-success mb-3"></i>
+                                <h5>Manage Users</h5>
+                                <p class="text-muted">Add team members and assign roles/permissions</p>
+                                <a href="#" class="btn btn-outline-success">
+                                    <i class="fas fa-user-plus me-1"></i> Add User
+                                </a>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <div class="border rounded p-4 h-100 text-center">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-warning mb-3"></i>
+                                <h5>Analyze Media</h5>
+                                <p class="text-muted">Upload and analyze video/images for security threats</p>
+                                <a href="{% url 'cameras:media_selection' %}" class="btn btn-outline-warning">
+                                    <i class="fas fa-play me-1"></i> Start Analysis
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.dashboard-header {
+    padding: 1.5rem 0;
+    border-bottom: 1px solid rgba(0, 33, 71, 0.1);
+}
+
+.card {
+    border-radius: 0.5rem;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.border-left-primary {
+    border-left: 0.25rem solid #4e73df !important;
+}
+
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-warning {
+    border-left: 0.25rem solid #f6c23e !important;
+}
+
+.border-left-info {
+    border-left: 0.25rem solid #36b9cc !important;
+}
+
+.btn-icon {
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-icon:hover {
+    transform: scale(1.05);
+}
+
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline-item {
+    position: relative;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -1rem;
+    top: 0.5rem;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.timeline-content {
+    padding-left: 1rem;
+}
+
+.system-info .info-item {
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    background-color: rgba(0, 33, 71, 0.02);
+}
+
+.system-info .info-item:hover {
+    background-color: rgba(0, 33, 71, 0.05);
+}
+</style>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Process Image - Smart Surveillance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="fas fa-image me-2"></i>Analyze Security Image
+                </h4>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>PythonAnywhere Free Tier:</strong> Upload images (max 10MB) for AI analysis. 
+                    Detects people, faces, vehicles, and objects using lightweight algorithms.
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" id="upload-form">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4 text-center">
+                        <div class="border-dashed p-5 rounded bg-light">
+                            <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-3"></i>
+                            <h5>Upload Security Image</h5>
+                            <p class="text-muted">JPG or PNG format, max 10MB</p>
+                            
+                            <div class="mb-3">
+                                <input type="file" name="image" id="image-input" 
+                                       class="form-control" accept="image/*" required>
+                            </div>
+                            
+                            <div class="form-check mb-3">
+                                <input type="checkbox" class="form-check-input" id="create-incident" name="create_incident" checked>
+                                <label class="form-check-label" for="create-incident">
+                                    Create incident if threats detected
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="process-btn">
+                            <i class="fas fa-search me-2"></i>Analyze Image
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="loading" class="text-center mt-4" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2">Analyzing image with AI... This may take a few seconds.</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Example Results -->
+        <div class="card shadow mt-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>What Can Be Detected
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-user fa-2x text-success mb-2"></i>
+                            <h6>People</h6>
+                            <small class="text-muted">Human detection</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-car fa-2x text-primary mb-2"></i>
+                            <h6>Vehicles</h6>
+                            <small class="text-muted">Cars, motorcycles</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-box fa-2x text-warning mb-2"></i>
+                            <h6>Objects</h6>
+                            <small class="text-muted">Suspicious items</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3 text-center mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger mb-2"></i>
+                            <h6>Motion</h6>
+                            <small class="text-muted">Movement detection</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('upload-form').addEventListener('submit', function(e) {
+    document.getElementById('loading').style.display = 'block';
+    document.getElementById('process-btn').disabled = true;
+});
+</script>
+{% endblock %}
