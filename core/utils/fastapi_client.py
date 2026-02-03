@@ -1,3 +1,4 @@
+# smart_surveillance/core/utils/fastapi_client.py
 """
 FastAPI client for communicating with the processing server.
 """

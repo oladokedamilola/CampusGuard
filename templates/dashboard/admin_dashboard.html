@@ -59,7 +59,7 @@
                     </div>
                 </div>
                 <div class="card-footer bg-transparent">
-                    <a href="#" class="btn btn-sm btn-outline-primary w-100">
+                    <a href="{% url 'accounts:invite_user' %}" class="btn btn-sm btn-outline-primary w-100">
                         <i class="fas fa-user-plus me-1"></i> Add User
                     </a>
                 </div>
@@ -385,7 +385,7 @@
                                 <i class="fas fa-users fa-3x text-success mb-3"></i>
                                 <h5>Manage Users</h5>
                                 <p class="text-muted">Add team members and assign roles/permissions</p>
-                                <a href="#" class="btn btn-outline-success">
+                                <a href="{% url 'accounts:invite_user' %}" class="btn btn-outline-success">
                                     <i class="fas fa-user-plus me-1"></i> Add User
                                 </a>
                             </div>

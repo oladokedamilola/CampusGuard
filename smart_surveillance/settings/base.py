@@ -158,36 +158,64 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Default backend (fallback)
 ]
 
-# Email configuration (for password reset)
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = 'Smart Surveillance System <noreply@smart-surveillance.com>'
+# Email Configuration
+EMAIL_BACKEND = os.getenv('DJANGO_EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST = os.getenv('DJANGO_EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('DJANGO_EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('DJANGO_EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('DJANGO_EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('DJANGO_EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'CampusGuard AI <noreply@campusguard.ai>')
+
+# Session Settings
+SESSION_ENGINE = os.getenv('SESSION_ENGINE', 'django.contrib.sessions.backends.db')
+SESSION_COOKIE_AGE = int(os.getenv('SESSION_COOKIE_AGE', 600))
+SESSION_SAVE_EVERY_REQUEST = os.getenv('SESSION_SAVE_EVERY_REQUEST', 'True') == 'True'
+SESSION_EXPIRE_AT_BROWSER_CLOSE = os.getenv('SESSION_EXPIRE_AT_BROWSER_CLOSE', 'True') == 'True'
+
+# Token Expiry Times
+OTP_EXPIRY_MINUTES = int(os.getenv('OTP_EXPIRY_MINUTES', 10))
+PASSWORD_RESET_TOKEN_EXPIRY_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_EXPIRY_HOURS', 1))
 
 # ============================================================================
-# FastAPI Processing Server Configuration - UPDATED
+# FastAPI Processing Server Configuration - UPDATED FOR BASE64 INTEGRATION
 # ============================================================================
-FASTAPI_BASE_URL = os.environ.get('FASTAPI_BASE_URL', 'http://localhost:8001')
-FASTAPI_API_KEY = os.environ.get('FASTAPI_API_KEY', 'a3f8e97b12c450d6f34a8921b567d0e9f12a34b5678c9d0e1f23a45b67c89d012')
+FASTAPI_CONFIG = {
+    'BASE_URL': os.environ.get('FASTAPI_BASE_URL', 'http://localhost:8001'),
+    'API_KEY': os.environ.get('FASTAPI_API_KEY', 'a3f8e97b12c450d6f34a8921b567d0e9f12a34b5678c9d0e1f23a45b67c89d012'),
+    'TIMEOUT': 120,  # seconds for processing requests
+    'RETRY_ATTEMPTS': 3,
+    'RETRY_DELAY': 2,  # seconds between retries
+    
+    # Endpoints
+    'ENDPOINTS': {
+        'PROCESS_IMAGE': '/api/v1/process/image',
+        'PROCESS_VIDEO': '/api/v1/process/video',
+        'JOB_STATUS': '/api/v1/jobs/{job_id}/status',
+        'HEALTH_CHECK': '/health',
+    }
+}
 
 # Media upload settings
 MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB
 ALLOWED_IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.gif']
 ALLOWED_VIDEO_EXTENSIONS = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.webm']
 
-# ============================================================================
-# REMOVED: Duplicate and conflicting FastAPI configuration
-# Please REMOVE or COMMENT OUT these lines if they exist elsewhere:
-# FASTAPI_CONFIG = {...}
-# def get_fastapi_config():...
-# ============================================================================
+# Base64 Processing Settings
+BASE64_CONFIG = {
+    'PROCESSED_IMAGES_DIR': 'processed/images/',
+    'PROCESSED_VIDEOS_DIR': 'processed/videos/',
+    'KEY_FRAMES_DIR': 'processed/key_frames/',
+    'MAX_BASE64_SIZE': 50 * 1024 * 1024,  # 50MB max for base64 decoding
+}
 
 # If using Celery for background processing (recommended)
 CELERY_BROKER_URL = os.environ.get('CELERY_BROKER_URL', 'redis://localhost:6379/0')
 CELERY_RESULT_BACKEND = os.environ.get('CELERY_RESULT_BACKEND', 'redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
 
 # Custom Error Handlers
 handler400 = 'core.error_views.handler400'
@@ -276,6 +304,14 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'django.server',
         },
+        'fastapi_debug': {
+            'level': 'DEBUG',
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': LOG_DIR / 'fastapi.log',
+            'maxBytes': 10485760,
+            'backupCount': 5,
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'django': {
@@ -294,7 +330,7 @@ LOGGING = {
             'propagate': True,
         },
         'cameras': {
-            'handlers': ['console', 'file_errors', 'file_warnings', 'file_info'],
+            'handlers': ['console', 'file_errors', 'file_warnings', 'file_info', 'fastapi_debug'],
             'level': 'INFO',
             'propagate': True,
         },
@@ -305,6 +341,11 @@ LOGGING = {
         },
         'incidents': {
             'handlers': ['console', 'file_errors', 'file_warnings', 'file_info'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+        'surveillance': {
+            'handlers': ['console', 'file_errors', 'file_warnings', 'file_info', 'fastapi_debug'],
             'level': 'INFO',
             'propagate': True,
         },

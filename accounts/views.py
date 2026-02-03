@@ -8,8 +8,15 @@ from django.views.generic import UpdateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 
+from django.utils import timezone
+from .models import Invitation
+from .forms import InvitationForm, RegistrationForm
+from .email_utils import send_invitation_email, send_welcome_email
+
+from django.utils import timezone
+
 from .forms import LoginForm, UserProfileForm, CustomUserCreationForm
-from .models import User
+from .models import User, Invitation
 
 def login_view(request):
     """Custom login view using email."""
@@ -109,9 +116,32 @@ def user_list_view(request):
     if institution_filter:
         users = users.filter(institution__icontains=institution_filter)
     
+    # Get pending invitations (only show those created by the current user)
+    pending_invitations = Invitation.objects.filter(
+        invited_by=request.user,
+        is_accepted=False,
+        expires_at__gt=timezone.now()
+    ).order_by('-created_at')
+    
+    # Get today's date at midnight
+    today = timezone.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    
+    # Statistics
+    stats = {
+        'total_users': User.objects.count(),
+        'active_users': User.objects.filter(is_active=True).count(),
+        'pending_invitations': pending_invitations.count(),
+        'today_logins': User.objects.filter(last_login__gte=today).count(),
+    }
+    
     context = {
         'users': users,
+        'invitations': pending_invitations,
         'roles': User.Role.choices,
+        'total_users': stats['total_users'],
+        'active_users': stats['active_users'],
+        'pending_invitations': stats['pending_invitations'],
+        'today_logins': stats['today_logins'],
     }
     return render(request, 'accounts/user_list.html', context)
 
@@ -159,3 +189,131 @@ def register_view(request):
         'title': _('Register New User'),
     }
     return render(request, 'accounts/register.html', context)
+
+
+
+@login_required
+def invite_user_view(request):
+    """Invite a new user."""
+    if not request.user.can_manage_users():
+        messages.error(request, _('You do not have permission to invite users.'))
+        return redirect('dashboard:index')
+    
+    if request.method == 'POST':
+        form = InvitationForm(request.POST, inviter=request.user)
+        if form.is_valid():
+            try:
+                invitation = form.save()
+                
+                # Send invitation email
+                if send_invitation_email(invitation, request):
+                    messages.success(request, _('Invitation sent successfully!'))
+                    return redirect('accounts:user_list')
+                else:
+                    messages.error(request, _('Failed to send invitation email. Please try again.'))
+                    # Delete the invitation if email failed
+                    invitation.delete()
+                    
+            except Exception as e:
+                messages.error(request, _('An error occurred while sending the invitation.'))
+    else:
+        form = InvitationForm(inviter=request.user)
+    
+    context = {
+        'form': form,
+        'title': _('Invite User'),
+    }
+    return render(request, 'accounts/invite_user.html', context)
+
+def register_invited_user_view(request, token):
+    """Register a user who was invited."""
+    # Get invitation
+    invitation = get_object_or_404(
+        Invitation.objects.select_related('invited_by'),
+        token=token
+    )
+    
+    # Check if invitation is valid
+    if invitation.is_accepted:
+        messages.error(request, _('This invitation has already been accepted.'))
+        return redirect('accounts:login')
+    
+    if invitation.is_expired():
+        messages.error(request, _('This invitation has expired.'))
+        return redirect('accounts:login')
+    
+    # Check if user already exists (shouldn't happen with our validation)
+    if User.objects.filter(email=invitation.email).exists():
+        messages.error(request, _('A user with this email already exists.'))
+        return redirect('accounts:login')
+    
+    if request.method == 'POST':
+        form = RegistrationForm(request.POST, invitation=invitation)
+        if form.is_valid():
+            try:
+                user = form.save()
+                
+                # Send welcome email
+                send_welcome_email(user, request)
+                
+                # Auto-login the user
+                from django.contrib.auth import login
+                login(request, user)
+                
+                messages.success(request, _('Account created successfully! Welcome to CampusGuard AI.'))
+                
+                # Redirect based on user role
+                if user.role == User.Role.VIEWER:
+                    return redirect('dashboard:viewer_dashboard')
+                else:
+                    return redirect('dashboard:index')
+                    
+            except Exception as e:
+                messages.error(request, _('An error occurred while creating your account.'))
+    else:
+        form = RegistrationForm(invitation=invitation)
+    
+    context = {
+        'form': form,
+        'invitation': invitation,
+        'title': _('Complete Registration'),
+    }
+    return render(request, 'accounts/register_invited.html', context)
+
+@login_required
+def resend_invitation_view(request, pk):
+    """Resend invitation to user."""
+    if not request.user.can_manage_users():
+        messages.error(request, _('You do not have permission to resend invitations.'))
+        return redirect('dashboard:index')
+    
+    invitation = get_object_or_404(Invitation, pk=pk, invited_by=request.user)
+    
+    if invitation.is_accepted:
+        messages.error(request, _('This invitation has already been accepted.'))
+    elif invitation.is_expired():
+        messages.error(request, _('This invitation has expired.'))
+    else:
+        if send_invitation_email(invitation, request):
+            messages.success(request, _('Invitation resent successfully!'))
+        else:
+            messages.error(request, _('Failed to resend invitation.'))
+    
+    return redirect('accounts:user_list')
+
+@login_required
+def cancel_invitation_view(request, pk):
+    """Cancel a pending invitation."""
+    if not request.user.can_manage_users():
+        messages.error(request, _('You do not have permission to cancel invitations.'))
+        return redirect('dashboard:index')
+    
+    invitation = get_object_or_404(Invitation, pk=pk, invited_by=request.user)
+    
+    if not invitation.is_accepted:
+        invitation.delete()
+        messages.success(request, _('Invitation cancelled successfully.'))
+    else:
+        messages.error(request, _('Cannot cancel an accepted invitation.'))
+    
+    return redirect('accounts:user_list')

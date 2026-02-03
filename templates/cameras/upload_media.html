@@ -1,19 +1,19 @@
 {% extends 'base_app.html' %}
 
-{% block title %}Upload Media - CampusGuard AI{% endblock %}
+{% block title %}Upload Images - CampusGuard AI{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
             <h1 class="mb-4">
-                <i class="fas fa-cloud-upload-alt me-3"></i>Upload Media for Analysis
+                <i class="fas fa-cloud-upload-alt me-3"></i>Upload Images for Analysis
             </h1>
             <nav aria-label="breadcrumb" class="mb-4">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{% url 'cameras:media_selection' %}">Media Analysis</a></li>
-                    <li class="breadcrumb-item active">Upload Media</li>
+                    <li class="breadcrumb-item"><a href="{% url 'cameras:media_selection' %}">Image Analysis</a></li>
+                    <li class="breadcrumb-item active">Upload Images</li>
                 </ol>
             </nav>
         </div>
@@ -24,21 +24,16 @@
             <div class="card shadow-lg">
                 <div class="card-header bg-oxford text-white">
                     <h3 class="mb-0">
-                        <i class="fas fa-upload me-2"></i>Upload Surveillance Media
+                        <i class="fas fa-upload me-2"></i>Upload Surveillance Images
                     </h3>
                 </div>
                 <div class="card-body p-4">
                     <!-- Media Type Selection -->
                     <div class="row mb-5">
                         <div class="col-12">
-                            <h4 class="mb-4">Select Media Type</h4>
+                            <h4 class="mb-4">Upload Image File</h4>
                             <div class="btn-group w-100" role="group" aria-label="Media type selection">
-                                <input type="radio" class="btn-check" name="mediaType" id="videoType" autocomplete="off" checked>
-                                <label class="btn btn-outline-primary btn-lg py-3" for="videoType">
-                                    <i class="fas fa-video me-2"></i>Video File
-                                </label>
-                                
-                                <input type="radio" class="btn-check" name="mediaType" id="imageType" autocomplete="off">
+                                <input type="radio" class="btn-check" name="mediaType" id="imageType" autocomplete="off" checked>
                                 <label class="btn btn-outline-primary btn-lg py-3" for="imageType">
                                     <i class="fas fa-image me-2"></i>Image File
                                 </label>
@@ -53,11 +48,11 @@
                                 <i class="fas fa-cloud-upload-alt fa-4x text-muted mb-4"></i>
                                 <h4 class="mb-3">Drag & Drop or Click to Upload</h4>
                                 <p class="text-muted mb-4" id="fileTypesInfo">
-                                    Upload video files (MP4, AVI, MOV, MPEG) up to 2GB
+                                    Upload image files (JPG, PNG, BMP, WEBP) up to 100MB
                                 </p>
-                                <input type="file" class="d-none" id="fileInput" accept=".mp4,.avi,.mov,.mpeg,.jpg,.jpeg,.png">
+                                <input type="file" class="d-none" id="fileInput" accept=".jpg,.jpeg,.png,.bmp,.webp">
                                 <button class="btn btn-primary btn-lg" onclick="document.getElementById('fileInput').click()">
-                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                    <i class="fas fa-folder-open me-2"></i>Browse Images
                                 </button>
                                 <div class="mt-3 text-muted" id="selectedFileInfo"></div>
                             </div>
@@ -70,7 +65,7 @@
                             <div class="card bg-light">
                                 <div class="card-body">
                                     <h5 class="mb-3">
-                                        <i class="fas fa-spinner fa-spin me-2"></i>Uploading Media
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Uploading Image
                                     </h5>
                                     <div class="progress mb-2" style="height: 25px;">
                                         <div class="progress-bar progress-bar-striped progress-bar-animated" 
@@ -92,9 +87,9 @@
                             <div class="card bg-info text-white">
                                 <div class="card-body">
                                     <h5 class="mb-3">
-                                        <i class="fas fa-cogs me-2"></i>Analyzing Media
+                                        <i class="fas fa-cogs me-2"></i>Analyzing Image
                                     </h5>
-                                    <p class="mb-3">The system is now analyzing the uploaded media for security threats.</p>
+                                    <p class="mb-3">The system is now analyzing the uploaded image for security threats.</p>
                                     <div class="progress mb-2" style="height: 25px;">
                                         <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" 
                                              role="progressbar" 
@@ -131,10 +126,10 @@
                             <i class="fas fa-info-circle me-2"></i>Upload Guidelines
                         </h5>
                         <ul class="mb-0">
-                            <li>Ensure video files are clear and well-lit for optimal analysis</li>
-                            <li>Recommended resolution: 720p or higher</li>
-                            <li>For images: upload multiple angles if available</li>
-                            <li>Processing time depends on file size (approx. 1 minute per 100MB)</li>
+                            <li>Ensure images are clear and well-lit for optimal analysis</li>
+                            <li>Recommended resolution: 1280x720 or higher</li>
+                            <li>Upload multiple angles if available for comprehensive analysis</li>
+                            <li>Processing time depends on image size (approx. 30 seconds per image)</li>
                             <li>All uploaded files are encrypted and stored securely</li>
                         </ul>
                     </div>
@@ -150,7 +145,7 @@
         <div class="modal-content">
             <div class="modal-header bg-oxford text-white">
                 <h5 class="modal-title" id="previewModalLabel">
-                    <i class="fas fa-eye me-2"></i>Preview Upload
+                    <i class="fas fa-eye me-2"></i>Image Preview
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -167,7 +162,7 @@
                     <i class="fas fa-times me-2"></i>Cancel
                 </button>
                 <button type="button" class="btn btn-outline-primary" onclick="changeFile()">
-                    <i class="fas fa-exchange-alt me-2"></i>Change File
+                    <i class="fas fa-exchange-alt me-2"></i>Change Image
                 </button>
                 <button type="button" class="btn btn-primary" onclick="confirmUpload()">
                     <i class="fas fa-check me-2"></i>Confirm & Upload
@@ -203,8 +198,8 @@
 {% block extra_js %}
 <script>
     let selectedFile = null;
-    const videoExtensions = ['.mp4', '.avi', '.mov', '.mpeg'];
-    const imageExtensions = ['.jpg', '.jpeg', '.png'];
+    let uploadInProgress = false;
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.bmp', '.webp'];
 
     // Get CSRF token from cookies
     function getCookie(name) {
@@ -223,19 +218,11 @@
         return cookieValue;
     }
 
-    // Update media type description
-    document.getElementById('videoType').addEventListener('change', function() {
-        document.getElementById('fileTypesInfo').textContent = 
-            'Upload video files (MP4, AVI, MOV, MPEG) up to 2GB';
-        document.getElementById('fileInput').setAttribute('accept', '.mp4,.avi,.mov,.mpeg');
-        selectedFile = null;
-        resetUploadUI();
-    });
-
+    // Update media type description - only image type
     document.getElementById('imageType').addEventListener('change', function() {
         document.getElementById('fileTypesInfo').textContent = 
-            'Upload image files (JPG, JPEG, PNG) up to 100MB';
-        document.getElementById('fileInput').setAttribute('accept', '.jpg,.jpeg,.png');
+            'Upload image files (JPG, PNG, BMP, WEBP) up to 100MB';
+        document.getElementById('fileInput').setAttribute('accept', '.jpg,.jpeg,.png,.bmp,.webp');
         selectedFile = null;
         resetUploadUI();
     });
@@ -273,10 +260,19 @@
     });
 
     function validateAndPreviewFile(file) {
-        const maxSize = file.type.startsWith('video/') ? 2 * 1024 * 1024 * 1024 : 100 * 1024 * 1024;
+        const maxSize = 100 * 1024 * 1024; // 100MB for images
         
+        // Check file size
         if (file.size > maxSize) {
-            alert(`File size exceeds maximum limit (${maxSize / (1024*1024)}MB)`);
+            alert(`File size exceeds maximum limit (100MB). Your file: ${(file.size / (1024*1024)).toFixed(2)}MB`);
+            resetUploadUI();
+            return;
+        }
+
+        // Check file type
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        if (!imageExtensions.includes(fileExtension)) {
+            alert(`Unsupported file type. Please upload image files only (${imageExtensions.join(', ')})`);
             resetUploadUI();
             return;
         }
@@ -287,7 +283,7 @@
         // Show file info
         const fileSize = (file.size / (1024*1024)).toFixed(2);
         document.getElementById('selectedFileInfo').innerHTML = `
-            <i class="fas fa-file me-2"></i>
+            <i class="fas fa-file-image me-2"></i>
             <strong>${file.name}</strong> (${fileSize} MB)
         `;
 
@@ -302,18 +298,10 @@
         // Clear previous preview
         previewContent.innerHTML = '';
         
-        if (file.type.startsWith('video/')) {
-            previewContent.innerHTML = `
-                <video controls width="100%" height="auto">
-                    <source src="${URL.createObjectURL(file)}" type="${file.type}">
-                    Your browser does not support the video tag.
-                </video>
-            `;
-        } else if (file.type.startsWith('image/')) {
-            previewContent.innerHTML = `
-                <img src="${URL.createObjectURL(file)}" alt="Preview" class="img-fluid rounded" style="max-height: 400px;">
-            `;
-        }
+        // Only image preview (no video handling)
+        previewContent.innerHTML = `
+            <img src="${URL.createObjectURL(file)}" alt="Image Preview" class="img-fluid rounded" style="max-height: 400px;">
+        `;
         
         const fileSize = (file.size / (1024*1024)).toFixed(2);
         fileDetails.textContent = `${file.name} | ${fileSize} MB | ${file.type}`;
@@ -333,8 +321,10 @@
     }
 
     function startUpload() {
-        if (!selectedFile) return;
-
+        if (!selectedFile || uploadInProgress) return;
+        
+        uploadInProgress = true;
+        
         // Show upload progress
         document.getElementById('uploadProgressSection').classList.remove('d-none');
         document.getElementById('uploadBtn').disabled = true;
@@ -344,11 +334,10 @@
         const formData = new FormData();
         formData.append('media_file', selectedFile);
         
-        // Determine media type
-        const isVideo = selectedFile.type.startsWith('video/');
-        formData.append('media_type', isVideo ? 'video' : 'image');
+        // Always set media_type to 'image'
+        formData.append('media_type', 'image');
         formData.append('title', selectedFile.name);
-        formData.append('description', 'Uploaded media for analysis');
+        formData.append('description', 'Uploaded image for analysis');
         
         // Add detection types
         formData.append('detection_types', 'person');
@@ -364,30 +353,41 @@
         xhr.upload.addEventListener('progress', function(e) {
             if (e.lengthComputable) {
                 const percentComplete = (e.loaded / e.total) * 100;
-                document.getElementById('uploadProgressBar').style.width = percentComplete + '%';
-                document.getElementById('uploadProgressBar').textContent = Math.round(percentComplete) + '%';
-                document.getElementById('uploadStatus').textContent = `Uploading... ${Math.round(percentComplete)}%`;
+                updateUploadProgress(percentComplete, `Uploading... ${Math.round(percentComplete)}%`);
             }
         });
         
         // Handle upload completion
         xhr.addEventListener('load', function() {
             if (xhr.status === 200) {
-                const response = JSON.parse(xhr.responseText);
-                document.getElementById('uploadStatus').textContent = 'Upload complete! Starting analysis...';
-                
-                // Switch to processing
-                setTimeout(() => {
-                    document.getElementById('uploadProgressSection').classList.add('d-none');
-                    document.getElementById('processingProgressSection').classList.remove('d-none');
+                try {
+                    const response = JSON.parse(xhr.responseText);
                     
-                    // Redirect to processing status page
-                    if (response.upload_id) {
+                    if (response.success) {
+                        updateUploadProgress(100, 'Upload complete! Starting analysis...');
+                        
+                        // Switch to processing mode
                         setTimeout(() => {
-                            window.location.href = `/cameras/media/${response.upload_id}/status/`;
-                        }, 1500);
+                            document.getElementById('uploadProgressSection').classList.add('d-none');
+                            document.getElementById('processingProgressSection').classList.remove('d-none');
+                            
+                            // Start polling for processing status
+                            if (response.upload_id) {
+                                startStatusPolling(response.upload_id);
+                            } else if (response.redirect_url) {
+                                // Fallback: redirect to status page
+                                setTimeout(() => {
+                                    window.location.href = response.redirect_url;
+                                }, 2000);
+                            }
+                        }, 1000);
+                    } else {
+                        throw new Error(response.error || 'Upload failed');
                     }
-                }, 1000);
+                } catch (error) {
+                    alert('Upload failed: ' + error.message);
+                    resetUploadUI();
+                }
             } else {
                 // Handle error
                 try {
@@ -415,14 +415,133 @@
         xhr.send(formData);
     }
 
+    function updateUploadProgress(percent, message) {
+        const progressBar = document.getElementById('uploadProgressBar');
+        const statusText = document.getElementById('uploadStatus');
+        
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = Math.round(percent) + '%';
+        statusText.textContent = message;
+    }
+
+    function startStatusPolling(uploadId) {
+        let pollCount = 0;
+        const maxPolls = 300; // 5 minutes (poll every second)
+        const pollInterval = 1000; // 1 second
+        
+        function pollStatus() {
+            if (pollCount >= maxPolls) {
+                updateProcessingProgress(100, 'Processing timeout. Please check status page.');
+                setTimeout(() => {
+                    window.location.href = `/cameras/media/${uploadId}/status/`;
+                }, 2000);
+                return;
+            }
+            
+            pollCount++;
+            
+            fetch(`/cameras/api/media/${uploadId}/status/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const status = data.data;
+                        
+                        // Update progress
+                        let progress = status.progress || 0;
+                        let message = `Analyzing... ${progress}%`;
+                        
+                        if (status.status === 'processing') {
+                            message = `Processing image... ${progress}%`;
+                        } else if (status.status === 'completed') {
+                            progress = 100;
+                            message = 'Analysis complete! Redirecting to results...';
+                            updateProcessingProgress(progress, message);
+                            
+                            // Redirect to results page
+                            setTimeout(() => {
+                                window.location.href = `/cameras/media/${uploadId}/analysis/`;
+                            }, 1500);
+                            return; // Stop polling
+                        } else if (status.status === 'failed') {
+                            progress = 0;
+                            message = `Analysis failed: ${status.error_message || 'Unknown error'}`;
+                            updateProcessingProgress(progress, message);
+                            
+                            // Show retry button after delay
+                            setTimeout(() => {
+                                document.getElementById('processingStatus').innerHTML = `
+                                    ${message}<br>
+                                    <button class="btn btn-warning btn-sm mt-2" onclick="window.location.reload()">
+                                        <i class="fas fa-redo me-1"></i>Try Again
+                                    </button>
+                                `;
+                            }, 1000);
+                            return; // Stop polling
+                        }
+                        
+                        updateProcessingProgress(progress, message);
+                        
+                        // Continue polling
+                        setTimeout(pollStatus, pollInterval);
+                    } else {
+                        updateProcessingProgress(0, 'Error checking status. Please refresh page.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Polling error:', error);
+                    updateProcessingProgress(0, 'Connection error. Please check your network.');
+                    // Continue polling despite errors
+                    setTimeout(pollStatus, pollInterval * 2);
+                });
+        }
+        
+        // Start polling
+        pollStatus();
+    }
+
+    function updateProcessingProgress(percent, message) {
+        const progressBar = document.getElementById('processingProgressBar');
+        const statusText = document.getElementById('processingStatus');
+        
+        progressBar.style.width = percent + '%';
+        progressBar.textContent = Math.round(percent) + '%';
+        statusText.textContent = message;
+        
+        // Change color based on progress
+        if (percent >= 100) {
+            progressBar.classList.remove('bg-warning');
+            progressBar.classList.add('bg-success');
+        } else if (percent >= 75) {
+            progressBar.classList.remove('bg-warning');
+            progressBar.classList.add('bg-info');
+        }
+    }
+
     function resetUploadUI() {
         selectedFile = null;
+        uploadInProgress = false;
         document.getElementById('fileInput').value = '';
         document.getElementById('selectedFileInfo').textContent = '';
         document.getElementById('uploadBtn').disabled = true;
         document.getElementById('uploadArea').style.display = 'block';
         document.getElementById('uploadProgressSection').classList.add('d-none');
         document.getElementById('processingProgressSection').classList.add('d-none');
+        
+        // Reset progress bars
+        updateUploadProgress(0, 'Preparing upload...');
+        updateProcessingProgress(0, 'Initializing analysis...');
+        
+        // Reset progress bar colors
+        const processingBar = document.getElementById('processingProgressBar');
+        processingBar.classList.remove('bg-success', 'bg-info');
+        processingBar.classList.add('bg-warning');
     }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        resetUploadUI();
+        // Auto-select image type on load
+        document.getElementById('imageType').checked = true;
+    });
 </script>
 {% endblock %}

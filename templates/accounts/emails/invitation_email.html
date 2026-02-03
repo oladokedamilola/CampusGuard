@@ -1,0 +1,111 @@
+<!-- templates/accounts/emails/invitation_email.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background: linear-gradient(135deg, #0066CC 0%, #004499 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+        }
+        .content {
+            background: #f8f9fc;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+            border: 1px solid #e3e6f0;
+        }
+        .button {
+            display: inline-block;
+            background: #0066CC;
+            color: white;
+            padding: 12px 30px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e3e6f0;
+            color: #6c757d;
+            font-size: 12px;
+        }
+        .role-badge {
+            display: inline-block;
+            background: #e3f2fd;
+            color: #0066CC;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            margin: 5px 0;
+        }
+        .brand-gradient {
+            background: linear-gradient(90deg, #0066CC, #00CCFF);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1><span class="brand-gradient">CampusGuard AI</span></h1>
+        <p>Smart Surveillance System</p>
+    </div>
+    
+    <div class="content">
+        <h2>You're Invited!</h2>
+        
+        <p>Hello,</p>
+        
+        <p>You have been invited by <strong>{{ inviter }}</strong> to join the <strong>CampusGuard AI</strong> Security Surveillance System.</p>
+        
+        <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p><strong>Role:</strong> <span class="role-badge">{{ role }}</span></p>
+            {% if invitation.institution %}
+            <p><strong>Institution:</strong> {{ invitation.institution }}</p>
+            {% endif %}
+            {% if invitation.department %}
+            <p><strong>Department:</strong> {{ invitation.department }}</p>
+            {% endif %}
+        </div>
+        
+        <p>To accept this invitation and create your account, please click the button below:</p>
+        
+        <div style="text-align: center;">
+            <a href="{{ registration_url }}" class="button">
+                Accept Invitation & Create Account
+            </a>
+        </div>
+        
+        <p><strong>Important:</strong> This invitation link will expire on {{ expires_at|date:"F d, Y H:i" }}</p>
+        
+        <p>If you believe you received this invitation by mistake, please ignore this email.</p>
+        
+        <p>Best regards,<br>
+        <strong>CampusGuard AI Team</strong></p>
+        
+        <p style="font-style: italic; margin-top: 20px; color: #666;">
+            "Safety That Never Sleeps, So Learning Never Stops"
+        </p>
+    </div>
+    
+    <div class="footer">
+        <p>This is an automated message from CampusGuard AI. Please do not reply to this email.</p>
+        <p>&copy; {% now "Y" %} CampusGuard AI. All rights reserved.</p>
+    </div>
+</body>
+</html>

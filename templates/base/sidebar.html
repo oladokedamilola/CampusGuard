@@ -117,7 +117,7 @@
                 <li class="nav-item">
                     <a href="{% url 'cameras:media_selection' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'media_selection' %}active{% endif %}">
                         <i class="fas fa-file-video"></i>
-                        <span class="nav-link-text">Video Analysis</span>
+                        <span class="nav-link-text">Media Analysis</span>
                     </a>
                 </li>
                 {% endif %}
@@ -156,16 +156,6 @@
                     </a>
                 </li>
                 {% endif %}
-                
-                <!-- System Reports - for admins and ICT -->
-                {% if user.is_superuser or user.role == 'admin' or user.role == 'ict_staff' %}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-chart-pie"></i>
-                        <span class="nav-link-text">System Reports</span>
-                    </a>
-                </li>
-                {% endif %}
             </ul>
         </div>
         {% endif %}
@@ -174,6 +164,7 @@
         <div class="nav-section">
             <div class="nav-section-title">NOTIFICATIONS</div>
             <ul class="nav flex-column">
+                <!-- Only keep Alerts as requested -->
                 <li class="nav-item">
                     <a href="#" class="nav-link">
                         <i class="fas fa-bell"></i>
@@ -182,15 +173,7 @@
                     </a>
                 </li>
                 
-                <!-- Incident Notifications - for security personnel -->
-                {% if user.is_security_staff %}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-bullhorn"></i>
-                        <span class="nav-link-text">Emergency Alerts</span>
-                    </a>
-                </li>
-                {% endif %}
+                <!-- Emergency Alerts REMOVED as per requirement #3 -->
             </ul>
         </div>
         
@@ -202,9 +185,19 @@
                 <!-- User Management - for admins and institution admins -->
                 {% if user.can_manage_users %}
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{% url 'accounts:user_list' %}" class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'user_list' %}active{% endif %}">
                         <i class="fas fa-users"></i>
                         <span class="nav-link-text">User Management</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- Invite User - for admins and institution admins -->
+                {% if user.can_manage_users %}
+                <li class="nav-item">
+                    <a href="{% url 'accounts:invite_user' %}" class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'invite_user' %}active{% endif %}">
+                        <i class="fas fa-user-plus"></i>
+                        <span class="nav-link-text">Invite User</span>
                     </a>
                 </li>
                 {% endif %}
@@ -212,32 +205,15 @@
                 <!-- Camera Management - for admins and ICT -->
                 {% if user.can_manage_cameras %}
                 <li class="nav-item">
-                    <a href="{% url 'cameras:list' %}" class="nav-link">
+                    <a href="{% url 'cameras:list' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'list' %}active{% endif %}">
                         <i class="fas fa-video"></i>
                         <span class="nav-link-text">Camera Management</span>
                     </a>
                 </li>
                 {% endif %}
                 
-                <!-- Alert Rules - for security managers and admins -->
-                {% if user.role == 'security_manager' or user.role == 'admin' or user.is_superuser %}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-cog"></i>
-                        <span class="nav-link-text">Alert Rules</span>
-                    </a>
-                </li>
-                {% endif %}
-                
-                <!-- System Configuration - for admins and ICT -->
-                {% if user.role == 'admin' or user.role == 'ict_staff' or user.is_superuser %}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-sliders-h"></i>
-                        <span class="nav-link-text">System Config</span>
-                    </a>
-                </li>
-                {% endif %}
+                <!-- Alert Rules REMOVED as per requirement #4 -->
+                <!-- System Configuration REMOVED as per requirement #4 -->
                 
                 <!-- Django Admin Panel - only for superusers -->
                 {% if user.is_superuser %}
@@ -256,19 +232,15 @@
         <div class="nav-section">
             <div class="nav-section-title">ACCOUNT</div>
             <ul class="nav flex-column">
+                <!-- Profile page updated with proper URL -->
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
+                    <a href="{% url 'accounts:profile' %}" class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'profile' %}active{% endif %}">
                         <i class="fas fa-user"></i>
                         <span class="nav-link-text">My Profile</span>
                     </a>
                 </li>
                 
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-bell"></i>
-                        <span class="nav-link-text">Notification Settings</span>
-                    </a>
-                </li>
+                <!-- Notification Settings REMOVED as per requirement #5 -->
                 
                 <!-- Role-specific account links -->
                 {% if user.is_security_staff %}
@@ -280,14 +252,7 @@
                 </li>
                 {% endif %}
                 
-                {% if user.role == 'security_guard' %}
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-clipboard-check"></i>
-                        <span class="nav-link-text">Patrol Reports</span>
-                    </a>
-                </li>
-                {% endif %}
+                <!-- Patrol Reports REMOVED as per requirement #5 -->
                 
                 <!-- Logout -->
                 <li class="nav-item">

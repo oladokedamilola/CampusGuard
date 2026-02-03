@@ -1,7 +1,7 @@
 # smart_surveillance/cameras/forms.py
 from django import forms
 from django.utils.translation import gettext_lazy as _
-from .models import Camera, CameraGroup, VideoFile
+from .models import Camera, CameraGroup, VideoFile, MediaUpload
 from core.models import Location as CoreLocation
 import os
 
@@ -228,4 +228,182 @@ class VideoProcessingForm(forms.Form):
         initial=False,
         required=False,
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'})
+    )
+
+
+class MediaUploadForm(forms.ModelForm):
+    """
+    Form for uploading media (images/videos) for FastAPI processing.
+    """
+    
+    # Detection type choices for FastAPI
+    DETECTION_CHOICES = [
+        ('person', 'Person Detection'),
+        ('vehicle', 'Vehicle Detection'),
+        ('face', 'Face Recognition'),
+        ('weapon', 'Weapon Detection'),
+        ('all', 'All Detections'),
+    ]
+    
+    detection_types = forms.MultipleChoiceField(
+        choices=DETECTION_CHOICES,
+        initial=['person', 'vehicle'],
+        required=False,
+        widget=forms.SelectMultiple(attrs={
+            'class': 'form-select',
+            'data-placeholder': 'Select detection types...'
+        }),
+        help_text=_('Select what types of objects to detect (Ctrl+Click for multiple)')
+    )
+    
+    class Meta:
+        model = MediaUpload
+        fields = ['title', 'description', 'original_file']
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter media title (e.g., "Entrance Camera - Monday Morning")'
+            }),
+            'description': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 3,
+                'placeholder': 'Describe what to analyze in this media...'
+            }),
+            'original_file': forms.ClearableFileInput(attrs={
+                'class': 'form-control',
+                'accept': 'image/*,video/*,.jpg,.jpeg,.png,.bmp,.gif,.mp4,.avi,.mov,.mkv'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+        # Style all fields with Bootstrap classes
+        for field_name, field in self.fields.items():
+            if isinstance(field.widget, (forms.Select, forms.SelectMultiple)):
+                field.widget.attrs.update({'class': 'form-select'})
+            elif isinstance(field.widget, forms.CheckboxInput):
+                field.widget.attrs.update({'class': 'form-check-input'})
+            elif isinstance(field.widget, forms.Textarea):
+                field.widget.attrs.update({'class': 'form-control'})
+            elif isinstance(field.widget, forms.ClearableFileInput):
+                field.widget.attrs.update({'class': 'form-control'})
+            else:
+                field.widget.attrs.update({'class': 'form-control'})
+    
+    def clean_original_file(self):
+        """Validate media file upload."""
+        original_file = self.cleaned_data.get('original_file')
+        
+        if not original_file:
+            raise forms.ValidationError(_('Please select a file to upload.'))
+        
+        # Check file size (max 500MB)
+        max_size = 500 * 1024 * 1024  # 500MB
+        if original_file.size > max_size:
+            raise forms.ValidationError(
+                _('File size must be less than 500MB.')
+            )
+        
+        # Check file extension
+        filename = original_file.name.lower()
+        
+        # Allowed image extensions
+        image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp']
+        # Allowed video extensions
+        video_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.webm']
+        
+        allowed_extensions = image_extensions + video_extensions
+        
+        # Get file extension
+        ext = os.path.splitext(filename)[1].lower()
+        
+        if ext not in allowed_extensions:
+            raise forms.ValidationError(
+                _('Unsupported file format. Supported formats: JPG, PNG, BMP, GIF, WebP, MP4, AVI, MOV, MKV, FLV, WebM')
+            )
+        
+        # Check MIME type
+        content_type = original_file.content_type
+        
+        allowed_mime_types = [
+            'image/jpeg', 'image/png', 'image/bmp', 'image/gif', 'image/webp',
+            'video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-matroska',
+            'video/x-flv', 'video/webm'
+        ]
+        
+        if content_type and content_type not in allowed_mime_types:
+            # If content type detection fails, rely on extension
+            if not any(filename.endswith(ext) for ext in allowed_extensions):
+                raise forms.ValidationError(
+                    _('Invalid file type. Please upload an image or video file.')
+                )
+        
+        return original_file
+    
+    def save(self, commit=True):
+        """
+        Save the media upload instance and set media type based on file.
+        """
+        instance = super().save(commit=False)
+        
+        # Set media type based on file extension
+        filename = self.cleaned_data['original_file'].name.lower()
+        
+        # Image extensions
+        image_extensions = ['.jpg', '.jpeg', '.png', '.bmp', '.gif', '.webp']
+        # Video extensions
+        video_extensions = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.webm']
+        
+        if any(filename.endswith(ext) for ext in image_extensions):
+            instance.media_type = MediaUpload.MediaType.IMAGE
+        elif any(filename.endswith(ext) for ext in video_extensions):
+            instance.media_type = MediaUpload.MediaType.VIDEO
+        
+        if commit:
+            instance.save()
+        
+        return instance
+
+
+class MediaUploadFilterForm(forms.Form):
+    """
+    Form for filtering media uploads.
+    """
+    media_type = forms.ChoiceField(
+        choices=[('', 'All Types')] + list(MediaUpload.MediaType.choices),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    processing_status = forms.ChoiceField(
+        choices=[('', 'All Statuses')] + list(MediaUpload.ProcessingStatus.choices),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    
+    date_from = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'placeholder': 'From date'
+        })
+    )
+    
+    date_to = forms.DateField(
+        required=False,
+        widget=forms.DateInput(attrs={
+            'class': 'form-control',
+            'type': 'date',
+            'placeholder': 'To date'
+        })
+    )
+    
+    search = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Search by title or description...'
+        })
     )

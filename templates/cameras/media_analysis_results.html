@@ -1,247 +1,793 @@
+<!-- templates/cameras/media_analysis_results.html -->
 {% extends 'base_app.html' %}
+{% load cameras_extras %}
+{% load static %}
 
-{% block title %}Analysis Results - CampusGuard AI{% endblock %}
+{% block title %}AI Analysis Results - CampusGuard AI{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="container-fluid px-0 px-md-3">
+    <!-- API URLs for JavaScript (hidden) -->
+    <div id="api-urls" 
+         data-media-status-url="{% url 'cameras:api_media_status' media_upload.id %}"
+         data-process-image-url="{% url 'cameras:api_get_processed_image' media_upload.id %}"
+         style="display: none;">
+    </div>
+
+    <!-- Processing Status Alert -->
+    {% if media_upload.processing_status != 'completed' %}
+    <div class="alert alert-warning alert-dismissible fade show mb-4" role="alert" id="processingAlert">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="fas fa-sync-alt fa-spin fa-2x"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-1">Processing in Progress</h5>
+                <p class="mb-0">Your media is being analyzed by the AI system. This may take a few moments.</p>
+                <div class="mt-2">
+                    <div class="progress" style="height: 10px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" 
+                             style="width: {{ media_upload.get_progress_percentage }}%"
+                             aria-valuenow="{{ media_upload.get_progress_percentage }}" 
+                             aria-valuemin="0" 
+                             aria-valuemax="100">
+                        </div>
+                    </div>
+                    <small class="text-muted d-block mt-1">
+                        Status: <strong>{{ media_upload.get_processing_status_display }}</strong>
+                        {% if media_upload.job_id %}
+                        | Job ID: <code>{{ media_upload.job_id }}</code>
+                        {% endif %}
+                    </small>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
+    <!-- Error Alert -->
+    {% if media_upload.processing_status == 'failed' %}
+    <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+        <div class="d-flex align-items-center">
+            <div class="me-3">
+                <i class="fas fa-exclamation-triangle fa-2x"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="alert-heading mb-1">Processing Failed</h5>
+                <p class="mb-0">{{ media_upload.error_message|default:"An error occurred during processing." }}</p>
+                {% if media_upload.processing_attempts < 3 %}
+                <div class="mt-2">
+                    <a href="{% url 'cameras:media_upload_retry' media_id=media_upload.id %}" 
+                       class="btn btn-sm btn-warning">
+                        <i class="fas fa-redo me-1"></i>Retry Processing
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    {% endif %}
+
     <!-- Breadcrumb -->
-    <nav aria-label="breadcrumb" class="mb-4">
+    <nav aria-label="breadcrumb" class="mb-4 d-none d-md-flex">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'dashboard:index' %}">Dashboard</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'cameras:media_gallery' %}">Media Gallery</a></li>
-            <li class="breadcrumb-item active">Analysis Results</li>
+            <li class="breadcrumb-item"><a href="{% url 'cameras:media_upload_list' %}">Media Gallery</a></li>
+            <li class="breadcrumb-item active">AI Analysis Results</li>
         </ol>
     </nav>
 
     <!-- Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <h1 class="mb-3">
-                <i class="fas fa-chart-bar me-3"></i>Analysis Results
-            </h1>
-            <div class="card shadow-sm">
-                <div class="card-body">
-                    <h2 class="h4">{{ media_upload.title }}</h2>
-                    <p class="text-muted mb-0">{{ media_upload.description|default:"No description provided" }}</p>
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h1 class="h3 mb-1">
+                        <i class="fas fa-chart-bar text-primary me-2"></i>CampusGuard AI Analysis
+                    </h1>
+                    <p class="text-muted mb-0">
+                        Intelligent security analysis for: <strong>{{ media_upload.title }}</strong>
+                    </p>
+                </div>
+                <div>
+                    <span class="badge bg-{{ media_upload.is_image|yesno:'info,warning' }} fs-6">
+                        <i class="fas fa-{{ media_upload.is_image|yesno:'image,video' }} me-1"></i>
+                        {{ media_upload.get_media_type_display|upper }}
+                    </span>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Media Preview -->
+    <!-- Media Preview Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow">
+            <div class="card shadow-sm border-0">
                 <div class="card-header bg-oxford text-white">
-                    <h3 class="h5 mb-0">
-                        <i class="fas fa-eye me-2"></i>Media Preview
-                    </h3>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="h5 mb-0">
+                            <i class="fas fa-eye me-2"></i>AI Analysis Preview
+                        </h3>
+                        {% if media_upload.has_processed_file or media_upload.has_base64_data %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle me-1"></i>AI Processed
+                        </span>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body">
+                    <!-- Image Media -->
                     {% if media_upload.is_image %}
-                        <img src="{{ media_upload.original_file.url }}" 
-                             alt="Analyzed Image" 
-                             class="img-fluid rounded" 
-                             style="max-height: 500px;">
+                        <!-- Toggle Buttons -->
+                        {% if media_upload.has_processed_file or media_upload.has_base64_data %}
+                        <div class="mb-3">
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Image view toggle">
+                                <button type="button" id="showProcessedBtn" class="btn btn-primary active">
+                                    <i class="fas fa-draw-polygon me-1"></i>AI Analysis View
+                                </button>
+                                <button type="button" id="showOriginalBtn" class="btn btn-outline-primary">
+                                    <i class="fas fa-image me-1"></i>Original View
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Images Container -->
+                        <div class="text-center position-relative">
+                            <!-- Loading Spinner -->
+                            <div id="imageLoading" class="d-none">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Processed Image (from base64 or file) -->
+                            <div id="processedImageContainer" class="{% if not media_upload.has_processed_file and not media_upload.has_base64_data %}d-none{% endif %}">
+                                {% if media_upload.has_processed_file %}
+                                    <img id="processedImage" 
+                                         src="{{ media_upload.processed_file.url }}" 
+                                         alt="Processed Image with AI Detections" 
+                                         class="img-fluid rounded border shadow" 
+                                         style="max-height: 60vh; width: auto;">
+                                {% elif media_upload.has_base64_data %}
+                                    <img id="processedImageBase64" 
+                                         alt="Processed Image with AI Detections" 
+                                         class="img-fluid rounded border shadow" 
+                                         style="max-height: 60vh; width: auto; display: none;">
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Original Image -->
+                            <div id="originalImageContainer" class="{% if media_upload.has_processed_file or media_upload.has_base64_data %}d-none{% endif %}">
+                                <img id="originalImage" 
+                                     src="{{ media_upload.original_file.url }}" 
+                                     alt="Original Image" 
+                                     class="img-fluid rounded border shadow" 
+                                     style="max-height: 60vh; width: auto;">
+                            </div>
+                        </div>
+                        
+                        <!-- Detection Legend -->
+                        <div class="mt-3 text-center">
+                            <h6 class="mb-2">
+                                <i class="fas fa-palette me-1"></i>AI Detection Colors
+                            </h6>
+                            <div class="d-flex flex-wrap justify-content-center gap-2" id="detectionLegend">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    
+                    <!-- Video Media -->
                     {% elif media_upload.is_video %}
-                        <video controls class="w-100 rounded" style="max-height: 500px;">
-                            <source src="{{ media_upload.original_file.url }}" type="{{ media_upload.mime_type }}">
-                            Your browser does not support the video tag.
-                        </video>
+                        <div class="row">
+                            <div class="col-lg-8 mb-3 mb-lg-0">
+                                <div class="card h-100 border-0">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">
+                                            <i class="fas fa-video me-2"></i>Original Video
+                                        </h5>
+                                        <video controls class="w-100 rounded shadow" style="max-height: 50vh;">
+                                            <source src="{{ media_upload.original_file.url }}" type="{{ media_upload.mime_type }}">
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- AI Analysis Results -->
+                            <div class="col-lg-4">
+                                <div class="card h-100 border-0">
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3">
+                                            <i class="fas fa-robot me-2"></i>AI Key Moments
+                                        </h5>
+                                        
+                                        {% if media_upload.key_frames_base64 %}
+                                            <div id="keyFramesCarousel" class="carousel slide" data-bs-ride="carousel">
+                                                <div class="carousel-inner rounded" id="keyFramesContainer">
+                                                    <!-- Will be populated by JavaScript -->
+                                                </div>
+                                                <button class="carousel-control-prev" type="button" data-bs-target="#keyFramesCarousel" data-bs-slide="prev">
+                                                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Previous</span>
+                                                </button>
+                                                <button class="carousel-control-next" type="button" data-bs-target="#keyFramesCarousel" data-bs-slide="next">
+                                                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                                    <span class="visually-hidden">Next</span>
+                                                </button>
+                                            </div>
+                                            
+                                            <div class="mt-3 text-center">
+                                                <small class="text-muted">
+                                                    AI detected {{ media_upload.key_frames_base64|length }} key moments
+                                                </small>
+                                            </div>
+                                        {% else %}
+                                            <div class="text-center py-4">
+                                                <i class="fas fa-film fa-3x text-muted mb-3"></i>
+                                                <p class="text-muted mb-0">AI analysis in progress...</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     {% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Quick Stats -->
+    <!-- AI Security Intelligence Dashboard -->
+    {% if media_upload.processing_status == 'completed' and has_analysis %}
     <div class="row mb-4">
-        <div class="col-md-3 mb-3">
-            <div class="card bg-success text-white h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-6">{{ analysis_results.total_detections }}</h3>
-                    <p class="mb-0">Total Detections</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-primary text-white h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-6">{{ analysis_results.person_count }}</h3>
-                    <p class="mb-0">Persons Detected</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-warning text-dark h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-6">{{ analysis_results.vehicle_count }}</h3>
-                    <p class="mb-0">Vehicles Detected</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card bg-danger text-white h-100">
-                <div class="card-body text-center">
-                    <h3 class="display-6">{{ analysis_results.suspicious_activity_count }}</h3>
-                    <p class="mb-0">Suspicious Activities</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Charts and Analysis -->
-    <div class="row mb-4">
-        <!-- Detection Timeline -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header bg-oxford text-white">
-                    <h3 class="h5 mb-0">
-                        <i class="fas fa-timeline me-2"></i>Detection Timeline
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div id="timelineChart" style="height: 300px;"></div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Detection Heatmap -->
-        <div class="col-lg-6 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header bg-oxford text-white">
-                    <h3 class="h5 mb-0">
-                        <i class="fas fa-fire me-2"></i>Detection Heatmap
-                    </h3>
-                </div>
-                <div class="card-body">
-                    <div id="heatmapContainer" style="height: 300px;">
-                        <canvas id="heatmapCanvas"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Detailed Detections -->
-    <div class="row">
         <div class="col-12">
-            <div class="card shadow">
-                <div class="card-header bg-oxford text-white">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-dark text-white">
                     <h3 class="h5 mb-0">
-                        <i class="fas fa-list me-2"></i>Detailed Detections
+                        <i class="fas fa-brain me-2"></i>CampusGuard AI Security Intelligence
                     </h3>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table table-hover" id="detectionsTable">
-                            <thead>
-                                <tr>
-                                    <th>Time</th>
-                                    <th>Type</th>
-                                    <th>Confidence</th>
-                                    <th>Position</th>
-                                    <th>Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for detection in analysis_results.detections_json|slice:":20" %}
-                                <tr>
-                                    <td>{{ detection.timestamp|default:"0" }}s</td>
-                                    <td>
-                                        <span class="badge bg-{{ detection.class|yesno:'primary,warning' }}">
-                                            {{ detection.class|default:"unknown" }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="progress" style="height: 10px;">
-                                            <div class="progress-bar {% if detection.confidence > 0.8 %}bg-success{% elif detection.confidence > 0.5 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                                 role="progressbar" 
-                                                 style="width: {{ detection.confidence|default:0|floatformat:2 }}%">
+                    <!-- Quick Stats -->
+                    <div class="row mb-4">
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-primary text-white border-0 h-100">
+                                <div class="card-body text-center p-3">
+                                    <div class="mb-2">
+                                        <i class="fas fa-bullseye fa-2x"></i>
+                                    </div>
+                                    <h3 class="display-6 mb-1">{{ analysis.total_detections|default:0 }}</h3>
+                                    <p class="mb-0 small">Total Detections</p>
+                                    {% if processing_time %}
+                                    <small class="opacity-75">{{ processing_time|floatformat:2 }}s analysis</small>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-success text-white border-0 h-100">
+                                <div class="card-body text-center p-3">
+                                    <div class="mb-2">
+                                        <i class="fas fa-user-friends fa-2x"></i>
+                                    </div>
+                                    <h3 class="display-6 mb-1">{{ analysis.person_count|default:0 }}</h3>
+                                    <p class="mb-0 small">Persons Detected</p>
+                                    <small class="opacity-75">{{ person_confidence|default:"85"|floatformat:0 }}% avg confidence</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-warning text-dark border-0 h-100">
+                                <div class="card-body text-center p-3">
+                                    <div class="mb-2">
+                                        <i class="fas fa-car fa-2x"></i>
+                                    </div>
+                                    <h3 class="display-6 mb-1">{{ analysis.vehicle_count|default:0 }}</h3>
+                                    <p class="mb-0 small">Vehicles Detected</p>
+                                    <small class="opacity-75">Campus parking context</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3 mb-3">
+                            <div class="card bg-danger text-white border-0 h-100">
+                                <div class="card-body text-center p-3">
+                                    <div class="mb-2">
+                                        <i class="fas fa-exclamation-triangle fa-2x"></i>
+                                    </div>
+                                    <h3 class="display-6 mb-1">{{ analysis.suspicious_activity_count|default:0 }}</h3>
+                                    <p class="mb-0 small">Security Alerts</p>
+                                    <small class="opacity-75">Requires attention</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AI Analysis Charts -->
+                    <div class="row">
+                        <!-- Detection Distribution -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 border">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-chart-pie me-2"></i>Detection Distribution
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="distributionChart" style="height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Confidence Analysis -->
+                        <div class="col-lg-6 mb-4">
+                            <div class="card h-100 border">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-chart-bar me-2"></i>Confidence Analysis
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <canvas id="confidenceChart" style="height: 250px;"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campus Security Context -->
+                    <div class="row mt-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 border">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-university me-2"></i>Campus Context Analysis
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <h6 class="border-bottom pb-2">Zone Assessment</h6>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <div class="border rounded p-2 text-center">
+                                                    <small class="text-muted d-block">Academic Zone</small>
+                                                    <span class="h5 text-primary">{{ academic_persons|default:"0" }}</span>
+                                                    <small class="d-block text-muted">persons</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="border rounded p-2 text-center">
+                                                    <small class="text-muted d-block">Residential Zone</small>
+                                                    <span class="h5 text-warning">{{ residential_persons|default:"0" }}</span>
+                                                    <small class="d-block text-muted">persons</small>
+                                                </div>
                                             </div>
                                         </div>
-                                        <small>{{ detection.confidence|default:0|floatformat:2 }}%</small>
-                                    </td>
-                                    <td>
-                                        <small>
-                                            ({{ detection.bbox.x1|default:0 }}, {{ detection.bbox.y1|default:0 }})<br>
-                                            ({{ detection.bbox.x2|default:0 }}, {{ detection.bbox.y2|default:0 }})
-                                        </small>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-outline-primary" 
-                                                onclick="viewDetectionDetails({{ forloop.counter0 }})">
-                                            <i class="fas fa-info-circle"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% empty %}
-                                <tr>
-                                    <td colspan="5" class="text-center text-muted py-4">
-                                        No detections found in this media.
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="card h-100 border">
+                                <div class="card-header bg-light">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-lightbulb me-2"></i>AI Recommendations
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    {% if recommendations %}
+                                    <div class="list-group list-group-flush">
+                                        {% for rec in recommendations %}
+                                        <div class="list-group-item border-0 px-0">
+                                            <div class="d-flex">
+                                                <div class="me-3">
+                                                    <i class="fas fa-{{ rec.icon|default:'check-circle' }} text-{{ rec.color|default:'success' }}"></i>
+                                                </div>
+                                                <div>
+                                                    <strong>{{ rec.title|default:'Recommendation' }}</strong>
+                                                    <p class="mb-0 small">{{ rec.description|default:'' }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                    {% else %}
+                                    <div class="text-center py-3">
+                                        <i class="fas fa-check-circle fa-2x text-success mb-3"></i>
+                                        <p class="text-muted mb-0">No specific recommendations at this time</p>
+                                        <small class="text-muted">Activity appears normal for campus environment</small>
+                                    </div>
+                                    {% endif %}
+                                    
+                                    <div class="mt-3">
+                                        <h6 class="border-bottom pb-2">Analysis Metadata</h6>
+                                        <div class="small">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-muted">Processing Time:</span>
+                                                <span class="fw-bold">{{ processing_time|default:"N/A"|floatformat:2 }}s</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-muted">AI Model:</span>
+                                                <span class="fw-bold">{{ media_upload.response_data.models_used|default:"YOLO"|first }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span class="text-muted">Analysis Date:</span>
+                                                <span class="fw-bold">{{ media_upload.uploaded_at|date:"M d, Y" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    {% if analysis_results.detections_json|length > 20 %}
-                    <div class="text-center mt-3">
-                        <button class="btn btn-outline-primary" id="loadMoreBtn">
-                            Load More Detections ({{ analysis_results.detections_json|length|add:"-20" }} remaining)
-                        </button>
-                    </div>
-                    {% endif %}
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Enhanced Detections Table - SIMPLIFIED VERSION -->
+{% if analysis.detections_json and analysis.detections_json|length > 0 %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-dark text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="h5 mb-0">
+                        <i class="fas fa-search me-2"></i>Detailed Security Analysis
+                        <span class="badge bg-light text-dark ms-2">{{ analysis.detections_json|length }} detections</span>
+                    </h3>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-filter me-1"></i>Filter
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="filterDetections('all')">All Detections</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterDetections('person')">Persons Only</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterDetections('vehicle')">Vehicles Only</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="filterDetections('suspicious')">Alerts Only</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="enhancedDetectionsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Detection Type</th>
+                                <th>AI Confidence</th>
+                                <th>Campus Context</th>
+                                <th>Risk Assessment</th>
+                                <th>AI Insights</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for detection in enhanced_detections %}
+                            <tr class="detection-row" 
+                                data-type="{{ detection.label|default:detection.type|default:'unknown' }}"
+                                data-risk="{{ detection.risk_level|default:'Medium Risk' }}">
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-{{ detection.icon|default:'cube' }} fa-lg text-{{ detection.color|default:'secondary' }}"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ detection.label|default:detection.type|default:'object'|title }}</strong>
+                                            {% if detection.subtype %}
+                                            <br><small class="text-muted">{{ detection.subtype }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                            <div class="progress-bar 
+                                                {% if detection.confidence > 0.8 %}bg-success
+                                                {% elif detection.confidence > 0.6 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                 style="width: {% widthratio detection.confidence|default:0 1 100 %}%">
+                                            </div>
+                                        </div>
+                                        <small class="text-nowrap">{{ detection.confidence|default:0|floatformat:3 }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <div class="mb-2">
+                                            <span class="badge bg-{{ detection.zone_color|default:'primary' }}">
+                                                <i class="fas fa-{{ detection.zone_icon|default:'map-marker' }} me-1"></i>
+                                                {{ detection.zone|default:'Academic' }} Zone
+                                            </span>
+                                        </div>
+                                        <div class="text-muted">
+                                            {{ detection.zone_assessment|default:'Campus activity detected' }}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ detection.risk_color|default:'warning' }} p-2">
+                                        <i class="fas fa-{{ detection.risk_icon|default:'exclamation-circle' }} me-1"></i>
+                                        {{ detection.risk_level|default:'Medium Risk' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="showDetectionInsights({{ detection.index|default:forloop.counter0 }})"
+                                            data-bs-toggle="tooltip" 
+                                            title="View AI Insights">
+                                        <i class="fas fa-robot"></i>
+                                    </button>
+                                    {% if detection.needs_review %}
+                                    <span class="badge bg-warning ms-1" data-bs-toggle="tooltip" title="Needs manual review">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <!-- Fallback to original detections if enhanced_detections is empty -->
+                            {% for detection in analysis.detections_json|slice:":15" %}
+                            <tr class="detection-row" 
+                                data-type="{{ detection.label|default:detection.type|default:'unknown' }}">
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            <i class="fas fa-{{ detection.label|default:detection.type|default:'object'|get_detection_icon }} fa-lg text-{{ detection.label|default:detection.type|default:'object'|get_detection_color }}"></i>
+                                        </div>
+                                        <div>
+                                            <strong>{{ detection.label|default:detection.type|default:'object'|title }}</strong>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="progress flex-grow-1 me-2" style="height: 8px;">
+                                            <div class="progress-bar 
+                                                {% if detection.confidence > 0.8 %}bg-success
+                                                {% elif detection.confidence > 0.6 %}bg-warning
+                                                {% else %}bg-danger{% endif %}" 
+                                                 style="width: {% widthratio detection.confidence|default:0 1 100 %}%">
+                                            </div>
+                                        </div>
+                                        <small class="text-nowrap">{{ detection.confidence|default:0|floatformat:3 }}</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="small">
+                                        <div class="mb-2">
+                                            {% if detection.label == 'person' or detection.type == 'person' %}
+                                            <span class="badge bg-primary">
+                                                <i class="fas fa-user-graduate me-1"></i>
+                                                Campus Member
+                                            </span>
+                                            {% elif detection.label in 'car,truck,bus' or detection.type in 'car,truck,bus' %}
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-parking me-1"></i>
+                                                Campus Vehicle
+                                            </span>
+                                            {% else %}
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-map-marker me-1"></i>
+                                                Detected Object
+                                            </span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-muted">
+                                            {% if detection.confidence|default:0 > 0.8 %}
+                                            High confidence detection
+                                            {% elif detection.confidence|default:0 > 0.6 %}
+                                            Moderate confidence
+                                            {% else %}
+                                            Review recommended
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    {% with risk_level=detection.confidence|default:0|get_risk_level %}
+                                    <span class="badge bg-{{ risk_level.color }} p-2">
+                                        <i class="fas fa-{{ risk_level.icon }} me-1"></i>
+                                        {{ risk_level.label }}
+                                    </span>
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="showDetectionInsights({{ forloop.counter0 }})"
+                                            data-bs-toggle="tooltip" 
+                                            title="View AI Insights">
+                                        <i class="fas fa-robot"></i>
+                                    </button>
+                                    {% if detection.confidence|default:0 < 0.6 %}
+                                    <span class="badge bg-warning ms-1" data-bs-toggle="tooltip" title="Low confidence - review recommended">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-search fa-2x mb-3"></i><br>
+                                    No AI detections found in this media.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Detection Summary Footer -->
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <div class="d-flex flex-wrap gap-2">
+                            <span class="badge bg-primary">
+                                <i class="fas fa-user me-1"></i>
+                                Persons: {{ analysis.person_count|default:0 }}
+                            </span>
+                            <span class="badge bg-warning">
+                                <i class="fas fa-car me-1"></i>
+                                Vehicles: {{ analysis.vehicle_count|default:0 }}
+                            </span>
+                            <span class="badge bg-success">
+                                <i class="fas fa-percentage me-1"></i>
+                                Avg Confidence: {{ average_confidence|default:"0"|floatformat:1 }}%
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted">
+                            AI Analysis generated: {% now "Y-m-d H:i" %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+    {% endif %} <!-- End of if processing completed -->
 
     <!-- Action Buttons -->
     <div class="row mt-4">
         <div class="col-12">
-            <div class="card">
+            <div class="card border-0">
                 <div class="card-body text-center">
-                    <a href="{% url 'cameras:media_gallery' %}" class="btn btn-secondary me-3">
-                        <i class="fas fa-arrow-left me-2"></i>Back to Gallery
-                    </a>
-                    <a href="#" class="btn btn-primary me-3" onclick="exportResults()">
-                        <i class="fas fa-download me-2"></i>Export Results
-                    </a>
-                    <a href="#" class="btn btn-success" onclick="generateReport()">
-                        <i class="fas fa-file-pdf me-2"></i>Generate Report
-                    </a>
+                    <div class="d-flex flex-wrap justify-content-center gap-2">
+                        <a href="{% url 'cameras:media_upload_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Gallery
+                        </a>
+                        
+                        {% if media_upload.processing_status == 'completed' %}
+                        <button type="button" class="btn btn-primary" onclick="exportResults()">
+                            <i class="fas fa-download me-2"></i>Export Analysis
+                        </button>
+                        
+                        <button type="button" class="btn btn-success" onclick="generateSecurityReport()">
+                            <i class="fas fa-file-pdf me-2"></i>Security Report
+                        </button>
+                        
+                        {% if media_upload.has_processed_file %}
+                        <a href="{{ media_upload.processed_file.url }}" 
+                           target="_blank" 
+                           class="btn btn-info" 
+                           download="campusguard_analysis_{{ media_upload.title|slugify }}.jpg">
+                            <i class="fas fa-image me-2"></i>Download AI Analysis
+                        </a>
+                        {% endif %}
+                        {% endif %}
+                        
+                        <button type="button" class="btn btn-outline-danger" 
+                                onclick="confirmDelete('{% url 'cameras:media_upload_delete' media_id=media_upload.id %}')">
+                            <i class="fas fa-trash me-2"></i>Delete
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Detection Details Modal -->
-<div class="modal fade" id="detectionDetailsModal" tabindex="-1" aria-hidden="true">
+<!-- AI Insights Modal -->
+<div class="modal fade" id="aiInsightsModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
-            <div class="modal-header bg-oxford text-white">
-                <h5 class="modal-title">Detection Details</h5>
+            <div class="modal-header bg-dark text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-robot me-2"></i>CampusGuard AI Insights
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" id="detectionDetailsContent">
-                <!-- Details will be loaded here -->
+            <div class="modal-body" id="aiInsightsContent">
+                <!-- AI insights will be loaded here -->
             </div>
         </div>
     </div>
+</div>
+
+<!-- Data Storage (hidden) -->
+{% if media_upload.processed_file_base64 %}
+<div id="base64Data" style="display: none;">
+    {{ media_upload.processed_file_base64 }}
+</div>
+{% endif %}
+
+{% if media_upload.key_frames_base64 %}
+<div id="keyFramesData" style="display: none;">
+    {{ media_upload.key_frames_base64|safe }}
+</div>
+{% endif %}
+
+{% if analysis.detections_json %}
+<div id="detectionsData" style="display: none;">
+    {{ analysis.detections_json|safe }}
+</div>
+{% endif %}
+
+<!-- Additional context data -->
+<div id="analysisContext" 
+     data-total-detections="{{ analysis.total_detections|default:0 }}"
+     data-person-count="{{ analysis.person_count|default:0 }}"
+     data-vehicle-count="{{ analysis.vehicle_count|default:0 }}"
+     data-suspicious-count="{{ analysis.suspicious_activity_count|default:0 }}"
+     style="display: none;">
 </div>
 {% endblock %}
 
 {% block extra_css %}
 <style>
-    .progress {
-        background-color: #e9ecef;
+    .card {
+        border-radius: 10px;
+        overflow: hidden;
     }
     
-    .progress-bar {
-        transition: width 0.3s ease;
+    .card-header {
+        border-bottom: none;
+    }
+    
+    .display-6 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .detection-row:hover {
+        background-color: rgba(0, 33, 71, 0.05);
+        cursor: pointer;
+    }
+    
+    .border-0 {
+        border: none !important;
+    }
+    
+    @media (max-width: 768px) {
+        .display-6 {
+            font-size: 1.5rem;
+        }
+        
+        .btn-group {
+            width: 100%;
+        }
+        
+        .btn-group .btn {
+            flex: 1;
+        }
+    }
+    
+    /* Custom colors for CampusGuard AI */
+    .bg-oxford {
+        background: linear-gradient(135deg, #0066CC 0%, #003366 100%) !important;
+    }
+    
+    .bg-dark {
+        background: linear-gradient(135deg, #1A1A1A 0%, #333333 100%) !important;
     }
 </style>
 {% endblock %}
@@ -249,181 +795,933 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Timeline Chart
-    const timelineData = JSON.parse('{{ analysis_results.timeline_data|escapejs }}');
-    const timelineCtx = document.getElementById('timelineChart').getContext('2d');
+    // Global variables
+    let processingInterval;
+    let detections = [];
+    let base64ImageData = null;
+    let keyFramesData = [];
     
-    const timelineChart = new Chart(timelineCtx, {
-        type: 'line',
-        data: {
-            datasets: [{
-                label: 'Detections Over Time',
-                data: timelineData.map(d => ({x: d.time, y: 1})),
-                borderColor: 'rgba(0, 33, 71, 1)',
-                backgroundColor: 'rgba(0, 33, 71, 0.1)',
-                tension: 0.4
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time (seconds)'
-                    }
-                },
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Detections'
-                    }
-                }
-            }
+    // Initialize on DOM ready
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('CampusGuard AI Analysis Initializing...');
+        
+        // Load data from hidden elements
+        loadData();
+        
+        // Set up image toggle for images
+        setupImageToggle();
+        
+        // Load base64 images
+        loadBase64Images();
+        
+        // Set up key frames carousel for videos
+        setupKeyFramesCarousel();
+        
+        // Initialize tooltips
+        initTooltips();
+        
+        // Set up charts - SIMPLIFIED VERSION
+        setTimeout(() => {
+            createSimpleCharts();
+        }, 300);
+        
+        // Start status polling if still processing
+        if ('{{ media_upload.processing_status }}' !== 'completed' && 
+            '{{ media_upload.processing_status }}' !== 'failed') {
+            startStatusPolling();
         }
     });
     
-    // Heatmap
-    const heatmapData = JSON.parse('{{ analysis_results.heatmap_data|escapejs }}');
-    const heatmapCtx = document.getElementById('heatmapCanvas').getContext('2d');
+    // Load data from hidden elements
+    function loadData() {
+        // Load detections
+        const detectionsEl = document.getElementById('detectionsData');
+        if (detectionsEl && detectionsEl.textContent.trim()) {
+            try {
+                detections = JSON.parse(detectionsEl.textContent);
+                console.log(`Loaded ${detections.length} detections`);
+            } catch (e) {
+                console.error('Error parsing detections:', e);
+            }
+        }
+        
+        // Load base64 image data
+        const base64El = document.getElementById('base64Data');
+        if (base64El && base64El.textContent.trim()) {
+            base64ImageData = base64El.textContent;
+        }
+        
+        // Load key frames data
+        const keyFramesEl = document.getElementById('keyFramesData');
+        if (keyFramesEl && keyFramesEl.textContent.trim()) {
+            try {
+                keyFramesData = JSON.parse(keyFramesEl.textContent);
+            } catch (e) {
+                console.error('Error parsing key frames data:', e);
+            }
+        }
+    }
     
-    // Simple heatmap implementation
-    function drawHeatmap() {
-        const canvas = heatmapCtx.canvas;
-        canvas.width = canvas.parentElement.clientWidth;
-        canvas.height = 300;
+    // SIMPLIFIED CHART CREATION - GUARANTEED TO WORK
+    function createSimpleCharts() {
+        console.log('Creating simple charts...');
         
-        // Draw background
-        heatmapCtx.fillStyle = '#f8f9fa';
-        heatmapCtx.fillRect(0, 0, canvas.width, canvas.height);
+        // Get data from Django context (not from detections array)
+        const totalDetections = {{ analysis.total_detections|default:0 }};
+        const personCount = {{ analysis.person_count|default:0 }};
+        const vehicleCount = {{ analysis.vehicle_count|default:0 }};
+        const avgConfidence = {{ average_confidence|default:0 }};
         
-        // Draw heat points
-        heatmapData.points.forEach(point => {
-            const x = (point.x / 1000) * canvas.width;
-            const y = (point.y / 1000) * canvas.height;
+        console.log('Chart data:', { totalDetections, personCount, vehicleCount, avgConfidence });
+        
+        // Create Distribution Chart
+        createSimpleDistributionChart(totalDetections, personCount, vehicleCount);
+        
+        // Create Confidence Chart
+        createSimpleConfidenceChart(avgConfidence, detections);
+    }
+    
+    function createSimpleDistributionChart(totalDetections, personCount, vehicleCount) {
+        const ctx = document.getElementById('distributionChart');
+        if (!ctx) {
+            console.error('Distribution chart element not found');
+            return;
+        }
+        
+        // If no detections at all
+        if (totalDetections === 0) {
+            ctx.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-eye-slash fa-2x mb-3"></i>
+                    <p class="mb-2">No objects detected</p>
+                    <small class="text-muted">The AI did not find any objects in this media</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Calculate other objects
+        const otherCount = totalDetections - personCount - vehicleCount;
+        
+        // Prepare data
+        const labels = [];
+        const data = [];
+        const colors = [];
+        
+        if (personCount > 0) {
+            labels.push('Persons');
+            data.push(personCount);
+            colors.push('#0066CC'); // Tech Blue
+        }
+        
+        if (vehicleCount > 0) {
+            labels.push('Vehicles');
+            data.push(vehicleCount);
+            colors.push('#00CCFF'); // AI Cyan
+        }
+        
+        if (otherCount > 0) {
+            labels.push('Other Objects');
+            data.push(otherCount);
+            colors.push('#39FF14'); // Neon Green
+        }
+        
+        // If only one category, make it a full circle
+        if (data.length === 1) {
+            data.push(0.1); // Add tiny slice to make it visible
+            labels.push('');
+            colors.push('transparent');
+        }
+        
+        console.log('Distribution chart data:', { labels, data, colors });
+        
+        try {
+            // Destroy existing chart if any
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
             
-            const gradient = heatmapCtx.createRadialGradient(x, y, 0, x, y, 30);
-            gradient.addColorStop(0, 'rgba(255, 0, 0, 0.8)');
-            gradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+            // Create new chart
+            ctx.chart = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 15,
+                                usePointStyle: true,
+                                font: {
+                                    size: 11
+                                }
+                            }
+                        }
+                    }
+                }
+            });
             
-            heatmapCtx.fillStyle = gradient;
-            heatmapCtx.beginPath();
-            heatmapCtx.arc(x, y, 30, 0, Math.PI * 2);
-            heatmapCtx.fill();
+            console.log('Distribution chart created successfully');
+        } catch (error) {
+            console.error('Error creating distribution chart:', error);
+            // Fallback to HTML display
+            ctx.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="d-flex justify-content-center mb-3">
+                        ${personCount > 0 ? `<span class="badge bg-primary mx-2 p-2">Persons: ${personCount}</span>` : ''}
+                        ${vehicleCount > 0 ? `<span class="badge bg-info mx-2 p-2">Vehicles: ${vehicleCount}</span>` : ''}
+                        ${otherCount > 0 ? `<span class="badge bg-success mx-2 p-2">Other: ${otherCount}</span>` : ''}
+                    </div>
+                    <p class="text-muted mb-0">Total: ${totalDetections} detections</p>
+                </div>
+            `;
+        }
+    }
+    
+    function createSimpleConfidenceChart(avgConfidence, detections) {
+        const ctx = document.getElementById('confidenceChart');
+        if (!ctx) {
+            console.error('Confidence chart element not found');
+            return;
+        }
+        
+        // Calculate confidence distribution
+        let highConfidence = 0;
+        let mediumConfidence = 0;
+        let lowConfidence = 0;
+        
+        if (detections && detections.length > 0) {
+            detections.forEach(detection => {
+                const confidence = detection.confidence || 0;
+                if (confidence > 0.8) {
+                    highConfidence++;
+                } else if (confidence > 0.6) {
+                    mediumConfidence++;
+                } else {
+                    lowConfidence++;
+                }
+            });
+        } else {
+            // Use average confidence to estimate
+            if (avgConfidence > 80) {
+                highConfidence = 1;
+            } else if (avgConfidence > 60) {
+                mediumConfidence = 1;
+            } else {
+                lowConfidence = 1;
+            }
+        }
+        
+        const hasData = highConfidence > 0 || mediumConfidence > 0 || lowConfidence > 0;
+        
+        if (!hasData) {
+            ctx.innerHTML = `
+                <div class="text-center text-muted py-5">
+                    <i class="fas fa-chart-line fa-2x mb-3"></i>
+                    <p class="mb-2">No confidence data</p>
+                    <small class="text-muted">Confidence analysis requires detection data</small>
+                </div>
+            `;
+            return;
+        }
+        
+        // Prepare data for bar chart
+        const labels = ['High (>80%)', 'Medium (60-80%)', 'Low (<60%)'];
+        const data = [highConfidence, mediumConfidence, lowConfidence];
+        const colors = [
+            'rgba(57, 255, 20, 0.7)',   // Neon Green
+            'rgba(0, 204, 255, 0.7)',   // AI Cyan
+            'rgba(255, 107, 107, 0.7)'  // Coral
+        ];
+        
+        console.log('Confidence chart data:', { labels, data, colors });
+        
+        try {
+            // Destroy existing chart if any
+            if (ctx.chart) {
+                ctx.chart.destroy();
+            }
+            
+            // Create new chart
+            ctx.chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Detections',
+                        data: data,
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                        borderColor: colors.map(color => color.replace('0.7', '1'))
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            console.log('Confidence chart created successfully');
+        } catch (error) {
+            console.error('Error creating confidence chart:', error);
+            // Fallback to HTML display
+            ctx.innerHTML = `
+                <div class="text-center py-4">
+                    <h4 class="mb-3">Confidence Analysis</h4>
+                    <div class="row">
+                        <div class="col-4">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center p-2">
+                                    <div class="h4 mb-1">${highConfidence}</div>
+                                    <small>High</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card bg-warning text-dark">
+                                <div class="card-body text-center p-2">
+                                    <div class="h4 mb-1">${mediumConfidence}</div>
+                                    <small>Medium</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center p-2">
+                                    <div class="h4 mb-1">${lowConfidence}</div>
+                                    <small>Low</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <p class="text-muted mb-0">Average Confidence: ${avgConfidence.toFixed(1)}%</p>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // Keep all other functions the same (setupImageToggle, loadBase64Images, etc.)
+    // ... rest of your existing JavaScript code ...
+    
+    // Set up image toggle functionality
+    function setupImageToggle() {
+        const showProcessedBtn = document.getElementById('showProcessedBtn');
+        const showOriginalBtn = document.getElementById('showOriginalBtn');
+        const processedImageContainer = document.getElementById('processedImageContainer');
+        const originalImageContainer = document.getElementById('originalImageContainer');
+        
+        if (showProcessedBtn && showOriginalBtn) {
+            showProcessedBtn.addEventListener('click', function() {
+                this.classList.add('active', 'btn-primary');
+                this.classList.remove('btn-outline-primary');
+                showOriginalBtn.classList.remove('active', 'btn-primary');
+                showOriginalBtn.classList.add('btn-outline-primary');
+                
+                if (processedImageContainer) processedImageContainer.classList.remove('d-none');
+                if (originalImageContainer) originalImageContainer.classList.add('d-none');
+            });
+            
+            showOriginalBtn.addEventListener('click', function() {
+                this.classList.add('active', 'btn-primary');
+                this.classList.remove('btn-outline-primary');
+                showProcessedBtn.classList.remove('active', 'btn-primary');
+                showProcessedBtn.classList.add('btn-outline-primary');
+                
+                if (processedImageContainer) processedImageContainer.classList.add('d-none');
+                if (originalImageContainer) originalImageContainer.classList.remove('d-none');
+            });
+        }
+    }
+    
+    // Load base64 images
+    function loadBase64Images() {
+        // Processed image from base64
+        if (base64ImageData) {
+            const processedImageEl = document.getElementById('processedImageBase64');
+            if (processedImageEl) {
+                // Create data URL
+                let base64Str = base64ImageData;
+                if (base64Str.includes('base64,')) {
+                    base64Str = base64Str.split('base64,')[1];
+                }
+                
+                const dataUrl = `data:image/jpeg;base64,${base64Str}`;
+                processedImageEl.src = dataUrl;
+                processedImageEl.style.display = 'block';
+                
+                // Update the main processed image if it's from file
+                const mainProcessedImage = document.getElementById('processedImage');
+                if (mainProcessedImage && !mainProcessedImage.src) {
+                    mainProcessedImage.src = dataUrl;
+                }
+            }
+        }
+        
+        // Create detection legend
+        createDetectionLegend();
+    }
+    
+    // Create detection legend based on detections
+    function createDetectionLegend() {
+        if (detections.length === 0) return;
+        
+        const legendContainer = document.getElementById('detectionLegend');
+        if (!legendContainer) return;
+        
+        // Count detection types
+        const typeCounts = {};
+        detections.forEach(detection => {
+            const type = detection.label || detection.class || detection.type || 'unknown';
+            typeCounts[type] = (typeCounts[type] || 0) + 1;
+        });
+        
+        // Color mapping for CampusGuard AI
+        const colorMap = {
+            'person': '#00FF00',  // Green
+            'car': '#0000FF',     // Blue
+            'truck': '#FF0000',   // Red
+            'bus': '#FFFF00',     // Yellow
+            'motorcycle': '#00FFFF', // Cyan
+            'vehicle': '#800080'  // Purple
+        };
+        
+        // Create legend items
+        Object.entries(typeCounts).forEach(([type, count]) => {
+            const color = colorMap[type.toLowerCase()] || '#6c757d';
+            const badge = document.createElement('span');
+            badge.className = 'badge me-2 mb-1';
+            badge.style.backgroundColor = color;
+            badge.style.color = getContrastColor(color);
+            badge.innerHTML = `<i class="fas fa-${getIconForType(type)} me-1"></i>${type} (${count})`;
+            legendContainer.appendChild(badge);
         });
     }
     
-    drawHeatmap();
-    window.addEventListener('resize', drawHeatmap);
-    
-    // Detection Details
-    const detections = JSON.parse('{{ analysis_results.detections_json|escapejs }}');
-    
-    function viewDetectionDetails(index) {
-        const detection = detections[index];
-        const content = `
-            <div class="row">
-                <div class="col-md-6">
-                    <h6>Detection Information</h6>
-                    <table class="table table-sm">
-                        <tr>
-                            <th>Type:</th>
-                            <td><span class="badge bg-primary">${detection.class || 'Unknown'}</span></td>
-                        </tr>
-                        <tr>
-                            <th>Confidence:</th>
-                            <td>${(detection.confidence * 100 || 0).toFixed(2)}%</td>
-                        </tr>
-                        <tr>
-                            <th>Timestamp:</th>
-                            <td>${detection.timestamp || 0} seconds</td>
-                        </tr>
-                    </table>
-                </div>
-                <div class="col-md-6">
-                    <h6>Bounding Box</h6>
-                    <table class="table table-sm">
-                        <tr>
-                            <th>Top-Left:</th>
-                            <td>(${detection.bbox?.x1 || 0}, ${detection.bbox?.y1 || 0})</td>
-                        </tr>
-                        <tr>
-                            <th>Bottom-Right:</th>
-                            <td>(${detection.bbox?.x2 || 0}, ${detection.bbox?.y2 || 0})</td>
-                        </tr>
-                        <tr>
-                            <th>Width:</th>
-                            <td>${(detection.bbox?.x2 - detection.bbox?.x1 || 0).toFixed(0)}px</td>
-                        </tr>
-                        <tr>
-                            <th>Height:</th>
-                            <td>${(detection.bbox?.y2 - detection.bbox?.y1 || 0).toFixed(0)}px</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-            ${detection.additional_info ? `
-            <div class="mt-3">
-                <h6>Additional Information</h6>
-                <pre class="bg-light p-3 rounded">${JSON.stringify(detection.additional_info, null, 2)}</pre>
-            </div>
-            ` : ''}
-        `;
-        
-        document.getElementById('detectionDetailsContent').innerHTML = content;
-        new bootstrap.Modal(document.getElementById('detectionDetailsModal')).show();
+    // Get icon for detection type
+    function getIconForType(type) {
+        const icons = {
+            'person': 'user',
+            'car': 'car',
+            'truck': 'truck',
+            'bus': 'bus',
+            'motorcycle': 'motorcycle',
+            'vehicle': 'car'
+        };
+        return icons[type.toLowerCase()] || 'cube';
     }
     
-    // Load More Detections
-    document.getElementById('loadMoreBtn')?.addEventListener('click', function() {
-        // Implement AJAX loading of more detections
-        this.disabled = true;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Loading...';
+    // Get contrast color for background
+    function getContrastColor(hexColor) {
+        // Convert hex to RGB
+        const r = parseInt(hexColor.substr(1, 2), 16);
+        const g = parseInt(hexColor.substr(3, 2), 16);
+        const b = parseInt(hexColor.substr(5, 2), 16);
         
-        // Simulate loading
-        setTimeout(() => {
-            // In real implementation, fetch more data from server
-            alert('Load more functionality would fetch additional detections here.');
-            this.disabled = false;
-            this.innerHTML = 'Load More Detections';
-        }, 1000);
-    });
+        // Calculate luminance
+        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+        
+        // Return black or white based on luminance
+        return luminance > 0.5 ? '#000' : '#fff';
+    }
     
-    // Export Results
+    // Set up key frames carousel for videos
+    function setupKeyFramesCarousel() {
+        if (keyFramesData.length === 0) return;
+        
+        const carouselContainer = document.getElementById('keyFramesContainer');
+        if (!carouselContainer) return;
+        
+        // Clear existing content
+        carouselContainer.innerHTML = '';
+        
+        // Add carousel items
+        keyFramesData.forEach((base64Img, index) => {
+            // Clean base64 string
+            let imgData = base64Img;
+            if (imgData.includes('base64,')) {
+                imgData = imgData.split('base64,')[1];
+            }
+            
+            const dataUrl = `data:image/jpeg;base64,${imgData}`;
+            
+            const carouselItem = document.createElement('div');
+            carouselItem.className = `carousel-item ${index === 0 ? 'active' : ''}`;
+            
+            const img = document.createElement('img');
+            img.src = dataUrl;
+            img.className = 'd-block w-100';
+            img.alt = `AI Detection Frame ${index + 1}`;
+            img.style.maxHeight = '200px';
+            img.style.objectFit = 'cover';
+            
+            // Add caption with frame number
+            const caption = document.createElement('div');
+            caption.className = 'carousel-caption d-none d-md-block bg-dark bg-opacity-50 rounded';
+            caption.innerHTML = `<small>AI Detection #${index + 1}</small>`;
+            
+            carouselItem.appendChild(img);
+            carouselItem.appendChild(caption);
+            carouselContainer.appendChild(carouselItem);
+        });
+    }
+    
+    // Initialize Bootstrap tooltips
+    function initTooltips() {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    }
+    
+    // ... keep all your other existing functions (filterDetections, showDetectionInsights, etc.) ...
+    // Filter detections by type
+    function filterDetections(type) {
+        const rows = document.querySelectorAll('.detection-row');
+        let visibleCount = 0;
+        
+        rows.forEach(row => {
+            const rowType = row.dataset.type.toLowerCase();
+            const match = type === 'all' || 
+                         (type === 'person' && rowType === 'person') ||
+                         (type === 'vehicle' && ['car', 'truck', 'bus', 'motorcycle', 'vehicle'].includes(rowType)) ||
+                         (type === 'suspicious' && row.dataset.risk === 'high');
+            
+            if (match) {
+                row.style.display = '';
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+            }
+        });
+        
+        // Update filter button text
+        const filterBtn = document.querySelector('[data-bs-toggle="dropdown"]');
+        if (filterBtn) {
+            const typeLabels = {
+                'all': 'All',
+                'person': 'Persons',
+                'vehicle': 'Vehicles',
+                'suspicious': 'Alerts'
+            };
+            filterBtn.innerHTML = `<i class="fas fa-filter me-1"></i>${typeLabels[type]} (${visibleCount})`;
+        }
+    }
+    
+    // Show AI insights for a detection
+    function showDetectionInsights(index) {
+        if (index < 0 || index >= detections.length) {
+            alert('Invalid detection index');
+            return;
+        }
+        
+        const detection = detections[index];
+        const type = detection.label || detection.class || 'unknown';
+        const confidence = detection.confidence || 0;
+        
+        // Generate campus-specific insights
+        const insights = generateCampusAIInsights(detection, index);
+        
+        // Update modal content and show
+        document.getElementById('aiInsightsContent').innerHTML = insights;
+        new bootstrap.Modal(document.getElementById('aiInsightsModal')).show();
+    }
+    
+    function generateCampusAIInsights(detection, index) {
+        const type = detection.label || detection.class || 'unknown';
+        const confidence = detection.confidence || 0;
+        const confidencePercent = (confidence * 100).toFixed(1);
+        
+        // Campus-specific context
+        const campusContext = getCampusContext(type, confidence);
+        const riskAssessment = getRiskAssessment(type, confidence);
+        const recommendations = getCampusRecommendations(type, confidence);
+        
+        return `
+            <div class="insight-container">
+                <div class="alert alert-${getAlertColor(confidence)}">
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-${getIconForType(type)} fa-2x"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-1">${type.charAt(0).toUpperCase() + type.slice(1)} Detection</h5>
+                            <p class="mb-0">Detection #${index + 1} | Confidence: <strong>${confidencePercent}%</strong></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-university me-2"></i>Campus Context</h6>
+                        <div class="card bg-light border-0">
+                            <div class="card-body">
+                                ${campusContext.map(item => `<p class="mb-2"><i class="fas fa-${item.icon} me-2 text-${item.color}"></i>${item.text}</p>`).join('')}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-shield-alt me-2"></i>Security Assessment</h6>
+                        <div class="card bg-light border-0">
+                            <div class="card-body">
+                                <p class="mb-2"><strong>Risk Level:</strong> <span class="badge bg-${riskAssessment.color}">${riskAssessment.level}</span></p>
+                                <p class="mb-2"><strong>AI Confidence:</strong> ${getConfidenceText(confidence)}</p>
+                                <p class="mb-0"><strong>Recommended Action:</strong> ${riskAssessment.action}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                ${recommendations.length > 0 ? `
+                <div class="mt-3">
+                    <h6><i class="fas fa-lightbulb me-2"></i>CampusGuard AI Recommendations</h6>
+                    <div class="list-group">
+                        ${recommendations.map(rec => `
+                        <div class="list-group-item">
+                            <div class="d-flex">
+                                <div class="me-3">
+                                    <i class="fas fa-${rec.icon} text-${rec.color}"></i>
+                                </div>
+                                <div>
+                                    <strong>${rec.title}</strong>
+                                    <p class="mb-0 small">${rec.description}</p>
+                                </div>
+                            </div>
+                        </div>
+                        `).join('')}
+                    </div>
+                </div>
+                ` : ''}
+                
+                <!-- Detection Details -->
+                <div class="mt-3">
+                    <h6><i class="fas fa-info-circle me-2"></i>Technical Details</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <tr>
+                                <th>Detection Type:</th>
+                                <td>${type}</td>
+                            </tr>
+                            <tr>
+                                <th>Confidence Score:</th>
+                                <td>${confidence.toFixed(4)}</td>
+                            </tr>
+                            ${detection.bbox ? `
+                            <tr>
+                                <th>Bounding Box:</th>
+                                <td>
+                                    ${getBboxText(detection.bbox)}
+                                </td>
+                            </tr>
+                            ` : ''}
+                            ${detection.timestamp ? `
+                            <tr>
+                                <th>Timestamp:</th>
+                                <td>${detection.timestamp}</td>
+                            </tr>
+                            ` : ''}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // Helper functions for campus-specific insights
+    function getCampusContext(type, confidence) {
+        const context = [];
+        const now = new Date();
+        const hour = now.getHours();
+        
+        if (type === 'person') {
+            context.push({
+                icon: 'user-graduate',
+                color: 'primary',
+                text: 'Potential student or staff member'
+            });
+            
+            if (hour < 6 || hour > 22) {
+                context.push({
+                    icon: 'moon',
+                    color: 'warning',
+                    text: 'Detected during non-standard campus hours'
+                });
+            }
+            
+            if (confidence < 0.7) {
+                context.push({
+                    icon: 'user-check',
+                    color: 'info',
+                    text: 'Recommend verification of identification'
+                });
+            }
+        } else if (['car', 'truck', 'bus'].includes(type)) {
+            context.push({
+                icon: 'parking',
+                color: 'warning',
+                text: 'Check parking authorization if applicable'
+            });
+            
+            if (type === 'bus') {
+                context.push({
+                    icon: 'bus-alt',
+                    color: 'success',
+                    text: 'Potential campus shuttle or transport'
+                });
+            }
+        }
+        
+        return context;
+    }
+    
+    function getRiskAssessment(type, confidence) {
+        if (type === 'person') {
+            if (confidence < 0.6) {
+                return {
+                    level: 'Low',
+                    color: 'success',
+                    action: 'No action required'
+                };
+            } else if (confidence < 0.8) {
+                return {
+                    level: 'Medium',
+                    color: 'warning',
+                    action: 'Consider verification if in restricted area'
+                };
+            } else {
+                return {
+                    level: 'Normal',
+                    color: 'info',
+                    action: 'Standard campus activity'
+                };
+            }
+        } else if (['car', 'truck', 'bus'].includes(type)) {
+            return {
+                level: 'Low',
+                color: 'success',
+                action: 'Standard campus vehicle activity'
+            };
+        }
+        
+        return {
+            level: 'Unknown',
+            color: 'secondary',
+            action: 'Monitor if unusual'
+        };
+    }
+    
+    function getCampusRecommendations(type, confidence) {
+        const recommendations = [];
+        
+        if (confidence < 0.6) {
+            recommendations.push({
+                icon: 'eye',
+                color: 'warning',
+                title: 'Low Confidence Detection',
+                description: 'Consider manual review for verification'
+            });
+        }
+        
+        if (type === 'person' && confidence > 0.8) {
+            recommendations.push({
+                icon: 'check-circle',
+                color: 'success',
+                title: 'High Confidence Person',
+                description: 'No further action required - appears to be normal campus activity'
+            });
+        }
+        
+        if (['truck', 'bus'].includes(type)) {
+            recommendations.push({
+                icon: 'clipboard-check',
+                color: 'info',
+                title: 'Large Vehicle Detected',
+                description: 'Verify delivery schedules or transport authorization'
+            });
+        }
+        
+        return recommendations;
+    }
+    
+    function getAlertColor(confidence) {
+        if (confidence > 0.8) return 'success';
+        if (confidence > 0.6) return 'warning';
+        return 'danger';
+    }
+    
+    function getConfidenceText(confidence) {
+        if (confidence > 0.8) return 'High (Reliable detection)';
+        if (confidence > 0.6) return 'Medium (Likely accurate)';
+        return 'Low (Requires verification)';
+    }
+    
+    function getBboxText(bbox) {
+        if (Array.isArray(bbox) && bbox.length >= 4) {
+            const [x1, y1, x2, y2] = bbox;
+            return `(${x1.toFixed(0)}, ${y1.toFixed(0)}) to (${x2.toFixed(0)}, ${y2.toFixed(0)})`;
+        } else if (typeof bbox === 'object' && bbox.x1 !== undefined) {
+            return `(${bbox.x1.toFixed(0)}, ${bbox.y1.toFixed(0)}) to (${bbox.x2.toFixed(0)}, ${bbox.y2.toFixed(0)})`;
+        }
+        return 'Not available';
+    }
+    
+    // Export results
     function exportResults() {
-        const data = {
-            media_info: {
-                title: '{{ media_upload.title|escapejs }}',
-                type: '{{ media_upload.get_media_type_display|escapejs }}',
-                uploaded: '{{ media_upload.uploaded_at|date:"Y-m-d H:i:s" }}'
+        const exportData = {
+            campusguard_analysis: {
+                version: '1.0',
+                institution: 'CampusGuard AI',
+                analysis_type: 'Security Intelligence Report'
             },
-            analysis: {
-                summary: {
-                    total_detections: {{ analysis_results.total_detections }},
-                    person_count: {{ analysis_results.person_count }},
-                    vehicle_count: {{ analysis_results.vehicle_count }},
-                    suspicious_count: {{ analysis_results.suspicious_activity_count }}
-                },
-                detections: detections.slice(0, 100) // Limit for export
+            media_info: {
+                id: {{ media_upload.id }},
+                title: '{{ media_upload.title|escapejs }}',
+                description: '{{ media_upload.description|escapejs }}',
+                type: '{{ media_upload.get_media_type_display|escapejs }}',
+                uploaded: '{{ media_upload.uploaded_at|date:"Y-m-d H:i:s" }}',
+                campus_context: 'Educational Institution Security'
+            },
+            ai_analysis: {
+                processing_time: {{ processing_time|default:0|floatformat:2 }},
+                total_detections: {{ analysis.total_detections|default:0 }},
+                person_count: {{ analysis.person_count|default:0 }},
+                vehicle_count: {{ analysis.vehicle_count|default:0 }},
+                alert_count: {{ analysis.suspicious_activity_count|default:0 }},
+                threat_level: '{{ threat_level_label|default:"Normal" }}',
+                recommendations: {{ recommendations|default:"[]"|safe }}
+            },
+            detailed_detections: detections.slice(0, 50), // Limit for export
+            export_metadata: {
+                exported_at: new Date().toISOString(),
+                exported_by: '{{ request.user.username|default:"System" }}',
+                system: 'CampusGuard AI v1.0'
             }
         };
         
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], {type: 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'analysis_results_{{ media_upload.id }}.json';
+        a.download = `campusguard_analysis_{{ media_upload.id }}_${new Date().getTime()}.json`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+        
+        // Show success message
+        showToast('Analysis exported successfully!', 'success');
     }
     
-    // Generate Report
-    function generateReport() {
-        alert('Report generation would create a PDF report with all analysis results.');
-        // In implementation: Make AJAX request to generate PDF report
+    // Generate security report
+    function generateSecurityReport() {
+        showToast('Generating Campus Security Report...', 'info');
+        
+        // In production, this would make an API call to generate PDF
+        setTimeout(() => {
+            showToast('Security report generation feature coming soon!', 'warning');
+        }, 1500);
+    }
+    
+    // Show toast notification
+    function showToast(message, type = 'info') {
+        const toastId = 'customToast';
+        let toastEl = document.getElementById(toastId);
+        
+        if (!toastEl) {
+            toastEl = document.createElement('div');
+            toastEl.id = toastId;
+            toastEl.className = 'toast align-items-center text-white bg-' + type + ' border-0';
+            toastEl.setAttribute('role', 'alert');
+            toastEl.setAttribute('aria-live', 'assertive');
+            toastEl.setAttribute('aria-atomic', 'true');
+            
+            toastEl.innerHTML = `
+                <div class="d-flex">
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                </div>
+            `;
+            
+            document.body.appendChild(toastEl);
+        }
+        
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+        toast.show();
+    }
+    
+    // Confirm delete
+    function confirmDelete(url) {
+        if (confirm('Are you sure you want to delete this media and all its AI analysis results? This action cannot be undone.')) {
+            window.location.href = url;
+        }
+    }
+    
+    // Status polling functions (keep from original)
+    function startStatusPolling() {
+        const apiUrls = document.getElementById('api-urls');
+        if (!apiUrls) return;
+        
+        const statusUrl = apiUrls.dataset.mediaStatusUrl;
+        if (!statusUrl) return;
+        
+        processingInterval = setInterval(() => {
+            fetch(statusUrl)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        updateProcessingStatus(data.data);
+                        if (data.data.status === 'completed' || data.data.status === 'failed') {
+                            stopStatusPolling();
+                            location.reload();
+                        }
+                    }
+                })
+                .catch(error => console.error('Error polling status:', error));
+        }, 5000);
+    }
+    
+    function stopStatusPolling() {
+        if (processingInterval) {
+            clearInterval(processingInterval);
+            processingInterval = null;
+        }
+    }
+    
+    function updateProcessingStatus(statusData) {
+        const alert = document.getElementById('processingAlert');
+        if (!alert) return;
+        
+        const progressBar = alert.querySelector('.progress-bar');
+        if (progressBar) {
+            progressBar.style.width = `${statusData.progress || 0}%`;
+            progressBar.setAttribute('aria-valuenow', statusData.progress || 0);
+        }
     }
 </script>
 {% endblock %}

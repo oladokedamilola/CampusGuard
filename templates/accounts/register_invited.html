@@ -1,0 +1,253 @@
+<!-- templates/accounts/register_invited.html -->
+{% extends 'base_public.html' %}
+
+{% block title %}Complete Registration - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-xl-6 col-lg-8">
+            <!-- Registration Card -->
+            <div class="card shadow-lg border-0">
+                <!-- Card Header -->
+                <div class="card-header bg-gradient-primary text-white text-center py-4">
+                    <div class="brand-logo mb-3">
+                        <i class="fas fa-shield-alt fa-3x"></i>
+                    </div>
+                    <h2 class="h3 mb-1">Complete Your Registration</h2>
+                    <p class="mb-0 opacity-75">Welcome to CampusGuard AI</p>
+                </div>
+                
+                <!-- Card Body -->
+                <div class="card-body p-4 p-md-5">
+                    <!-- Invitation Info -->
+                    <div class="alert alert-info mb-4">
+                        <div class="d-flex">
+                            <i class="fas fa-info-circle fa-2x me-3"></i>
+                            <div>
+                                <h5 class="alert-heading mb-2">Invitation Details</h5>
+                                <p class="mb-1"><strong>Email:</strong> {{ invitation.email }}</p>
+                                <p class="mb-1"><strong>Role:</strong> {{ invitation.get_role_display }}</p>
+                                {% if invitation.institution %}
+                                <p class="mb-0"><strong>Institution:</strong> {{ invitation.institution }}</p>
+                                {% endif %}
+                                {% if invitation.department %}
+                                <p class="mb-0"><strong>Department:</strong> {{ invitation.department }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ message.tags == 'success'|yesno:'check-circle,exclamation-triangle' }} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <!-- Registration Form -->
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- First Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-user me-1 text-primary"></i>First Name *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.first_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Last Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-user me-1 text-primary"></i>Last Name *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.last_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Phone Number -->
+                            <div class="col-12 mb-3">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-phone me-1 text-primary"></i>Phone Number
+                                </label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.phone_number.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Format: +255 XXX XXX XXX
+                                </div>
+                            </div>
+                            
+                            <!-- Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-key me-1 text-primary"></i>Password *
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.password1.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Confirm Password -->
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-key me-1 text-primary"></i>Confirm Password *
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.password2.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password Requirements -->
+                            <div class="col-12 mb-4">
+                                <div class="card border-info">
+                                    <div class="card-header bg-info text-white py-2">
+                                        <h6 class="mb-0">
+                                            <i class="fas fa-shield-alt me-1"></i>Password Requirements
+                                        </h6>
+                                    </div>
+                                    <div class="card-body py-3">
+                                        <ul class="mb-0 small">
+                                            <li>At least 8 characters long</li>
+                                            <li>Include uppercase and lowercase letters</li>
+                                            <li>Include at least one number</li>
+                                            <li>Include at least one special character (@$!%*?&)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Terms and Conditions -->
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="terms" required>
+                            <label class="form-check-label small" for="terms">
+                                I agree to the <a href="#" class="text-decoration-none">Terms of Service</a> 
+                                and <a href="#" class="text-decoration-none">Privacy Policy</a> of CampusGuard AI
+                            </label>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-check me-2"></i>Complete Registration
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Login Link -->
+                    <div class="text-center mt-4">
+                        <p class="mb-0">
+                            Already have an account? 
+                            <a href="{% url 'accounts:login' %}" class="text-decoration-none fw-bold">
+                                Log in here
+                            </a>
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Card Footer -->
+                <div class="card-footer text-center py-3">
+                    <small class="text-muted">
+                        <i class="fas fa-lock me-1"></i>
+                        Your data is protected and encrypted
+                    </small>
+                </div>
+            </div>
+            
+            <!-- Security Note -->
+            <div class="text-center mt-4">
+                <p class="small text-muted">
+                    <i class="fas fa-exclamation-triangle me-1"></i>
+                    This invitation link is personal and should not be shared with others.
+                    If you did not expect this invitation, please ignore this email.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #0066CC 0%, #00CCFF 100%) !important;
+    }
+    
+    .form-control:focus {
+        border-color: #0066CC;
+        box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+    }
+    
+    .brand-logo i {
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    
+    .card {
+        border-radius: 15px;
+    }
+    
+    .card-header {
+        border-radius: 15px 15px 0 0 !important;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password strength indicator (optional enhancement)
+        const password1 = document.querySelector('#{{ form.password1.id_for_label }}');
+        const password2 = document.querySelector('#{{ form.password2.id_for_label }}');
+        
+        if (password1) {
+            password1.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+                
+                // Check password strength
+                if (password.length >= 8) strength++;
+                if (/[A-Z]/.test(password)) strength++;
+                if (/[a-z]/.test(password)) strength++;
+                if (/[0-9]/.test(password)) strength++;
+                if (/[@$!%*?&]/.test(password)) strength++;
+                
+                // Update strength indicator (optional UI element)
+                // You can add a strength bar here if needed
+            });
+        }
+        
+        // Terms checkbox validation
+        const form = document.querySelector('form');
+        const termsCheckbox = document.querySelector('#terms');
+        
+        form.addEventListener('submit', function(e) {
+            if (!termsCheckbox.checked) {
+                e.preventDefault();
+                alert('Please agree to the Terms of Service and Privacy Policy');
+                termsCheckbox.focus();
+            }
+        });
+    });
+</script>
+{% endblock %}

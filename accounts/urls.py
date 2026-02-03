@@ -1,3 +1,4 @@
+# smart_surveillance/accounts/urls.py
 from django.urls import path
 from django.contrib.auth import views as auth_views
 from . import views
@@ -16,7 +17,14 @@ urlpatterns = [
     # User management (admin only)
     path('users/', views.user_list_view, name='user_list'),
     path('users/<int:pk>/', views.user_detail_view, name='user_detail'),
-    path('register/', views.register_view, name='register'),
+    
+    # Invitation management
+    path('invite/', views.invite_user_view, name='invite_user'),
+    path('invite/resend/<uuid:pk>/', views.resend_invitation_view, name='resend_invitation'),
+    path('invite/cancel/<uuid:pk>/', views.cancel_invitation_view, name='cancel_invitation'),
+    
+    # Registration for invited users
+    path('register/<str:token>/', views.register_invited_user_view, name='register_invited'),
     
     # Password reset (Django built-in)
     path('password-reset/', 

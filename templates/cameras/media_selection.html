@@ -7,9 +7,9 @@
     <div class="row">
         <div class="col-12">
             <h1 class="mb-4">
-                <i class="fas fa-video me-3"></i>Media Analysis
+                <i class="fas fa-images me-3"></i>Image Analysis
             </h1>
-            <p class="lead mb-5">Choose how you would like to analyze surveillance media.</p>
+            <p class="lead mb-5">Choose how you would like to analyze surveillance images.</p>
         </div>
     </div>
 
@@ -32,10 +32,10 @@
                                     <div class="mb-4">
                                         <i class="fas fa-cloud-upload-alt fa-4x text-primary"></i>
                                     </div>
-                                    <h4 class="card-title text-primary mb-3">Upload Media</h4>
+                                    <h4 class="card-title text-primary mb-3">Upload Images</h4>
                                     <p class="card-text">
-                                        Upload recorded video files or images for forensic analysis.
-                                        Perfect for investigating past incidents.
+                                        Upload surveillance images for forensic analysis.
+                                        Perfect for investigating past incidents and detailed examination.
                                     </p>
                                     <div class="mt-4">
                                         <span class="badge bg-primary">Recommended</span>
@@ -44,7 +44,7 @@
                                 </div>
                                 <div class="card-footer bg-transparent text-center">
                                     <button class="btn btn-primary btn-lg">
-                                        <i class="fas fa-upload me-2"></i>Upload Files
+                                        <i class="fas fa-upload me-2"></i>Upload Images
                                     </button>
                                 </div>
                             </div>
@@ -57,7 +57,7 @@
                                  onclick="window.location.href='{% url 'cameras:configure_camera' %}'">
                                 <div class="card-body text-center p-5">
                                     <div class="mb-4">
-                                        <i class="fas fa-video fa-4x text-warning"></i>
+                                        <i class="fas fa-camera fa-4x text-warning"></i>
                                     </div>
                                     <h4 class="card-title text-warning mb-3">Live Camera Feed</h4>
                                     <p class="card-text">
@@ -86,10 +86,10 @@
                                     <i class="fas fa-lightbulb me-2"></i>Quick Tips
                                 </h5>
                                 <ul class="mb-0">
-                                    <li><strong>Upload Media</strong>: Best for analyzing recorded footage and generating detailed reports</li>
+                                    <li><strong>Upload Images</strong>: Best for analyzing captured images and generating detailed reports</li>
                                     <li><strong>Live Camera</strong>: Best for real-time monitoring and instant alerts</li>
-                                    <li>Supported formats: MP4, AVI, MOV, MPEG, JPG, PNG</li>
-                                    <li>Maximum file size: 2GB</li>
+                                    <li>Supported formats: JPG, PNG, BMP, WEBP</li>
+                                    <li>Maximum file size: 100MB per image</li>
                                 </ul>
                             </div>
                         </div>

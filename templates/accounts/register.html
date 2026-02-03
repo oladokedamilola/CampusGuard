@@ -1,0 +1,303 @@
+<!-- templates/accounts/register.html -->
+{% extends 'base_app.html' %}
+
+{% block title %}Register User - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-gray-800">
+                <i class="fas fa-user-plus me-2"></i>Register New User
+            </h1>
+            <p class="text-muted mb-0">
+                Create a new user account directly (Admin Only)
+            </p>
+        </div>
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Users
+        </a>
+    </div>
+    
+    <!-- Registration Form -->
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>User Registration
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Messages -->
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                <i class="fas fa-{{ message.tags == 'success'|yesno:'check-circle,exclamation-triangle' }} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <div class="row">
+                            <!-- Email Field -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-1 text-primary"></i>Email Address *
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Role Field -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.role.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-user-tag me-1 text-primary"></i>Role *
+                                </label>
+                                {{ form.role }}
+                                {% if form.role.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.role.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- First Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.first_name.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-user me-1 text-primary"></i>First Name *
+                                </label>
+                                {{ form.first_name }}
+                                {% if form.first_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.first_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Last Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.last_name.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-user me-1 text-primary"></i>Last Name *
+                                </label>
+                                {{ form.last_name }}
+                                {% if form.last_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.last_name.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password1.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-key me-1 text-primary"></i>Password *
+                                </label>
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.password1.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Choose a strong password
+                                </div>
+                            </div>
+                            
+                            <!-- Confirm Password -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.password2.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-key me-1 text-primary"></i>Confirm Password *
+                                </label>
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.password2.errors.0 }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <!-- Institution -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.institution.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-university me-1 text-primary"></i>Institution
+                                </label>
+                                {{ form.institution }}
+                                {% if form.institution.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.institution.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    {% if not request.user.institution %}
+                                    Leave blank if not applicable
+                                    {% else %}
+                                    Default: {{ request.user.institution }}
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            <!-- Role Information -->
+                            <div class="col-12 mb-4">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-info-circle me-2"></i>About Direct Registration
+                                    </h6>
+                                    <ul class="mb-0">
+                                        <li>User will receive their credentials via email</li>
+                                        <li>User account will be active immediately</li>
+                                        <li>Email verification will be required on first login</li>
+                                        <li>Use this method for trusted internal users</li>
+                                        <li>For external users, use the "Invite User" feature instead</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="row mt-4 pt-3 border-top">
+                            <div class="col-md-12">
+                                <div class="d-flex justify-content-between">
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="fas fa-redo me-1"></i>Clear Form
+                                    </button>
+                                    <div>
+                                        <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary me-2">
+                                            <i class="fas fa-times me-1"></i>Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-user-plus me-1"></i>Register User
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Registration Methods Comparison -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-compress-alt me-2"></i>Registration Methods
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-primary h-100">
+                                <div class="card-header bg-primary text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-user-plus me-2"></i>Direct Registration
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="text-primary">When to use:</h6>
+                                    <ul class="small">
+                                        <li>Internal staff members</li>
+                                        <li>Emergency account creation</li>
+                                        <li>Technical support accounts</li>
+                                        <li>When email is not accessible</li>
+                                    </ul>
+                                    <h6 class="text-primary">Pros:</h6>
+                                    <ul class="small">
+                                        <li>Instant account activation</li>
+                                        <li>Full control over credentials</li>
+                                        <li>No invitation expiry</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card border-success h-100">
+                                <div class="card-header bg-success text-white">
+                                    <h6 class="mb-0">
+                                        <i class="fas fa-envelope me-2"></i>Invitation System
+                                    </h6>
+                                </div>
+                                <div class="card-body">
+                                    <h6 class="text-success">When to use:</h6>
+                                    <ul class="small">
+                                        <li>External collaborators</li>
+                                        <li>New team members</li>
+                                        <li>Guest access</li>
+                                        <li>When email is available</li>
+                                    </ul>
+                                    <h6 class="text-success">Pros:</h6>
+                                    <ul class="small">
+                                        <li>More secure (user sets own password)</li>
+                                        <li>Professional invitation process</li>
+                                        <li>Automatic welcome email</li>
+                                        <li>Expiry for security</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'accounts:invite_user' %}" class="btn btn-outline-success">
+                            <i class="fas fa-paper-plane me-1"></i>Use Invitation System Instead
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #0066CC;
+        box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .border-top {
+        border-top: 1px solid #e3e6f0 !important;
+    }
+    
+    .card-header {
+        font-weight: 600;
+    }
+    
+    .alert-info {
+        background-color: #f0f8ff;
+        border-color: #b6d4fe;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-dismiss alerts after 5 seconds
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+        
+        // Auto-fill institution if admin has one
+        const institutionField = document.querySelector('#{{ form.institution.id_for_label }}');
+        const adminInstitution = "{{ request.user.institution|default:'' }}";
+        
+        if (institutionField && !institutionField.value && adminInstitution) {
+            institutionField.value = adminInstitution;
+        }
+    });
+</script>
+{% endblock %}

@@ -3,7 +3,11 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 import uuid
-
+import base64
+import os
+from io import BytesIO
+from django.core.files.base import ContentFile
+from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
@@ -386,13 +390,9 @@ class CameraHealthLog(models.Model):
         )
         
         
-        
-        
-# Add these models to your existing cameras/models.py
-
 class MediaUpload(models.Model):
     """
-    Base model for all media uploads (both images and videos)
+    Base model for all media uploads (both images and videos) with FastAPI integration
     """
     class MediaType(models.TextChoices):
         IMAGE = 'image', _('Image')
@@ -404,6 +404,7 @@ class MediaUpload(models.Model):
         PROCESSING = 'processing', _('Processing')
         COMPLETED = 'completed', _('Completed')
         FAILED = 'failed', _('Failed')
+        RETRYING = 'retrying', _('Retrying')
     
     # Basic Information
     title = models.CharField(
@@ -438,6 +439,29 @@ class MediaUpload(models.Model):
         verbose_name=_('Thumbnail')
     )
     
+    # Processed Files from FastAPI (Base64 decoded)
+    processed_file = models.FileField(
+        upload_to='media/processed/%Y/%m/%d/',
+        null=True,
+        blank=True,
+        verbose_name=_('Processed File'),
+        help_text=_('Processed media with detections (from FastAPI base64)')
+    )
+    
+    processed_file_base64 = models.TextField(
+        blank=True,
+        verbose_name=_('Processed File Base64'),
+        help_text=_('Base64 encoded processed media (temporary storage)')
+    )
+    
+    # For Videos: Key Frames storage
+    key_frames_base64 = models.JSONField(
+        default=list,
+        blank=True,
+        verbose_name=_('Key Frames Base64'),
+        help_text=_('List of base64 encoded key frames from video processing')
+    )
+    
     # Processing Information
     processing_status = models.CharField(
         max_length=50,
@@ -451,6 +475,18 @@ class MediaUpload(models.Model):
         blank=True,
         verbose_name=_('Job ID'),
         help_text=_('FastAPI processing job ID')
+    )
+    
+    processing_attempts = models.IntegerField(
+        default=0,
+        verbose_name=_('Processing Attempts'),
+        help_text=_('Number of times processing has been attempted')
+    )
+    
+    error_message = models.TextField(
+        blank=True,
+        verbose_name=_('Error Message'),
+        help_text=_('Error details if processing failed')
     )
     
     # FastAPI Processing Data
@@ -472,7 +508,14 @@ class MediaUpload(models.Model):
         default=dict,
         blank=True,
         verbose_name=_('Response Data'),
-        help_text=_('Response from FastAPI')
+        help_text=_('Full response from FastAPI (including base64)')
+    )
+    
+    analysis_summary = models.JSONField(
+        default=dict,
+        blank=True,
+        verbose_name=_('Analysis Summary'),
+        help_text=_('Summary of analysis results from FastAPI')
     )
     
     # User Information
@@ -529,6 +572,16 @@ class MediaUpload(models.Model):
         verbose_name=_('MIME Type')
     )
     
+    # Relations
+    video_processing_job = models.ForeignKey(
+        'surveillance.VideoProcessingJob',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='media_uploads',
+        verbose_name=_('Video Processing Job')
+    )
+    
     class Meta:
         verbose_name = _('Media Upload')
         verbose_name_plural = _('Media Uploads')
@@ -536,24 +589,29 @@ class MediaUpload(models.Model):
         indexes = [
             models.Index(fields=['processing_status']),
             models.Index(fields=['uploaded_by', 'uploaded_at']),
+            models.Index(fields=['media_type', 'processing_status']),
         ]
     
     def __str__(self):
-        return f"{self.title} ({self.get_media_type_display()})"
+        return f"{self.title} ({self.get_media_type_display()}) - {self.get_processing_status_display()}"
     
     def get_file_size_mb(self):
         """Get file size in megabytes."""
-        return round(self.file_size / (1024 * 1024), 2)
+        if self.file_size > 0:
+            return round(self.file_size / (1024 * 1024), 2)
+        return 0.0
     
     def get_progress_percentage(self):
         """Get processing progress percentage."""
-        if self.processing_status == self.ProcessingStatus.COMPLETED:
-            return 100
-        elif self.processing_status == self.ProcessingStatus.PROCESSING:
-            return 50  # You could implement actual progress tracking
-        elif self.processing_status == self.ProcessingStatus.PENDING:
-            return 25
-        return 0
+        status_progress = {
+            self.ProcessingStatus.UPLOADING: 10,
+            self.ProcessingStatus.PENDING: 25,
+            self.ProcessingStatus.PROCESSING: 50,
+            self.ProcessingStatus.RETRYING: 40,
+            self.ProcessingStatus.COMPLETED: 100,
+            self.ProcessingStatus.FAILED: 0,
+        }
+        return status_progress.get(self.processing_status, 0)
     
     def get_processing_time(self):
         """Get processing time in seconds."""
@@ -566,6 +624,120 @@ class MediaUpload(models.Model):
     
     def is_video(self):
         return self.media_type == self.MediaType.VIDEO
+    
+    def has_processed_file(self):
+        """Check if processed file is available."""
+        return bool(self.processed_file) and os.path.exists(self.processed_file.path)
+    
+    def has_base64_data(self):
+        """Check if base64 data is available."""
+        return bool(self.processed_file_base64) or bool(self.key_frames_base64)
+    
+    def save_processed_file_from_base64(self, base64_string, file_extension='.jpg'):
+        """
+        Save base64 encoded image to processed_file field.
+        
+        Args:
+            base64_string: Base64 encoded image data (with or without data:image prefix)
+            file_extension: File extension for the saved file (.jpg, .png, etc.)
+        
+        Returns:
+            bool: True if saved successfully
+        """
+        try:
+            # Clean base64 string (remove data:image prefix if present)
+            if 'base64,' in base64_string:
+                base64_string = base64_string.split('base64,')[1]
+            
+            # Decode base64
+            file_data = base64.b64decode(base64_string)
+            
+            # Create file name
+            filename = f"processed_{self.id}_{uuid.uuid4().hex[:8]}{file_extension}"
+            
+            # Save to processed_file field
+            self.processed_file.save(
+                filename,
+                ContentFile(file_data),
+                save=False
+            )
+            
+            # Clear base64 field to save database space
+            self.processed_file_base64 = ''
+            
+            return True
+            
+        except Exception as e:
+            self.error_message = f"Error saving processed file: {str(e)}"
+            return False
+    
+    def save_key_frames_from_base64(self, base64_list):
+        """
+        Save key frames from base64 list and store as separate image files.
+        
+        Args:
+            base64_list: List of base64 encoded images
+        
+        Returns:
+            list: List of saved key frame file paths
+        """
+        saved_files = []
+        
+        try:
+            for i, base64_img in enumerate(base64_list):
+                if not base64_img:
+                    continue
+                    
+                # Clean base64 string
+                if 'base64,' in base64_img:
+                    base64_img = base64_img.split('base64,')[1]
+                
+                # Decode and save
+                file_data = base64.b64decode(base64_img)
+                filename = f"keyframe_{self.id}_{i}_{uuid.uuid4().hex[:8]}.jpg"
+                
+                # Create a KeyFrame model instance if you have one
+                # For now, we'll just store in a directory
+                from django.core.files.storage import default_storage
+                file_path = default_storage.save(
+                    f'media/key_frames/{filename}',
+                    ContentFile(file_data)
+                )
+                saved_files.append(file_path)
+            
+            return saved_files
+            
+        except Exception as e:
+            self.error_message = f"Error saving key frames: {str(e)}"
+            return []
+    
+    def mark_as_processing(self):
+        """Mark media as being processed."""
+        self.processing_status = self.ProcessingStatus.PROCESSING
+        self.processing_started = timezone.now()
+        self.processing_attempts += 1
+        self.save()
+    
+    def mark_as_completed(self, response_data=None):
+        """Mark media as completed."""
+        self.processing_status = self.ProcessingStatus.COMPLETED
+        self.processing_completed = timezone.now()
+        if response_data:
+            self.response_data = response_data
+        self.save()
+    
+    def mark_as_failed(self, error_message):
+        """Mark media as failed."""
+        self.processing_status = self.ProcessingStatus.FAILED
+        self.processing_completed = timezone.now()
+        self.error_message = error_message
+        self.save()
+    
+    def retry_processing(self):
+        """Reset for retry processing."""
+        self.processing_status = self.ProcessingStatus.RETRYING
+        self.error_message = ''
+        self.save()
 
 class MediaAnalysisResult(models.Model):
     """
@@ -642,6 +814,13 @@ class MediaAnalysisResult(models.Model):
         help_text=_('Path to generated report (PDF/HTML)')
     )
     
+    # Base64 data storage
+    processed_image_base64 = models.TextField(
+        blank=True,
+        verbose_name=_('Processed Image Base64'),
+        help_text=_('Base64 encoded processed image with detections')
+    )
+    
     # Generated At
     generated_at = models.DateTimeField(
         auto_now_add=True,
@@ -651,6 +830,9 @@ class MediaAnalysisResult(models.Model):
     class Meta:
         verbose_name = _('Media Analysis Result')
         verbose_name_plural = _('Media Analysis Results')
+        indexes = [
+            models.Index(fields=['media_upload', 'generated_at']),
+        ]
     
     def __str__(self):
         return f"Analysis for {self.media_upload.title}"
@@ -663,9 +845,52 @@ class MediaAnalysisResult(models.Model):
             'vehicles': self.vehicle_count,
             'suspicious': self.suspicious_activity_count,
         }
+    
+    def has_base64_image(self):
+        """Check if base64 processed image is available."""
+        return bool(self.processed_image_base64)
+    
+    def save_base64_image_to_file(self):
+        """
+        Save base64 image to annotated_media_path.
         
+        Returns:
+            bool: True if saved successfully
+        """
+        if not self.processed_image_base64:
+            return False
         
-        
+        try:
+            # Import here to avoid circular imports
+            import base64
+            from django.core.files.base import ContentFile
+            from django.core.files.storage import default_storage
+            import uuid
+            
+            # Clean base64 string
+            base64_str = self.processed_image_base64
+            if 'base64,' in base64_str:
+                base64_str = base64_str.split('base64,')[1]
+            
+            # Decode and save
+            file_data = base64.b64decode(base64_str)
+            filename = f"annotated_{self.media_upload.id}_{uuid.uuid4().hex[:8]}.jpg"
+            file_path = default_storage.save(
+                f'media/annotated/{filename}',
+                ContentFile(file_data)
+            )
+            
+            self.annotated_media_path = file_path
+            self.save()
+            return True
+            
+        except Exception as e:
+            # Log error but don't crash
+            import logging
+            logger = logging.getLogger(__name__)
+            logger.error(f"Error saving base64 image: {str(e)}")
+            return False
+
 class VideoFile(models.Model):
     """
     Model for uploaded video files for processing and analysis.

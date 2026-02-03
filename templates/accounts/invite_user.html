@@ -1,0 +1,253 @@
+<!-- templates/accounts/invite_user.html -->
+{% extends 'base_app.html' %}
+
+{% block title %}Invite User - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 text-gray-800 mb-1">
+                <i class="fas fa-user-plus me-2"></i>Invite User
+            </h1>
+            <p class="text-muted mb-0">
+                Send an invitation to join the CampusGuard AI system
+            </p>
+        </div>
+        <a href="{% url 'accounts:user_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Back to Users
+        </a>
+    </div>
+    
+    <!-- Invite User Form -->
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-envelope me-2"></i>Invitation Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- Success/Error Messages -->
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                    {% if message.tags == 'success' %}
+                                        <i class="fas fa-check-circle me-2"></i>
+                                    {% else %}
+                                        <i class="fas fa-exclamation-triangle me-2"></i>
+                                    {% endif %}
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <div class="row">
+                            <!-- Email Field -->
+                            <div class="col-md-12 mb-4">
+                                <label for="{{ form.email.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-envelope me-1 text-primary"></i>Email Address *
+                                </label>
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.email.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    The user will receive an invitation email at this address
+                                </div>
+                            </div>
+                            
+                            <!-- Role Field -->
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.role.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-user-tag me-1 text-primary"></i>Role *
+                                </label>
+                                {{ form.role }}
+                                {% if form.role.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.role.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Select the appropriate role for this user
+                                </div>
+                            </div>
+                            
+                            <!-- Institution Field -->
+                            <div class="col-md-6 mb-4">
+                                <label for="{{ form.institution.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-university me-1 text-primary"></i>Institution
+                                </label>
+                                {{ form.institution }}
+                                {% if form.institution.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.institution.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Educational institution name (optional)
+                                </div>
+                            </div>
+                            
+                            <!-- Department Field -->
+                            <div class="col-md-12 mb-4">
+                                <label for="{{ form.department.id_for_label }}" class="form-label fw-bold">
+                                    <i class="fas fa-building me-1 text-primary"></i>Department
+                                </label>
+                                {{ form.department }}
+                                {% if form.department.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        <i class="fas fa-exclamation-circle me-1"></i>{{ form.department.errors.0 }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Department or unit within the institution (optional)
+                                </div>
+                            </div>
+                            
+                            <!-- Role Information -->
+                            <div class="col-12 mb-4">
+                                <div class="alert alert-info">
+                                    <h6 class="alert-heading">
+                                        <i class="fas fa-info-circle me-2"></i>Role Information
+                                    </h6>
+                                    <div class="row small mt-2">
+                                        <div class="col-md-4">
+                                            <strong>Admin:</strong> Full system control
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Security Manager:</strong> Oversee security operations
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Security Guard:</strong> Monitor and respond to incidents
+                                        </div>
+                                        <div class="col-md-4 mt-2">
+                                            <strong>ICT Staff:</strong> Technical maintenance
+                                        </div>
+                                        <div class="col-md-4 mt-2">
+                                            <strong>Institution Admin:</strong> Institution-level oversight
+                                        </div>
+                                        <div class="col-md-4 mt-2">
+                                            <strong>Viewer:</strong> Read-only access
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="row mt-4 pt-3 border-top">
+                            <div class="col-md-12">
+                                <div class="d-flex justify-content-between">
+                                    <button type="reset" class="btn btn-secondary">
+                                        <i class="fas fa-redo me-1"></i>Clear Form
+                                    </button>
+                                    <div>
+                                        <a href="{% url 'accounts:user_list' %}" class="btn btn-outline-secondary me-2">
+                                            <i class="fas fa-times me-1"></i>Cancel
+                                        </a>
+                                        <button type="submit" class="btn btn-primary">
+                                            <i class="fas fa-paper-plane me-1"></i>Send Invitation
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Invitation Process Info -->
+            <div class="card shadow mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>How Invitations Work
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                                 style="width: 60px; height: 60px;">
+                                <i class="fas fa-envelope fa-2x"></i>
+                            </div>
+                            <h6>1. Send Invitation</h6>
+                            <p class="small text-muted">User receives an email with invitation link</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                                 style="width: 60px; height: 60px;">
+                                <i class="fas fa-user-check fa-2x"></i>
+                            </div>
+                            <h6>2. User Registration</h6>
+                            <p class="small text-muted">User clicks link and completes registration</p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <div class="bg-warning text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-2"
+                                 style="width: 60px; height: 60px;">
+                                <i class="fas fa-shield-alt fa-2x"></i>
+                            </div>
+                            <h6>3. Access Granted</h6>
+                            <p class="small text-muted">User gains access based on assigned role</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-light border mt-3">
+                        <p class="mb-2"><strong>Important Notes:</strong></p>
+                        <ul class="mb-0">
+                            <li>Invitation links expire after 7 days</li>
+                            <li>Users cannot register without a valid invitation</li>
+                            <li>You can resend or cancel invitations at any time</li>
+                            <li>Each email can only have one active invitation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control:focus, .form-select:focus {
+        border-color: #0066CC;
+        box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
+    }
+    
+    .form-label {
+        font-weight: 600;
+        color: #495057;
+    }
+    
+    .border-top {
+        border-top: 1px solid #e3e6f0 !important;
+    }
+    
+    .card-header {
+        font-weight: 600;
+    }
+    
+    .alert-light {
+        background-color: #f8f9fc;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Auto-dismiss alerts after 5 seconds
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+</script>
+{% endblock %}
