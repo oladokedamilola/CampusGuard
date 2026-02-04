@@ -11,6 +11,7 @@ urlpatterns = [
     path('dashboard/', include('dashboard.urls')), 
     path('alerts/', include('alerts.urls')),
     path('', include('landing.urls')),    # Landing page URLs
+    path('reports/', include('reports.urls')),
 ]
 
 # Serve media files in development

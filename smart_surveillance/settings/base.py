@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'analytics',
     'alerts',
     'landing',
+    'reports',
     
     # Third-party apps
     'django_extensions',

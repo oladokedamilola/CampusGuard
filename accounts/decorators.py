@@ -10,7 +10,7 @@ def role_required(allowed_roles=None, redirect_url='dashboard:index'):
     Decorator for views that checks if the user has a specific role.
     
     Usage:
-    @role_required(allowed_roles=['admin', 'security_manager'])
+    @role_required(allowed_roles=[User.Role.ADMIN, User.Role.MANAGER])
     def my_view(request):
         ...
     """
@@ -49,19 +49,15 @@ def role_redirect(view_func):
     """
     def wrapped_view(request, *args, **kwargs):
         if not request.user.is_authenticated:
-            from django.shortcuts import redirect
             return redirect('accounts:login')
         
         # Get the appropriate dashboard view based on role
         role = request.user.role
         
-        # Map roles to their specific dashboard views
+        # Simplified dashboard mapping for our 3 roles
         role_dashboards = {
             User.Role.ADMIN: 'dashboard:admin_dashboard',
-            User.Role.SECURITY_MANAGER: 'dashboard:security_manager_dashboard',
-            User.Role.SECURITY_GUARD: 'dashboard:security_guard_dashboard',
-            User.Role.ICT_STAFF: 'dashboard:ict_dashboard',
-            User.Role.INSTITUTION_ADMIN: 'dashboard:institution_admin_dashboard',
+            User.Role.MANAGER: 'dashboard:manager_dashboard',
             User.Role.VIEWER: 'dashboard:viewer_dashboard',
         }
         
@@ -70,7 +66,27 @@ def role_redirect(view_func):
             return redirect('dashboard:admin_dashboard')
         
         # Redirect to role-specific dashboard
-        from django.shortcuts import redirect
         return redirect(role_dashboards.get(role, 'dashboard:viewer_dashboard'))
     
     return wrapped_view
+
+
+# ===========================================
+# Specific role decorators for convenience
+# ===========================================
+
+def admin_required(view_func):
+    """Decorator for views that require admin role."""
+    return role_required(allowed_roles=[User.Role.ADMIN])(view_func)
+
+def manager_required(view_func):
+    """Decorator for views that require manager role."""
+    return role_required(allowed_roles=[User.Role.MANAGER])(view_func)
+
+def admin_or_manager_required(view_func):
+    """Decorator for views that require admin or manager role."""
+    return role_required(allowed_roles=[User.Role.ADMIN, User.Role.MANAGER])(view_func)
+
+def viewer_required(view_func):
+    """Decorator for views that require viewer role."""
+    return role_required(allowed_roles=[User.Role.VIEWER])(view_func)

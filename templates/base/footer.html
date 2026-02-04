@@ -1,6 +1,6 @@
 <!-- ============================================
    FOOTER - CAMPUSGUARD AI
-   Professional Academic Brand
+   Evidence Intelligence Platform
    ============================================ -->
 
 <footer class="footer mt-auto" style="
@@ -29,7 +29,7 @@
                             font-size: 1rem;
                             font-weight: bold;
                         ">
-                            ⚔️
+                            🧠
                         </div>
                         <h4 style="
                             font-family: var(--font-serif);
@@ -41,10 +41,21 @@
                         </h4>
                     </div>
                     <p style="color: rgba(255, 255, 240, 0.8); line-height: 1.6;">
-                        Intelligent security surveillance system for Nigerian educational institutions.
-                        Combining artificial intelligence with practical security solutions for safer
-                        learning environments.
+                        Transform phone photos into campus security intelligence.
+                        AI-powered evidence analysis platform for Nigerian educational institutions.
+                        Zero hardware cost - uses smartphones you already have.
                     </p>
+                    <div class="badge-list mt-3">
+                        <span class="badge bg-success me-2 mb-2" style="font-size: 0.75rem;">
+                            <i class="fas fa-mobile-alt me-1"></i> Mobile-First
+                        </span>
+                        <span class="badge bg-info me-2 mb-2" style="font-size: 0.75rem;">
+                            <i class="fas fa-robot me-1"></i> AI Analysis
+                        </span>
+                        <span class="badge bg-warning me-2 mb-2" style="font-size: 0.75rem;">
+                            <i class="fas fa-chart-line me-1"></i> Pattern Detection
+                        </span>
+                    </div>
                 </div>
                 
                 <!-- Social Links -->
@@ -123,41 +134,43 @@
                                 </a>
                             </li>
                             <li class="mb-2">
-                                <a href="{% url 'cameras:list' %}" style="
+                                <a href="{% url 'reports:create' %}" style="
                                     color: rgba(255, 255, 240, 0.8);
                                     text-decoration: none;
                                     transition: all 0.3s ease;
                                     display: flex;
                                     align-items: center;
                                 ">
-                                    <i class="fas fa-video me-2" style="width: 20px;"></i>
-                                    Cameras
+                                    <i class="fas fa-flag me-2" style="width: 20px;"></i>
+                                    Report Incident
                                 </a>
                             </li>
                             <li class="mb-2">
-                                <a href="{% url 'incidents:list' %}" style="
+                                <a href="{% url 'reports:my_reports' %}" style="
                                     color: rgba(255, 255, 240, 0.8);
                                     text-decoration: none;
                                     transition: all 0.3s ease;
                                     display: flex;
                                     align-items: center;
                                 ">
-                                    <i class="fas fa-exclamation-triangle me-2" style="width: 20px;"></i>
-                                    Incidents
+                                    <i class="fas fa-folder me-2" style="width: 20px;"></i>
+                                    My Reports
                                 </a>
                             </li>
+                            {% if user.is_authenticated and user.role in 'admin,manager' %}
                             <li class="mb-2">
-                                <a href="{% url 'alerts:list' %}" style="
+                                <a href="{% url 'reports:reports_queue' %}" style="
                                     color: rgba(255, 255, 240, 0.8);
                                     text-decoration: none;
                                     transition: all 0.3s ease;
                                     display: flex;
                                     align-items: center;
                                 ">
-                                    <i class="fas fa-bell me-2" style="width: 20px;"></i>
-                                    Alerts
+                                    <i class="fas fa-inbox me-2" style="width: 20px;"></i>
+                                    Review Queue
                                 </a>
                             </li>
+                            {% endif %}
                         </ul>
                     </div>
                     <div class="col-6">
@@ -175,18 +188,20 @@
                                     Profile
                                 </a>
                             </li>
+                            {% if user.role in 'admin,manager' %}
                             <li class="mb-2">
-                                <a href="{% url 'alerts:preferences' %}" style="
+                                <a href="{% url 'reports:analytics' %}" style="
                                     color: rgba(255, 255, 240, 0.8);
                                     text-decoration: none;
                                     transition: all 0.3s ease;
                                     display: flex;
                                     align-items: center;
                                 ">
-                                    <i class="fas fa-cog me-2" style="width: 20px;"></i>
-                                    Settings
+                                    <i class="fas fa-chart-line me-2" style="width: 20px;"></i>
+                                    Analytics
                                 </a>
                             </li>
+                            {% endif %}
                             <li class="mb-2">
                                 <a href="{% url 'accounts:logout' %}" style="
                                     color: rgba(255, 255, 240, 0.8);
@@ -213,7 +228,7 @@
                                 </a>
                             </li>
                             {% endif %}
-                            {% if user.is_superuser %}
+                            {% if user.is_superuser or user.role == 'admin' %}
                             <li class="mb-2">
                                 <a href="{% url 'admin:index' %}" style="
                                     color: rgba(255, 255, 240, 0.8);
@@ -223,7 +238,7 @@
                                     align-items: center;
                                 ">
                                     <i class="fas fa-cogs me-2" style="width: 20px;"></i>
-                                    Admin
+                                    Admin Panel
                                 </a>
                             </li>
                             {% endif %}
@@ -255,24 +270,44 @@
                         <span style="color: var(--academic-gold); font-weight: 600;">System Status: Operational</span>
                     </div>
                     <small style="color: rgba(255, 255, 240, 0.7);">
-                        Last updated: {% now "F j, Y, g:i a" %}
+                        Evidence Intelligence Platform
                     </small>
+                    <div class="mt-2">
+                        <small style="color: rgba(255, 255, 240, 0.7);">
+                            <i class="fas fa-sync-alt me-1"></i>
+                            Last updated: {% now "F j, Y, g:i a" %}
+                        </small>
+                    </div>
                 </div>
                 
-                <!-- Compliance Badge -->
+                <!-- Key Benefits -->
                 <div class="compliance-badge mb-4">
-                    <div class="d-flex align-items-center p-3" style="
+                    <div class="p-3" style="
                         background: rgba(255, 215, 0, 0.1);
                         border: 1px solid rgba(255, 215, 0, 0.3);
                         border-radius: var(--border-radius);
                     ">
-                        <i class="fas fa-shield-alt fa-2x me-3" style="color: var(--academic-gold);"></i>
-                        <div>
-                            <strong style="color: var(--ivory-white);">Data Protection Compliant</strong>
-                            <div style="font-size: 0.85rem; color: rgba(255, 255, 240, 0.7);">
-                                Nigeria Data Protection Act, 2023
-                            </div>
-                        </div>
+                        <h6 style="color: var(--academic-gold); margin-bottom: 0.75rem;">
+                            <i class="fas fa-bolt me-2"></i>Key Benefits
+                        </h6>
+                        <ul class="list-unstyled mb-0" style="font-size: 0.85rem;">
+                            <li class="mb-1">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                Zero hardware cost
+                            </li>
+                            <li class="mb-1">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                Uses existing smartphones
+                            </li>
+                            <li class="mb-1">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                AI-powered evidence analysis
+                            </li>
+                            <li>
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                Pattern recognition & prevention
+                            </li>
+                        </ul>
                     </div>
                 </div>
                 
@@ -280,8 +315,11 @@
                 <div class="version-info">
                     <small style="color: rgba(255, 255, 240, 0.6);">
                         <i class="fas fa-code-branch me-1"></i>
-                        Version 1.0.0
+                        CampusGuard AI v1.0
                     </small>
+                    <div style="font-size: 0.75rem; color: rgba(255, 255, 240, 0.5); margin-top: 0.25rem;">
+                        Evidence Intelligence Platform
+                    </div>
                 </div>
             </div>
         </div>
@@ -296,12 +334,20 @@
         <div class="row">
             <div class="col-md-6">
                 <p style="color: rgba(255, 255, 240, 0.6); margin: 0; font-size: 0.9rem;">
-                    &copy; {% now "Y" %} CampusGuard AI Surveillance System. All rights reserved.
+                    &copy; {% now "Y" %} CampusGuard AI - Evidence Intelligence Platform
+                </p>
+                <p style="color: rgba(255, 255, 240, 0.5); margin: 0.25rem 0 0; font-size: 0.8rem;">
+                    <i class="fas fa-shield-alt me-1"></i>
+                    Compliant with Nigeria Data Protection Act, 2023
                 </p>
             </div>
             <div class="col-md-6 text-md-end">
                 <p style="color: rgba(255, 255, 240, 0.6); margin: 0; font-size: 0.9rem;">
                     Designed specifically for Nigerian educational institutions
+                </p>
+                <p style="color: rgba(255, 255, 240, 0.5); margin: 0.25rem 0 0; font-size: 0.8rem;">
+                    <i class="fas fa-mobile-alt me-1"></i>
+                    Mobile-first • AI-powered • Cost-effective
                 </p>
             </div>
         </div>
@@ -334,6 +380,12 @@
     }
 }
 
+/* Badge styling */
+.badge-list .badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
 /* Mobile adjustments */
 @media (max-width: 768px) {
     .footer {
@@ -350,6 +402,14 @@
     
     .col-lg-4:last-child {
         margin-bottom: 0;
+    }
+    
+    .list-unstyled {
+        text-align: left;
+    }
+    
+    .list-unstyled li {
+        justify-content: flex-start !important;
     }
 }
 </style>

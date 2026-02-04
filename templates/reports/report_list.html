@@ -1,0 +1,169 @@
+<!-- templates/reports/report_list.html -->
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Incident Reports - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">📋 Incident Reports</h2>
+                    <p class="text-muted mb-0">
+                        {% if user.can_view_all_reports %}
+                            All incident reports in the system
+                        {% else %}
+                            Your submitted incident reports
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'reports:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Report New Incident
+                    </a>
+                    {% if user.can_view_all_reports %}
+                        <a href="{% url 'reports:my_reports' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-user me-2"></i>My Reports
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Reports</h6>
+                    <h2 class="mb-0">{{ total_reports }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Pending Review</h6>
+                    <h2 class="mb-0">{{ pending_reports }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Resolved</h6>
+                    <h2 class="mb-0">{{ resolved_reports }}</h2>
+                </div>
+            </div>
+        </div>
+       <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h6 class="card-title">Processing</h6>
+                <h2 class="mb-0">{{ processing_reports }}</h2>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <!-- Reports Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Title</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr>
+                            <td>
+                                <small class="text-muted">{{ report.id|slice:":8" }}...</small>
+                            </td>
+                            <td>
+                                <strong>{{ report.title|truncatechars:40 }}</strong>
+                                {% if report.images.count > 0 %}
+                                    <span class="badge bg-info ms-1">
+                                        <i class="fas fa-image"></i> {{ report.images.count }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.category %}
+                                    <span class="badge bg-secondary">{{ report.category.name }}</span>
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.location %}
+                                    {{ report.location.name|truncatechars:20 }}
+                                {% else %}
+                                    <span class="text-muted">Not specified</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif report.status == 'processing' %}
+                                    <span class="badge bg-info">Processing</span>
+                                {% elif report.status == 'resolved' %}
+                                    <span class="badge bg-success">Resolved</span>
+                                {% elif report.status == 'closed' %}
+                                    <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.priority == 'low' %}
+                                    <span class="badge bg-success">Low</span>
+                                {% elif report.priority == 'medium' %}
+                                    <span class="badge bg-warning">Medium</span>
+                                {% elif report.priority == 'high' %}
+                                    <span class="badge bg-danger">High</span>
+                                {% elif report.priority == 'critical' %}
+                                    <span class="badge bg-dark">Critical</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <small class="text-muted">{{ report.created_at|date:"M d, Y" }}</small>
+                            </td>
+                            <td>
+                                <a href="{% url 'reports:detail' report.id %}" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center py-4">
+                                <div class="text-muted">
+                                    <i class="fas fa-inbox fa-2x mb-3"></i>
+                                    <h5>No reports found</h5>
+                                    <p>Start by creating your first incident report.</p>
+                                    <a href="{% url 'reports:create' %}" class="btn btn-primary">
+                                        <i class="fas fa-plus-circle me-2"></i>Report First Incident
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

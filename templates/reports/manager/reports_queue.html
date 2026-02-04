@@ -1,0 +1,169 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Reports Queue - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">📥 Reports Queue</h2>
+                    <p class="text-muted mb-0">{{ queue_count }} reports awaiting review</p>
+                </div>
+                <div>
+                    <a href="{% url 'reports:manager_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter Card -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>Filter Reports
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Status</label>
+                    {{ filter_form.status }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Category</label>
+                    {{ filter_form.category }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">From Date</label>
+                    {{ filter_form.date_from }}
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">To Date</label>
+                    {{ filter_form.date_to }}
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Apply Filters
+                    </button>
+                    <a href="{% url 'reports:reports_queue' %}" class="btn btn-outline-secondary ms-2">
+                        Clear Filters
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Reports Queue -->
+    <div class="card">
+        <div class="card-body">
+            {% if reports %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Priority</th>
+                            <th>Report Details</th>
+                            <th>Category</th>
+                            <th>Location</th>
+                            <th>Submitted</th>
+                            <th>Images</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in reports %}
+                        <tr class="{% if report.priority == 'critical' %}table-danger
+                                  {% elif report.priority == 'high' %}table-warning
+                                  {% endif %}">
+                            <td class="align-middle">
+                                {% if report.priority == 'critical' %}
+                                <span class="badge bg-dark">CRITICAL</span>
+                                {% elif report.priority == 'high' %}
+                                <span class="badge bg-danger">HIGH</span>
+                                {% elif report.priority == 'medium' %}
+                                <span class="badge bg-warning">MEDIUM</span>
+                                {% else %}
+                                <span class="badge bg-success">LOW</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <strong>{{ report.title }}</strong>
+                                <div class="small text-muted">
+                                    {{ report.description|truncatechars:100 }}
+                                </div>
+                                <div class="small">
+                                    <i class="fas fa-user me-1"></i>
+                                    {{ report.display_reporter }}
+                                </div>
+                            </td>
+                            <td class="align-middle">
+                                {% if report.category %}
+                                <span class="badge bg-secondary">{{ report.category.name }}</span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                {% if report.location %}
+                                {{ report.location.name|truncatechars:20 }}
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                <small class="text-muted">{{ report.created_at|timesince }} ago</small>
+                            </td>
+                            <td class="align-middle">
+                                {% if report.images.count > 0 %}
+                                <span class="badge bg-info">
+                                    <i class="fas fa-image"></i> {{ report.images.count }}
+                                </span>
+                                {% else %}
+                                <span class="badge bg-secondary">No images</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'reports:process_report' report.id %}" 
+                                       class="btn btn-primary">
+                                        <i class="fas fa-cog"></i> Process
+                                    </a>
+                                    <a href="{% url 'reports:detail' report.id %}" 
+                                       class="btn btn-outline-secondary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <div class="text-muted mb-4">
+                    <i class="fas fa-check-circle fa-3x text-success"></i>
+                </div>
+                <h4>Queue is Empty!</h4>
+                <p class="text-muted">All reports have been processed.</p>
+                <a href="{% url 'reports:manager_dashboard' %}" class="btn btn-primary">
+                    <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.table tbody tr:hover {
+    background-color: rgba(0, 123, 255, 0.05);
+}
+</style>
+{% endblock %}

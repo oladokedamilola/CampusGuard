@@ -1,0 +1,218 @@
+<!-- templates/reports/admin/system_stats.html -->
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}System Statistics - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">📊 System Statistics</h2>
+                    <p class="text-muted mb-0">Comprehensive system-wide analytics</p>
+                </div>
+                <div>
+                    <a href="{% url 'reports:manager_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Users</h6>
+                    <h2 class="mb-0">{{ total_users }}</h2>
+                    <small>{{ active_users }} active</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Reports</h6>
+                    <h2 class="mb-0">{{ total_reports }}</h2>
+                    <small>{{ reports_last_30_days }} in last 30 days</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Avg. Resolution Time</h6>
+                    <h2 class="mb-0">
+                        {% if avg_resolution_hours %}
+                            {{ avg_resolution_hours|floatformat:1 }}h
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </h2>
+                    <small>average time to resolve</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">System Health</h6>
+                    <h2 class="mb-0">100%</h2>
+                    <small>uptime & performance</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- User Statistics -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>User Distribution by Role
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if users_by_role %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Role</th>
+                                    <th class="text-end">Count</th>
+                                    <th class="text-end">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in users_by_role %}
+                                <tr>
+                                    <td>
+                                        {% if item.role == 'admin' %}
+                                        <span class="badge bg-danger">Admin</span>
+                                        {% elif item.role == 'manager' %}
+                                        <span class="badge bg-primary">Manager</span>
+                                        {% elif item.role == 'viewer' %}
+                                        <span class="badge bg-success">Viewer</span>
+                                        {% else %}
+                                        <span class="badge bg-secondary">{{ item.role }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">{{ item.count }}</td>
+                                    <td class="text-end">
+                                        {% widthratio item.count total_users 100 %}%
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No user data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Top Categories -->
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-tags me-2"></i>Top Incident Categories
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if top_categories %}
+                    <div class="list-group list-group-flush">
+                        {% for item in top_categories %}
+                        <div class="list-group-item d-flex justify-content-between align-items-center px-0">
+                            <span>{{ item.category__name|default:"Uncategorized" }}</span>
+                            <div class="d-flex align-items-center">
+                                <div class="progress flex-grow-1" style="width: 100px; height: 8px;">
+                                    <div class="progress-bar" 
+                                         style="width: {% widthratio item.count total_reports 100 %}%">
+                                    </div>
+                                </div>
+                                <span class="badge bg-primary ms-2">{{ item.count }}</span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No category data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hourly Distribution -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">
+                        <i class="fas fa-clock me-2"></i>Report Distribution by Hour
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if hourly_distribution %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Hour (24h)</th>
+                                    <th>Count</th>
+                                    <th>Bar Chart</th>
+                                    <th>Peak Analysis</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in hourly_distribution %}
+                                <tr>
+                                    <td>
+                                        {% if item.hour < 10 %}0{% endif %}{{ item.hour }}:00
+                                    </td>
+                                    <td>{{ item.count }}</td>
+                                    <td>
+                                        <div class="progress" style="height: 20px;">
+                                            {% with max_count=hourly_distribution.0.count|default:1 %}
+                                            <div class="progress-bar" 
+                                                 style="width: {% widthratio item.count max_count 100 %}%">
+                                                {{ item.count }}
+                                            </div>
+                                            {% endwith %}
+                                        </div>
+                                    </td>
+                                    <td>
+                                        {% if item.count >= 10 %}
+                                        <span class="badge bg-danger">Peak Hour</span>
+                                        {% elif item.count >= 5 %}
+                                        <span class="badge bg-warning">High Activity</span>
+                                        {% else %}
+                                        <span class="badge bg-success">Normal</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted text-center py-4">No hourly data available</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

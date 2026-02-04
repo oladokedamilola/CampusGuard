@@ -1,0 +1,39 @@
+{% extends 'base_public.html' %}
+{% load static %}
+
+{% block title %}Dashboard - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6 text-center">
+            <div class="card border-0 shadow">
+                <div class="card-body p-5">
+                    <div class="mb-4">
+                        <i class="fas fa-sync-alt fa-spin fa-3x text-primary mb-4"></i>
+                        <h3>Redirecting to Your Dashboard</h3>
+                        <p class="text-muted">Please wait while we redirect you to your role-specific dashboard.</p>
+                    </div>
+                    
+                    <div class="progress" style="height: 6px;">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             style="width: 100%"></div>
+                    </div>
+                    
+                    <p class="mt-4 small text-muted">
+                        If you're not redirected automatically, 
+                        <a href="{% url 'reports:my_reports' %}">click here</a>.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Auto-redirect after 2 seconds
+setTimeout(function() {
+    window.location.href = "{% url 'reports:my_reports' %}";
+}, 2000);
+</script>
+{% endblock %}

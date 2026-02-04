@@ -1,16 +1,15 @@
 {% extends 'base_public.html' %}
 {% load static %}
 
-{% block title %}CampusGuard AI - Intelligent Campus Security for Nigerian Institutions{% endblock %}
+{% block title %}CampusGuard AI - Evidence Intelligence for Safer Campuses{% endblock %}
 
 {% block content %}
 <!-- Hero Section -->
 <section class="hero-section" style="
-    background: linear-gradient(rgba(0, 33, 71, 0.85), rgba(0, 33, 71, 0.9)), 
-                url('https://images.unsplash.com/photo-1562774053-701939374585?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+    background: linear-gradient(rgba(0, 33, 71, 0.92), rgba(0, 33, 71, 0.95)), 
+                url('https://images.unsplash.com/photo-1581094794329-c8112a89af12?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
     background-size: cover;
     background-position: center;
-    background-attachment: fixed;
     min-height: 85vh;
     display: flex;
     align-items: center;
@@ -19,25 +18,25 @@
 ">
     <div class="container">
         <div class="row align-items-center">
-            <div class="col-lg-7">
+            <div class="col-lg-8">
                 <!-- Academic Badge -->
                 <div class="academic-badge mb-4">
                     <span class="badge bg-gold text-oxford px-3 py-2" style="font-family: var(--font-serif);">
-                        <i class="fas fa-shield-alt me-2"></i>Trusted by Nigerian Educational Institutions
+                        <i class="fas fa-brain me-2"></i>Intelligent Evidence Platform
                     </span>
                 </div>
                 
                 <!-- Main Heading -->
                 <h1 class="hero-title mb-4" style="
                     font-family: var(--font-serif);
-                    font-size: 3.5rem;
+                    font-size: 3.2rem;
                     font-weight: 700;
                     line-height: 1.2;
                     color: var(--ivory-white);
                     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
                 ">
-                    <span class="text-accent">Intelligent Security</span> 
-                    for Safer Learning Environments
+                    Transform <span class="text-accent">Phone Photos</span> 
+                    into Campus Security Intelligence
                 </h1>
                 
                 <!-- Subtitle -->
@@ -45,11 +44,11 @@
                     font-size: 1.25rem;
                     color: rgba(255, 255, 240, 0.9);
                     line-height: 1.6;
-                    max-width: 600px;
+                    max-width: 700px;
                 ">
-                    CampusGuard AI combines advanced surveillance technology with artificial intelligence 
-                    to protect Nigerian educational institutions. Detect threats in real-time, 
-                    prevent incidents, and ensure a secure academic environment.
+                    CampusGuard AI turns scattered incident evidence into organized security intelligence. 
+                    Upload photos, analyze patterns, and prevent repeat incidents—all with the smartphones 
+                    your institution already has. <strong>Zero hardware cost required.</strong>
                 </p>
                 
                 <!-- CTA Buttons -->
@@ -58,50 +57,65 @@
                         <a href="{% url 'dashboard:index' %}" class="btn btn-secondary btn-lg px-5 py-3">
                             <i class="fas fa-tachometer-alt me-2"></i>Go to Dashboard
                         </a>
+                        <a href="{% url 'reports:create' %}" class="btn btn-outline btn-lg px-5 py-3" 
+                           style="border: 2px solid var(--academic-gold); color: var(--academic-gold);">
+                            <i class="fas fa-flag me-2"></i>Report Incident
+                        </a>
                     {% else %}
                         <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-lg px-5 py-3">
                             <i class="fas fa-sign-in-alt me-2"></i>Login to System
                         </a>
-                        <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg px-5 py-3" 
+                        <a href="#how-it-works" class="btn btn-outline btn-lg px-5 py-3" 
                            style="border: 2px solid var(--academic-gold); color: var(--academic-gold);">
-                            <i class="fas fa-play-circle me-2"></i>Request Demo
+                            <i class="fas fa-play-circle me-2"></i>See How It Works
                         </a>
                     {% endif %}
                 </div>
                 
-                <!-- Trust Indicators -->
-                <div class="trust-indicators mt-5">
+                <!-- Key Benefits -->
+                <div class="trust-indicators mt-5 pt-4" style="border-top: 1px solid rgba(255, 215, 0, 0.3);">
                     <div class="row">
-                        <div class="col-md-4 mb-3">
+                        <div class="col-md-3 col-6 mb-3">
                             <div class="d-flex align-items-center">
                                 <div class="indicator-icon me-3">
-                                    <i class="fas fa-clock fa-2x text-accent"></i>
+                                    <i class="fas fa-mobile-alt fa-2x text-accent"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-0 text-accent" style="font-family: var(--font-serif);">0₦</h4>
+                                    <small class="text-ivory">Hardware Cost</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="indicator-icon me-3">
+                                    <i class="fas fa-cloud-upload-alt fa-2x text-accent"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-0 text-accent" style="font-family: var(--font-serif);">Smart</h4>
+                                    <small class="text-ivory">Evidence Upload</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="indicator-icon me-3">
+                                    <i class="fas fa-robot fa-2x text-accent"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-0 text-accent" style="font-family: var(--font-serif);">AI</h4>
+                                    <small class="text-ivory">Pattern Analysis</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-6 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="indicator-icon me-3">
+                                    <i class="fas fa-shield-alt fa-2x text-accent"></i>
                                 </div>
                                 <div>
                                     <h4 class="mb-0 text-accent" style="font-family: var(--font-serif);">24/7</h4>
-                                    <small class="text-ivory">Continuous Monitoring</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="indicator-icon me-3">
-                                    <i class="fas fa-bolt fa-2x text-accent"></i>
-                                </div>
-                                <div>
-                                    <h4 class="mb-0 text-accent" style="font-family: var(--font-serif);">&lt;5s</h4>
-                                    <small class="text-ivory">Alert Response</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="indicator-icon me-3">
-                                    <i class="fas fa-check-circle fa-2x text-accent"></i>
-                                </div>
-                                <div>
-                                    <h4 class="mb-0 text-accent" style="font-family: var(--font-serif);">99.9%</h4>
-                                    <small class="text-ivory">Detection Accuracy</small>
+                                    <small class="text-ivory">Evidence Access</small>
                                 </div>
                             </div>
                         </div>
@@ -109,9 +123,9 @@
                 </div>
             </div>
             
-            <!-- Dashboard Preview -->
-            <div class="col-lg-5 mt-5 mt-lg-0">
-                <div class="dashboard-preview-card card shadow-lg border-0" style="
+            <!-- System Preview -->
+            <div class="col-lg-4 mt-5 mt-lg-0">
+                <div class="system-preview-card card shadow-lg border-0" style="
                     background: rgba(255, 255, 255, 0.1);
                     backdrop-filter: blur(10px);
                     border: 1px solid rgba(255, 215, 0, 0.2);
@@ -123,50 +137,55 @@
                         border-bottom: 2px solid var(--academic-gold);
                     ">
                         <h5 class="mb-0 text-ivory" style="font-family: var(--font-serif);">
-                            <i class="fas fa-desktop me-2"></i>Live Dashboard Preview
+                            <i class="fas fa-upload me-2"></i>Evidence Upload Preview
                         </h5>
-                        <span class="badge bg-gold text-oxford">DEMO</span>
+                        <span class="badge bg-gold text-oxford">LIVE</span>
                     </div>
-                    <div class="card-body p-0">
-                        <div class="dashboard-preview" style="height: 250px; position: relative;">
-                            <!-- Mock Camera Grid -->
-                            <div class="camera-grid" style="
-                                display: grid;
-                                grid-template-columns: repeat(2, 1fr);
-                                gap: 4px;
-                                padding: 8px;
+                    <div class="card-body p-3">
+                        <!-- Upload Interface Mockup -->
+                        <div class="upload-preview" style="height: 220px; position: relative;">
+                            <div class="upload-area" style="
+                                border: 2px dashed var(--academic-gold);
+                                border-radius: 8px;
                                 height: 100%;
+                                display: flex;
+                                flex-direction: column;
+                                justify-content: center;
+                                align-items: center;
+                                padding: 20px;
+                                background: rgba(255, 215, 0, 0.05);
                             ">
-                                {% for i in '1234' %}
-                                <div class="camera-feed" style="
-                                    background: linear-gradient(135deg, var(--oxford-blue-dark) 0%, var(--oxford-blue) 100%);
-                                    border-radius: 4px;
-                                    display: flex;
-                                    flex-direction: column;
-                                    justify-content: center;
-                                    align-items: center;
-                                    position: relative;
-                                    border: 1px solid rgba(255, 215, 0, 0.1);
-                                ">
-                                    <i class="fas fa-video text-accent mb-2" style="opacity: 0.7;"></i>
-                                    <small class="text-ivory" style="opacity: 0.8;">Camera {{ i }}</small>
-                                    {% if i == '1' %}
-                                    <div class="position-absolute top-1 start-1">
-                                        <span class="badge bg-danger pulse" style="font-size: 0.6rem;">
-                                            <i class="fas fa-exclamation-circle"></i>
-                                        </span>
-                                    </div>
-                                    {% endif %}
+                                <div class="upload-icon mb-3">
+                                    <i class="fas fa-camera fa-3x text-accent" style="opacity: 0.8;"></i>
                                 </div>
-                                {% endfor %}
+                                <h6 class="text-ivory mb-2">Upload Incident Evidence</h6>
+                                <p class="text-center small mb-0" style="color: rgba(255, 255, 240, 0.7);">
+                                    Drag & drop or click to upload photos
+                                </p>
+                                <div class="image-previews mt-3 d-flex gap-2">
+                                    {% for i in '123' %}
+                                    <div class="image-preview" style="
+                                        width: 40px;
+                                        height: 40px;
+                                        background: linear-gradient(135deg, var(--oxford-blue-dark) 0%, var(--oxford-blue) 100%);
+                                        border-radius: 4px;
+                                        border: 1px solid rgba(255, 215, 0, 0.3);
+                                        display: flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                    ">
+                                        <i class="fas fa-image text-accent" style="font-size: 0.8rem; opacity: 0.7;"></i>
+                                    </div>
+                                    {% endfor %}
+                                </div>
                             </div>
                             
-                            <!-- Live Alert Indicator -->
+                            <!-- Processing Indicator -->
                             <div class="position-absolute bottom-3 start-3">
-                                <div class="alert-indicator d-flex align-items-center">
+                                <div class="processing-indicator d-flex align-items-center">
                                     <div class="pulse-ring me-2"></div>
                                     <span class="badge bg-success" style="font-size: 0.75rem;">
-                                        <i class="fas fa-circle me-1"></i>System Active
+                                        <i class="fas fa-robot me-1"></i>AI Analysis Ready
                                     </span>
                                 </div>
                             </div>
@@ -177,19 +196,19 @@
         </div>
     </div>
     
-    <!-- Academic Scroll Indicator -->
+    <!-- Scroll Indicator -->
     <div class="scroll-indicator position-absolute bottom-0 start-50 translate-middle-x mb-4">
-        <a href="#overview" class="text-decoration-none">
+        <a href="#how-it-works" class="text-decoration-none">
             <div class="d-flex flex-column align-items-center">
-                <span class="text-accent mb-1">Explore System</span>
+                <span class="text-accent mb-1">How It Works</span>
                 <i class="fas fa-chevron-down text-accent fa-lg animate-bounce"></i>
             </div>
         </a>
     </div>
 </section>
 
-<!-- System Overview Section -->
-<section id="overview" class="py-6 bg-ivory" style="padding: 6rem 0;">
+<!-- How It Works Section -->
+<section id="how-it-works" class="py-6 bg-ivory" style="padding: 6rem 0;">
     <div class="container">
         <div class="section-header text-center mb-5">
             <h2 class="section-title mb-3" style="
@@ -201,7 +220,7 @@
                 padding-bottom: 1rem;
             ">
                 <span class="accent-line"></span>
-                CampusGuard AI System
+                From Evidence to Intelligence
             </h2>
             <p class="section-subtitle mx-auto" style="
                 max-width: 700px;
@@ -209,53 +228,227 @@
                 color: var(--slate-gray);
                 line-height: 1.6;
             ">
-                A comprehensive security solution designed specifically for Nigerian educational institutions, 
-                combining cutting-edge technology with practical implementation.
+                Transform scattered photos into actionable security insights with our simple, 
+                intelligent four-step process.
+            </p>
+        </div>
+        
+        <!-- Process Steps - All in one row on large screens -->
+        <div class="row g-4 justify-content-center">
+            <!-- Step 1 -->
+            <div class="col-lg-2 col-md-3">
+                <div class="process-step text-center">
+                    <div class="step-number mb-4" style="
+                        width: 70px;
+                        height: 70px;
+                        background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 3px solid var(--academic-gold);
+                        margin: 0 auto;
+                        font-family: var(--font-serif);
+                        font-size: 1.8rem;
+                        color: var(--academic-gold);
+                        font-weight: bold;
+                    ">
+                        1
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-camera-retro fa-3x text-oxford"></i>
+                    </div>
+                    <h4 class="step-title mb-3" style="font-family: var(--font-serif); color: var(--oxford-blue);">
+                        Capture & Upload
+                    </h4>
+                    <p class="step-description" style="color: var(--slate-gray);">
+                        Take photos with your smartphone and upload them through our secure platform.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step Arrow -->
+            <div class="col-auto d-none d-lg-flex align-items-center justify-content-center">
+                <i class="fas fa-arrow-right fa-2x text-accent"></i>
+            </div>
+            
+            <!-- Step 2 -->
+            <div class="col-lg-2 col-md-3">
+                <div class="process-step text-center">
+                    <div class="step-number mb-4" style="
+                        width: 70px;
+                        height: 70px;
+                        background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 3px solid var(--academic-gold);
+                        margin: 0 auto;
+                        font-family: var(--font-serif);
+                        font-size: 1.8rem;
+                        color: var(--academic-gold);
+                        font-weight: bold;
+                    ">
+                        2
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-robot fa-3x text-oxford"></i>
+                    </div>
+                    <h4 class="step-title mb-3" style="font-family: var(--font-serif); color: var(--oxford-blue);">
+                        AI Analysis
+                    </h4>
+                    <p class="step-description" style="color: var(--slate-gray);">
+                        Our AI automatically analyzes images for objects, patterns, and risk assessment.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step Arrow -->
+            <div class="col-auto d-none d-lg-flex align-items-center justify-content-center">
+                <i class="fas fa-arrow-right fa-2x text-accent"></i>
+            </div>
+            
+            <!-- Step 3 -->
+            <div class="col-lg-2 col-md-3">
+                <div class="process-step text-center">
+                    <div class="step-number mb-4" style="
+                        width: 70px;
+                        height: 70px;
+                        background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 3px solid var(--academic-gold);
+                        margin: 0 auto;
+                        font-family: var(--font-serif);
+                        font-size: 1.8rem;
+                        color: var(--academic-gold);
+                        font-weight: bold;
+                    ">
+                        3
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-chart-line fa-3x text-oxford"></i>
+                    </div>
+                    <h4 class="step-title mb-3" style="font-family: var(--font-serif); color: var(--oxford-blue);">
+                        Pattern Recognition
+                    </h4>
+                    <p class="step-description" style="color: var(--slate-gray);">
+                        Identify recurring incidents, hotspots, and security trends across campus.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Step Arrow -->
+            <div class="col-auto d-none d-lg-flex align-items-center justify-content-center">
+                <i class="fas fa-arrow-right fa-2x text-accent"></i>
+            </div>
+            
+            <!-- Step 4 -->
+            <div class="col-lg-2 col-md-3">
+                <div class="process-step text-center">
+                    <div class="step-number mb-4" style="
+                        width: 70px;
+                        height: 70px;
+                        background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        border: 3px solid var(--academic-gold);
+                        margin: 0 auto;
+                        font-family: var(--font-serif);
+                        font-size: 1.8rem;
+                        color: var(--academic-gold);
+                        font-weight: bold;
+                    ">
+                        4
+                    </div>
+                    <div class="step-icon mb-3">
+                        <i class="fas fa-shield-alt fa-3x text-oxford"></i>
+                    </div>
+                    <h4 class="step-title mb-3" style="font-family: var(--font-serif); color: var(--oxford-blue);">
+                        Preventive Action
+                    </h4>
+                    <p class="step-description" style="color: var(--slate-gray);">
+                        Use data-driven insights to implement targeted security improvements.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-6 bg-oxford text-ivory" style="
+    margin: 4rem 0;
+    padding: 6rem 0;
+">
+    <div class="container">
+        <div class="section-header text-center mb-5">
+            <h2 class="section-title mb-3" style="
+                font-family: var(--font-serif);
+                font-size: 2.5rem;
+                color: var(--academic-gold);
+            ">
+                Evidence Intelligence Features
+            </h2>
+            <p class="section-subtitle mx-auto" style="
+                max-width: 700px;
+                font-size: 1.1rem;
+                color: var(--ivory-white);
+                opacity: 0.95;
+                line-height: 1.6;
+            ">
+                Everything you need to transform scattered evidence into organized security intelligence.
             </p>
         </div>
         
         <div class="row g-5">
             <!-- Feature 1 -->
             <div class="col-lg-4">
-                <div class="feature-card card border-0 h-100 shadow-sm" style="
-                    border-top: 4px solid var(--academic-gold);
+                <div class="feature-card card border-0 h-100" style="
+                    background: rgba(255, 255, 240, 0.08);
+                    border-left: 4px solid var(--academic-gold);
                     transition: transform 0.3s ease;
                 ">
                     <div class="card-body p-4">
                         <div class="feature-icon mb-4" style="
                             width: 70px;
                             height: 70px;
-                            background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                            background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
                             border-radius: 12px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            border: 2px solid var(--academic-gold);
+                            border: 2px solid var(--oxford-blue);
                         ">
-                            <i class="fas fa-brain fa-2x text-accent"></i>
+                            <i class="fas fa-cloud-upload-alt fa-2x text-oxford"></i>
                         </div>
                         <h4 class="feature-title mb-3" style="
                             font-family: var(--font-serif);
-                            color: var(--oxford-blue);
+                            color: var(--academic-gold);
                         ">
-                            AI-Powered Threat Detection
+                            Smart Evidence Upload
                         </h4>
-                        <p class="feature-description" style="color: var(--slate-gray);">
-                            Advanced computer vision algorithms that automatically detect suspicious activities, 
-                            unauthorized access, and potential security threats in real-time.
+                        <p class="feature-description" style="color: var(--ivory-white); opacity: 0.95;">
+                            Upload photos from any smartphone. Our system organizes evidence by incident, 
+                            location, and time—automatically.
                         </p>
                         <ul class="feature-list list-unstyled mt-3">
-                            <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Motion and anomaly detection
+                            <li class="mb-2" style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Mobile-friendly upload interface
                             </li>
-                            <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Facial and object recognition
+                            <li class="mb-2" style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Automatic metadata extraction
                             </li>
-                            <li>
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Behavior pattern analysis
+                            <li style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Secure cloud storage
                             </li>
                         </ul>
                     </div>
@@ -264,45 +457,46 @@
             
             <!-- Feature 2 -->
             <div class="col-lg-4">
-                <div class="feature-card card border-0 h-100 shadow-sm" style="
-                    border-top: 4px solid var(--academic-gold);
+                <div class="feature-card card border-0 h-100" style="
+                    background: rgba(255, 255, 240, 0.08);
+                    border-left: 4px solid var(--academic-gold);
                     transition: transform 0.3s ease;
                 ">
                     <div class="card-body p-4">
                         <div class="feature-icon mb-4" style="
                             width: 70px;
                             height: 70px;
-                            background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                            background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
                             border-radius: 12px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            border: 2px solid var(--academic-gold);
+                            border: 2px solid var(--oxford-blue);
                         ">
-                            <i class="fas fa-bell fa-2x text-accent"></i>
+                            <i class="fas fa-brain fa-2x text-oxford"></i>
                         </div>
                         <h4 class="feature-title mb-3" style="
                             font-family: var(--font-serif);
-                            color: var(--oxford-blue);
+                            color: var(--academic-gold);
                         ">
-                            Intelligent Alert System
+                            AI-Powered Analysis
                         </h4>
-                        <p class="feature-description" style="color: var(--slate-gray);">
-                            Instant notifications delivered to security personnel via multiple channels 
-                            when incidents are detected, ensuring rapid response.
+                        <p class="feature-description" style="color: var(--ivory-white); opacity: 0.95;">
+                            Advanced AI automatically analyzes uploaded images for objects, 
+                            patterns, and potential risks without manual review.
                         </p>
                         <ul class="feature-list list-unstyled mt-3">
-                            <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Email and SMS alerts
+                            <li class="mb-2" style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Object and face detection
                             </li>
-                            <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                In-app notifications
+                            <li class="mb-2" style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Automatic risk assessment
                             </li>
-                            <li>
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Priority-based escalation
+                            <li style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Privacy-preserving face blurring
                             </li>
                         </ul>
                     </div>
@@ -311,45 +505,46 @@
             
             <!-- Feature 3 -->
             <div class="col-lg-4">
-                <div class="feature-card card border-0 h-100 shadow-sm" style="
-                    border-top: 4px solid var(--academic-gold);
+                <div class="feature-card card border-0 h-100" style="
+                    background: rgba(255, 255, 240, 0.08);
+                    border-left: 4px solid var(--academic-gold);
                     transition: transform 0.3s ease;
                 ">
                     <div class="card-body p-4">
                         <div class="feature-icon mb-4" style="
                             width: 70px;
                             height: 70px;
-                            background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+                            background: linear-gradient(135deg, var(--academic-gold) 0%, var(--academic-gold-light) 100%);
                             border-radius: 12px;
                             display: flex;
                             align-items: center;
                             justify-content: center;
-                            border: 2px solid var(--academic-gold);
+                            border: 2px solid var(--oxford-blue);
                         ">
-                            <i class="fas fa-chart-line fa-2x text-accent"></i>
+                            <i class="fas fa-chart-bar fa-2x text-oxford"></i>
                         </div>
                         <h4 class="feature-title mb-3" style="
                             font-family: var(--font-serif);
-                            color: var(--oxford-blue);
+                            color: var(--academic-gold);
                         ">
-                            Comprehensive Analytics
+                            Pattern Intelligence
                         </h4>
-                        <p class="feature-description" style="color: var(--slate-gray);">
-                            Detailed security reports and analytics to help institutions understand 
-                            security trends and make data-driven decisions.
+                        <p class="feature-description" style="color: var(--ivory-white); opacity: 0.95;">
+                            Identify security hotspots, repeat incidents, and emerging trends 
+                            with our comprehensive analytics dashboard.
                         </p>
                         <ul class="feature-list list-unstyled mt-3">
-                            <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>
+                            <li class="mb-2" style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
                                 Incident trend analysis
                             </li>
-                            <li class="mb-2">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Security audit reports
+                            <li class="mb-2" style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Location heatmaps
                             </li>
-                            <li>
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                Performance dashboards
+                            <li style="color: var(--ivory-white); opacity: 0.95;">
+                                <i class="fas fa-check text-accent me-2"></i>
+                                Predictive insights
                             </li>
                         </ul>
                     </div>
@@ -359,132 +554,152 @@
     </div>
 </section>
 
-<!-- Implementation Section -->
-<section class="py-6 bg-oxford text-ivory">
+<!-- Solution for Nigeria Section -->
+<section class="py-6 bg-ivory" style="margin-top: 4rem;">
     <div class="container">
         <div class="row align-items-center">
             <div class="col-lg-6 mb-5 mb-lg-0">
-                <h2 class="mb-4 mt-4" style="
+                <div class="solution-visual p-4" style="
+                    background: rgba(0, 33, 71, 0.03);
+                    border-radius: 12px;
+                    border: 2px solid rgba(0, 33, 71, 0.1);
+                ">
+                    <div class="text-center mb-4">
+                        <h4 style="color: var(--oxford-blue); font-family: var(--font-serif);">
+                            <i class="fas fa-lightbulb me-2 text-accent"></i>
+                            The Smart Solution for Nigerian Institutions
+                        </h4>
+                    </div>
+                    
+                    <div class="solution-diagram" style="
+                        position: relative;
+                        min-height: 300px;
+                    ">
+                        <!-- Before & After Visualization -->
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="before-state text-center p-3">
+                                    <div class="state-icon mb-3">
+                                        <div style="
+                                            width: 80px;
+                                            height: 80px;
+                                            background: rgba(255, 0, 0, 0.1);
+                                            border-radius: 50%;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            margin: 0 auto;
+                                            border: 2px dashed #dc3545;
+                                        ">
+                                            <i class="fas fa-times fa-2x text-danger"></i>
+                                        </div>
+                                    </div>
+                                    <h6 class="text-danger mb-2">Traditional Approach</h6>
+                                    <ul class="list-unstyled small text-muted text-start">
+                                        <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Photos scattered in phones</li>
+                                        <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>No organized evidence</li>
+                                        <li class="mb-2"><i class="fas fa-times text-danger me-2"></i>Missed patterns & trends</li>
+                                        <li><i class="fas fa-times text-danger me-2"></i>Expensive camera systems</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="col-6">
+                                <div class="after-state text-center p-3">
+                                    <div class="state-icon mb-3">
+                                        <div style="
+                                            width: 80px;
+                                            height: 80px;
+                                            background: rgba(25, 135, 84, 0.1);
+                                            border-radius: 50%;
+                                            display: flex;
+                                            align-items: center;
+                                            justify-content: center;
+                                            margin: 0 auto;
+                                            border: 2px solid #198754;
+                                        ">
+                                            <i class="fas fa-check fa-2x text-success"></i>
+                                        </div>
+                                    </div>
+                                    <h6 class="text-success mb-2">Our Solution</h6>
+                                    <ul class="list-unstyled small text-muted text-start">
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Centralized evidence database</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>AI-powered analysis</li>
+                                        <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Pattern recognition</li>
+                                        <li><i class="fas fa-check text-success me-2"></i>Zero hardware cost</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Connecting Arrow -->
+                        <div class="position-absolute top-50 start-50 translate-middle d-none d-md-block">
+                            <i class="fas fa-arrow-right fa-2x text-accent"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-6">
+                <h2 class="mb-4" style="
                     font-family: var(--font-serif);
                     font-size: 2.5rem;
-                    color: var(--academic-gold);
+                    color: var(--oxford-blue);
                 ">
-                    Designed for Nigerian Institutions
+                    Built for Nigerian Realities
                 </h2>
-                <p class="mb-4" style="font-size: 1.1rem; opacity: 0.9;">
-                    Built with an understanding of the unique security challenges faced by 
-                    educational institutions in Nigeria, from power constraints to network limitations.
+                <p class="mb-4" style="font-size: 1.1rem; color: var(--slate-gray); line-height: 1.6;">
+                    We understand the unique challenges of implementing security solutions 
+                    in Nigerian educational institutions. That's why we built CampusGuard AI 
+                    to work within your existing constraints.
                 </p>
                 
                 <div class="implementation-points">
                     <div class="d-flex mb-3">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-accent fa-lg me-3"></i>
+                            <i class="fas fa-mobile-alt text-accent fa-lg me-3"></i>
                         </div>
                         <div>
-                            <h5 style="color: var(--academic-gold);">Adaptive to Local Conditions</h5>
-                            <p style="opacity: 0.8;">
-                                Works reliably even with intermittent power and internet connectivity
+                            <h5 style="color: var(--oxford-blue);">Uses Existing Smartphones</h5>
+                            <p style="color: var(--slate-gray);">
+                                No need for expensive camera installations. Use the smartphones your 
+                                staff and students already have.
                             </p>
                         </div>
                     </div>
                     
                     <div class="d-flex mb-3">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-accent fa-lg me-3"></i>
+                            <i class="fas fa-bolt text-accent fa-lg me-3"></i>
                         </div>
                         <div>
-                            <h5 style="color: var(--academic-gold);">Easy Integration</h5>
-                            <p style="opacity: 0.8;">
-                                Connects with existing CCTV systems and security infrastructure
+                            <h5 style="color: var(--oxford-blue);">Works with Intermittent Power</h5>
+                            <p style="color: var(--slate-gray);">
+                                Upload evidence when you have connectivity. Our system stores and 
+                                processes everything securely.
                             </p>
                         </div>
                     </div>
                     
                     <div class="d-flex mb-3">
                         <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-accent fa-lg me-3"></i>
+                            <i class="fas fa-shield-alt text-accent fa-lg me-3"></i>
                         </div>
                         <div>
-                            <h5 style="color: var(--academic-gold);">Cost-Effective Solution</h5>
-                            <p style="opacity: 0.8;">
-                                Affordable pricing tailored for educational budgets
+                            <h5 style="color: var(--oxford-blue);">NDPA Compliant</h5>
+                            <p style="color: var(--slate-gray);">
+                                Fully compliant with Nigeria Data Protection Act. Your evidence 
+                                and data are secure with us.
                             </p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="mt-4 mb-5">
-                    <a href="{% url 'accounts:login' %}" class="btn btn-secondary btn-lg">
-                        <i class="fas fa-rocket me-2"></i>Start Your Implementation
+                    <a href="{% if user.is_authenticated %}{% url 'reports:create' %}{% else %}{% url 'accounts:login' %}{% endif %}" 
+                       class="btn btn-secondary btn-lg">
+                        <i class="fas fa-upload me-2"></i>Start Organizing Your Evidence
                     </a>
-                </div>
-            </div>
-            
-            <div class="col-lg-6">
-                <div class="implementation-visual p-4" style="
-                    background: rgba(255, 255, 240, 0.1);
-                    border-radius: 12px;
-                    border: 2px solid rgba(255, 215, 0, 0.2);
-                    backdrop-filter: blur(5px);
-                ">
-                    <div class="text-center mb-4">
-                        <h4 style="color: var(--academic-gold); font-family: var(--font-serif);">
-                            <i class="fas fa-map-marker-alt me-2"></i>
-                            Security Coverage Map
-                        </h4>
-                    </div>
-                    
-                    <div class="coverage-map" style="
-                        background: linear-gradient(135deg, var(--oxford-blue-dark) 0%, var(--oxford-blue) 100%);
-                        border-radius: 8px;
-                        padding: 2rem;
-                        position: relative;
-                        min-height: 300px;
-                    ">
-                        <!-- Simplified Nigeria Map Visualization -->
-                        <div class="nigeria-map" style="
-                            position: relative;
-                            width: 100%;
-                            height: 250px;
-                            margin: 0 auto;
-                        ">
-                            <div class="map-outline" style="
-                                position: absolute;
-                                top: 50%;
-                                left: 50%;
-                                transform: translate(-50%, -50%);
-                                width: 80%;
-                                height: 80%;
-                                background: rgba(255, 215, 0, 0.1);
-                                border: 2px solid var(--academic-gold);
-                                border-radius: 8px;
-                            "></div>
-                            
-                            <!-- Security Points -->
-                            {% for i in '12345' %}
-                            <div class="security-point" style="
-                                position: absolute;
-                                width: 12px;
-                                height: 12px;
-                                background: var(--academic-gold);
-                                border-radius: 50%;
-                                border: 2px solid var(--oxford-blue);
-                                animation: pulse 2s infinite;
-                                animation-delay: {{ forloop.counter|add:"-1" }}s;
-                            " 
-                            style="
-                                top: {{ forloop.counter|add:"20" }}%;
-                                left: {{ forloop.counter|add:"15" }}%;
-                            "></div>
-                            {% endfor %}
-                            
-                            <div class="map-label position-absolute top-50 start-50 translate-middle text-center">
-                                <h5 class="text-accent mb-1">Nationwide Coverage</h5>
-                                <small class="text-ivory" style="opacity: 0.8;">Protecting institutions across Nigeria</small>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -493,7 +708,9 @@
 
 <!-- Final CTA -->
 <section class="py-6" style="
-    background: linear-gradient(rgba(255, 215, 0, 0.1), rgba(255, 215, 0, 0.05));
+    background: linear-gradient(135deg, var(--oxford-blue) 0%, var(--oxford-blue-light) 100%);
+    margin: 4rem 0;
+    padding: 6rem 0;
 ">
     <div class="container">
         <div class="row justify-content-center">
@@ -501,57 +718,59 @@
                 <div class="academic-seal mb-4" style="
                     width: 100px;
                     height: 100px;
-                    background: var(--oxford-blue);
+                    background: var(--academic-gold);
                     border-radius: 50%;
-                    border: 3px solid var(--academic-gold);
+                    border: 3px solid var(--oxford-blue);
                     margin: 0 auto;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-size: 2.5rem;
-                    color: var(--academic-gold);
+                    color: var(--oxford-blue);
                 ">
-                    <i class="fas fa-shield-alt"></i>
+                    <i class="fas fa-university"></i>
                 </div>
                 
                 <h2 class="mb-4" style="
                     font-family: var(--font-serif);
-                    color: var(--oxford-blue);
+                    color: var(--ivory-white);
                     font-size: 2.5rem;
                 ">
-                    Secure Your Institution Today
+                    Ready to Transform Your Campus Security?
                 </h2>
                 
                 <p class="mb-5 mx-auto" style="
                     max-width: 600px;
                     font-size: 1.1rem;
-                    color: var(--slate-gray);
+                    color: rgba(255, 255, 240, 0.9);
                     line-height: 1.6;
                 ">
-                    Join other forward-thinking Nigerian educational institutions in adopting 
-                    intelligent, reliable campus security.
+                    Join other Nigerian educational institutions that are turning scattered 
+                    evidence into organized security intelligence—with zero hardware investment.
                 </p>
                 
                 <div class="d-flex flex-wrap justify-content-center gap-3">
                     {% if user.is_authenticated %}
-                        <a href="{% url 'dashboard:index' %}" class="btn btn-primary btn-lg px-5">
-                            <i class="fas fa-tachometer-alt me-2"></i>Access Dashboard
+                        <a href="{% url 'reports:create' %}" class="btn btn-gold btn-lg px-5">
+                            <i class="fas fa-flag me-2"></i>Report an Incident
+                        </a>
+                        <a href="{% url 'dashboard:index' %}" class="btn btn-outline-ivory btn-lg px-5">
+                            <i class="fas fa-tachometer-alt me-2"></i>View Dashboard
                         </a>
                     {% else %}
-                        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg px-5">
+                        <a href="{% url 'accounts:login' %}" class="btn btn-gold btn-lg px-5">
                             <i class="fas fa-sign-in-alt me-2"></i>Login to System
                         </a>
-                        <a href="{% url 'accounts:login' %}" class="btn btn-outline btn-lg px-5" 
-                           style="border: 2px solid var(--oxford-blue); color: var(--oxford-blue);">
-                            <i class="fas fa-calendar-alt me-2"></i>Schedule Demo
+                        <a href="#how-it-works" class="btn btn-outline-ivory btn-lg px-5">
+                            <i class="fas fa-info-circle me-2"></i>Learn More
                         </a>
                     {% endif %}
                 </div>
                 
                 <div class="mt-4">
-                    <small class="text-muted">
-                        <i class="fas fa-lock me-1"></i>
-                        Fully compliant with Nigeria Data Protection Act
+                    <small style="color: rgba(255, 255, 240, 0.7);">
+                        <i class="fas fa-check-circle me-1"></i>
+                        No credit card required • Free for educational institutions • NDPA Compliant
                     </small>
                 </div>
             </div>
@@ -591,6 +810,7 @@
 .btn-secondary:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+    color: var(--oxford-blue);
 }
 
 .btn-outline {
@@ -603,6 +823,35 @@
 .btn-outline:hover {
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 33, 71, 0.1);
+}
+
+.btn-gold {
+    background: var(--academic-gold);
+    color: var(--oxford-blue);
+    border: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-gold:hover {
+    background: var(--academic-gold-light);
+    color: var(--oxford-blue);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.3);
+}
+
+.btn-outline-ivory {
+    background: transparent;
+    border: 2px solid var(--ivory-white);
+    color: var(--ivory-white);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-ivory:hover {
+    background: rgba(255, 255, 240, 0.1);
+    color: var(--ivory-white);
+    transform: translateY(-2px);
 }
 
 /* Animations */
@@ -649,7 +898,7 @@
 /* Feature card hover effect */
 .feature-card:hover {
     transform: translateY(-10px);
-    box-shadow: 0 15px 30px rgba(0, 33, 71, 0.15) !important;
+    background: rgba(255, 255, 240, 0.15) !important;
 }
 
 /* Section title accent line */
@@ -673,6 +922,20 @@
     opacity: 0.8;
 }
 
+/* Process step styling */
+.process-step {
+    padding: 2rem 1rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 33, 71, 0.1);
+    transition: all 0.3s ease;
+}
+
+.process-step:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 33, 71, 0.15);
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .hero-title {
@@ -691,6 +954,10 @@
         padding: 0.75rem 1.5rem !important;
         font-size: 1rem !important;
     }
+    
+    .trust-indicators .col-md-3 {
+        margin-bottom: 1.5rem;
+    }
 }
 
 @media (max-width: 576px) {
@@ -702,6 +969,21 @@
     .hero-cta .btn {
         width: 100%;
         margin-bottom: 0.5rem;
+    }
+    
+    .process-step {
+        margin-bottom: 2rem;
+    }
+}
+
+/* Mobile arrows for process steps */
+@media (max-width: 992px) {
+    .col-auto.d-none.d-lg-flex {
+        display: none !important;
+    }
+    
+    .row.justify-content-center > [class*='col-'] {
+        margin-bottom: 2rem;
     }
 }
 </style>

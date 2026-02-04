@@ -548,7 +548,6 @@ media/uploads/
 media/profiles/
 
 # Reports
-reports/
 exports/
 *.pdf
 *.csv

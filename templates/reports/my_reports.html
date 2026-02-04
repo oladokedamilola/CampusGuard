@@ -1,0 +1,174 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}My Reports - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">📁 My Incident Reports</h2>
+                    <p class="text-muted mb-0">Track all incidents you've reported</p>
+                </div>
+                <div>
+                    <a href="{% url 'reports:create' %}" class="btn btn-primary">
+                        <i class="fas fa-plus-circle me-2"></i>Report New Incident
+                    </a>
+                    {% if user.can_view_all_reports %}
+                        <a href="{% url 'reports:list' %}" class="btn btn-outline-secondary ms-2">
+                            <i class="fas fa-list me-2"></i>All Reports
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Total Reports</h6>
+                    <h2 class="mb-0">{{ stats.total }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+                <div class="card-body">
+                    <h6 class="card-title">Pending Review</h6>
+                    <h2 class="mb-0">{{ stats.pending }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Processing</h6>
+                    <h2 class="mb-0">{{ stats.processing }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h6 class="card-title">Resolved</h6>
+                    <h2 class="mb-0">{{ stats.resolved }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- My Reports Grid -->
+    <div class="row">
+        {% for report in reports %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge 
+                            {% if report.status == 'pending' %}bg-warning
+                            {% elif report.status == 'processing' %}bg-info
+                            {% elif report.status == 'resolved' %}bg-success
+                            {% else %}bg-secondary{% endif %}">
+                            {{ report.get_status_display }}
+                        </span>
+                        <span class="badge ms-1
+                            {% if report.priority == 'low' %}bg-success
+                            {% elif report.priority == 'medium' %}bg-warning
+                            {% elif report.priority == 'high' %}bg-danger
+                            {% else %}bg-dark{% endif %}">
+                            {{ report.get_priority_display }}
+                        </span>
+                    </div>
+                    <small class="text-muted">{{ report.created_at|date:"M d" }}</small>
+                </div>
+                
+                {% with report.images.first as first_image %}
+                {% if first_image %}
+                <div class="report-image-container">
+                    <img src="{{ first_image.image.url }}" 
+                         class="card-img-top" 
+                         alt="Incident image"
+                         style="height: 180px; object-fit: cover;">
+                    {% if report.images.count > 1 %}
+                    <span class="image-count-badge">
+                        <i class="fas fa-images"></i> +{{ report.images.count|add:"-1" }}
+                    </span>
+                    {% endif %}
+                </div>
+                {% endif %}
+                {% endwith %}
+                
+                <div class="card-body">
+                    <h5 class="card-title">{{ report.title|truncatechars:50 }}</h5>
+                    <p class="card-text text-muted small">{{ report.description|truncatechars:100 }}</p>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            {% if report.category %}
+                                <span class="badge bg-secondary">{{ report.category.name }}</span>
+                            {% endif %}
+                            {% if report.location %}
+                                <small class="text-muted ms-2">
+                                    <i class="fas fa-map-marker-alt"></i> {{ report.location.name }}
+                                </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card-footer bg-transparent">
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'reports:detail' report.id %}" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye me-1"></i> View Details
+                        </a>
+                        {% if report.status == 'pending' %}
+                        <span class="text-muted small">
+                            <i class="fas fa-clock"></i> Awaiting review
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <div class="text-muted mb-4">
+                        <i class="fas fa-inbox fa-3x"></i>
+                    </div>
+                    <h4>No Reports Yet</h4>
+                    <p class="text-muted">You haven't submitted any incident reports yet.</p>
+                    <a href="{% url 'reports:create' %}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-plus-circle me-2"></i>Submit Your First Report
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<style>
+.report-image-container {
+    position: relative;
+    overflow: hidden;
+}
+.image-count-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+</style>
+{% endblock %}

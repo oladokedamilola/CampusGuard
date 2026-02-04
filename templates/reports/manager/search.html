@@ -1,0 +1,307 @@
+{% extends 'base_app.html' %}
+{% load static %}
+
+{% block title %}Search Reports - CampusGuard AI{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-0">🔍 Search Reports</h2>
+                    <p class="text-muted mb-0">
+                        {% if result_count %}
+                            Found {{ result_count }} report(s)
+                        {% else %}
+                            Search all incident reports
+                        {% endif %}
+                    </p>
+                </div>
+                <div>
+                    <a href="{% url 'reports:manager_dashboard' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <h5 class="mb-0">
+                <i class="fas fa-search me-2"></i>Search & Filter
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" id="searchForm">
+                <div class="row g-3">
+                    <!-- Basic Search -->
+                    <div class="col-12">
+                        <label class="form-label">Search Text</label>
+                        <div class="input-group">
+                            {{ search_form.query }}
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filters Row 1 -->
+                    <div class="col-md-3">
+                        <label class="form-label">Status</label>
+                        {{ search_form.status }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Category</label>
+                        {{ search_form.category }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Location</label>
+                        {{ search_form.location }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Priority</label>
+                        {{ search_form.priority }}
+                    </div>
+
+                    <!-- Filters Row 2 -->
+                    <div class="col-md-3">
+                        <label class="form-label">Date Range</label>
+                        {{ search_form.date_range }}
+                    </div>
+                    
+                    <!-- Custom Date Range (hidden by default) -->
+                    <div class="col-md-3" id="customDateFrom" style="display: none;">
+                        <label class="form-label">From Date</label>
+                        {{ search_form.custom_date_from }}
+                    </div>
+                    <div class="col-md-3" id="customDateTo" style="display: none;">
+                        <label class="form-label">To Date</label>
+                        {{ search_form.custom_date_to }}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label">Images</label>
+                        {{ search_form.has_images }}
+                    </div>
+
+                    <!-- Filters Row 3 -->
+                    <div class="col-md-3">
+                        <label class="form-label">Sort By</label>
+                        {{ search_form.sort_by }}
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Other Filters</label>
+                        <div class="form-check mt-2">
+                            {{ search_form.anonymous_only }}
+                            <label class="form-check-label" for="{{ search_form.anonymous_only.id_for_label }}">
+                                Anonymous Reports Only
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-filter me-2"></i>Apply Filters
+                            </button>
+                            <a href="{% url 'reports:search' %}" class="btn btn-outline-secondary">
+                                Clear All
+                            </a>
+                            <button type="button" class="btn btn-outline-info ms-auto" id="toggleFilters">
+                                <i class="fas fa-sliders-h me-2"></i>Advanced
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Search Results -->
+    {% if results %}
+    <div class="card">
+        <div class="card-header bg-light d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>Search Results
+                <span class="badge bg-primary ms-2">{{ result_count }}</span>
+            </h5>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i>Print
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th width="50">
+                                <input type="checkbox" id="selectAll">
+                            </th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Priority</th>
+                            <th>Category</th>
+                            <th>Reporter</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in results %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" name="selected_reports" 
+                                       value="{{ report.id }}" class="report-checkbox">
+                            </td>
+                            <td>
+                                <strong>{{ report.title|truncatechars:40 }}</strong>
+                                {% if report.images.count > 0 %}
+                                <span class="badge bg-info ms-1">
+                                    <i class="fas fa-image"></i> {{ report.images.count }}
+                                </span>
+                                {% endif %}
+                                {% if report.anonymous %}
+                                <span class="badge bg-secondary ms-1">Anonymous</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.status == 'pending' %}
+                                <span class="badge bg-warning">Pending</span>
+                                {% elif report.status == 'processing' %}
+                                <span class="badge bg-info">Processing</span>
+                                {% elif report.status == 'resolved' %}
+                                <span class="badge bg-success">Resolved</span>
+                                {% else %}
+                                <span class="badge bg-secondary">Closed</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.priority == 'critical' %}
+                                <span class="badge bg-dark">Critical</span>
+                                {% elif report.priority == 'high' %}
+                                <span class="badge bg-danger">High</span>
+                                {% elif report.priority == 'medium' %}
+                                <span class="badge bg-warning">Medium</span>
+                                {% else %}
+                                <span class="badge bg-success">Low</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if report.category %}
+                                <span class="badge bg-secondary">{{ report.category.name }}</span>
+                                {% else %}
+                                <span class="text-muted">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ report.display_reporter }}</td>
+                            <td>
+                                <small class="text-muted">{{ report.created_at|date:"M d, Y" }}</small>
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'reports:detail' report.id %}" 
+                                       class="btn btn-outline-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{% url 'reports:process_report' report.id %}" 
+                                       class="btn btn-outline-info">
+                                        <i class="fas fa-cog"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% elif request.GET %}
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="text-muted mb-4">
+                <i class="fas fa-search fa-3x"></i>
+            </div>
+            <h4>No Results Found</h4>
+            <p class="text-muted">Try adjusting your search criteria</p>
+            <a href="{% url 'reports:search' %}" class="btn btn-primary">
+                <i class="fas fa-redo me-2"></i>Clear Search
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.advanced-filters {
+    display: none;
+}
+.advanced-filters.show {
+    display: block;
+}
+</style>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle custom date fields
+    const dateRangeSelect = document.getElementById('id_date_range');
+    const customDateFrom = document.getElementById('customDateFrom');
+    const customDateTo = document.getElementById('customDateTo');
+    
+    function toggleCustomDateFields() {
+        if (dateRangeSelect.value === 'custom') {
+            customDateFrom.style.display = 'block';
+            customDateTo.style.display = 'block';
+        } else {
+            customDateFrom.style.display = 'none';
+            customDateTo.style.display = 'none';
+        }
+    }
+    
+    dateRangeSelect.addEventListener('change', toggleCustomDateFields);
+    toggleCustomDateFields(); // Initial check
+    
+    // Select all checkboxes
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.report-checkbox');
+    
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+        
+        // Update select all when individual checkboxes change
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                selectAll.checked = allChecked;
+            });
+        });
+    }
+    
+    // Toggle advanced filters
+    const toggleBtn = document.getElementById('toggleFilters');
+    const advancedFilters = document.querySelector('.advanced-filters');
+    
+    if (toggleBtn && advancedFilters) {
+        toggleBtn.addEventListener('click', function() {
+            advancedFilters.classList.toggle('show');
+            this.innerHTML = advancedFilters.classList.contains('show') ?
+                '<i class="fas fa-times me-2"></i>Hide Advanced' :
+                '<i class="fas fa-sliders-h me-2"></i>Advanced';
+        });
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

@@ -15,7 +15,7 @@
                     <span class="text-gradient">CampusGuard</span>
                     <span class="text-secondary">AI</span>
                 </div>
-                <div class="brand-sub">Security System</div>
+                <div class="brand-sub">Evidence Intelligence</div>
             </div>
         </a>
         <!-- Close button for mobile (hidden on desktop) -->
@@ -28,114 +28,99 @@
     <nav class="sidebar-nav">
         <!-- Dashboard Section -->
         <div class="nav-section">
-            <div class="nav-section-title">MAIN</div>
+            <div class="nav-section-title">DASHBOARD</div>
             <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a href="{% url 'dashboard:index' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'index' %}active{% endif %}">
-                        <i class="fas fa-tachometer-alt"></i>
-                        <span class="nav-link-text">Dashboard</span>
-                    </a>
-                </li>
-                
                 <!-- Role-specific dashboards -->
-                {% if user.is_superuser or user.role == 'admin' %}
+                {% if user.is_admin or user.is_superuser %}
                 <li class="nav-item">
-                    <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
+                    <a href="{% url 'dashboard:admin_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}">
                         <i class="fas fa-user-shield"></i>
-                        <span class="nav-link-text">Admin Panel</span>
+                        <span class="nav-link-text">Admin Dashboard</span>
                     </a>
                 </li>
                 {% endif %}
                 
-                {% if user.role == 'security_manager' %}
+                {% if user.is_manager or user.is_admin or user.is_superuser %}
                 <li class="nav-item">
-                    <a href="{% url 'dashboard:security_manager_dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'security_manager_dashboard' %}active{% endif %}">
+                    <a href="{% url 'dashboard:manager_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'manager_dashboard' %}active{% endif %}">
                         <i class="fas fa-user-tie"></i>
-                        <span class="nav-link-text">Security Center</span>
+                        <span class="nav-link-text">Manager Dashboard</span>
                     </a>
                 </li>
                 {% endif %}
                 
-                {% if user.role == 'security_guard' %}
+                {% if user.is_viewer %}
                 <li class="nav-item">
-                    <a href="{% url 'dashboard:security_guard_dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'security_guard_dashboard' %}active{% endif %}">
-                        <i class="fas fa-shield-alt"></i>
-                        <span class="nav-link-text">Patrol Console</span>
-                    </a>
-                </li>
-                {% endif %}
-                
-                {% if user.role == 'ict_staff' %}
-                <li class="nav-item">
-                    <a href="{% url 'dashboard:ict_staff_dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'ict_staff_dashboard' %}active{% endif %}">
-                        <i class="fas fa-laptop-code"></i>
-                        <span class="nav-link-text">Technical Ops</span>
-                    </a>
-                </li>
-                {% endif %}
-                
-                {% if user.role == 'institution_admin' %}
-                <li class="nav-item">
-                    <a href="{% url 'dashboard:institution_admin_dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'institution_admin_dashboard' %}active{% endif %}">
-                        <i class="fas fa-university"></i>
-                        <span class="nav-link-text">Institution Admin</span>
-                    </a>
-                </li>
-                {% endif %}
-                
-                {% if user.role == 'viewer' %}
-                <li class="nav-item">
-                    <a href="{% url 'dashboard:viewer_dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'dashboard' and request.resolver_match.url_name == 'viewer_dashboard' %}active{% endif %}">
+                    <a href="{% url 'dashboard:viewer_dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'viewer_dashboard' %}active{% endif %}">
                         <i class="fas fa-eye"></i>
-                        <span class="nav-link-text">Viewer Dashboard</span>
+                        <span class="nav-link-text">My Dashboard</span>
                     </a>
                 </li>
                 {% endif %}
+                
+                <!-- Quick link to My Reports -->
+                <li class="nav-item">
+                    <a href="{% url 'reports:my_reports' %}" class="nav-link {% if 'my' in request.path %}active{% endif %}">
+                        <i class="fas fa-file-alt"></i>
+                        <span class="nav-link-text">My Reports</span>
+                    </a>
+                </li>
             </ul>
         </div>
         
-        <!-- Monitoring Section -->
+        <!-- Incident Reporting Section -->
         <div class="nav-section">
-            <div class="nav-section-title">MONITORING</div>
+            <div class="nav-section-title">INCIDENT REPORTING</div>
             <ul class="nav flex-column">
-                {% if user.can_manage_cameras or user.role == 'viewer' %}
-                <!-- Cameras - visible to camera managers and viewers -->
+                <!-- All users can report incidents -->
                 <li class="nav-item">
-                    <a href="{% url 'cameras:list' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'list' %}active{% endif %}">
-                        <i class="fas fa-video"></i>
-                        <span class="nav-link-text">Cameras</span>
-                        {% if user.can_manage_cameras %}
-                        <!-- Show camera count only for managers - simplified -->
+                    <a href="{% url 'reports:create' %}" class="nav-link {% if request.resolver_match.url_name == 'create' %}active{% endif %}">
+                        <i class="fas fa-flag"></i>
+                        <span class="nav-link-text">Report Incident</span>
+                        <span class="nav-badge badge bg-primary">NEW</span>
+                    </a>
+                </li>
+                
+                <!-- Reports Queue - for Managers and Admins -->
+                {% if user.is_manager or user.is_admin or user.is_superuser %}
+                <li class="nav-item">
+                    <a href="{% url 'reports:reports_queue' %}" class="nav-link {% if 'manager/queue' in request.path %}active{% endif %}">
+                        <i class="fas fa-inbox"></i>
+                        <span class="nav-link-text">Reports Queue</span>
+                        {% if user.is_manager or user.is_admin %}
+                        <!-- Placeholder badge - you can implement actual count later -->
                         <span class="nav-badge badge bg-danger">0</span>
                         {% endif %}
                     </a>
                 </li>
                 {% endif %}
                 
-                <!-- Video Analysis - only for camera managers and ICT staff -->
-                {% if user.can_manage_cameras or user.role == 'ict_staff' %}
+                <!-- All Reports - for Managers and Admins -->
+                {% if user.can_view_all_reports %}
                 <li class="nav-item">
-                    <a href="{% url 'cameras:media_selection' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'media_selection' %}active{% endif %}">
-                        <i class="fas fa-file-video"></i>
-                        <span class="nav-link-text">Media Analysis</span>
+                    <a href="{% url 'reports:list' %}" class="nav-link {% if request.resolver_match.url_name == 'list' and 'my' not in request.path %}active{% endif %}">
+                        <i class="fas fa-list"></i>
+                        <span class="nav-link-text">All Reports</span>
                     </a>
                 </li>
                 {% endif %}
                 
-                <!-- Media Gallery - for all users -->
+                <!-- Case Management - for Managers and Admins -->
+                {% if user.can_manage_cases %}
                 <li class="nav-item">
-                    <a href="{% url 'cameras:media_gallery' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'media_gallery' %}active{% endif %}">
-                        <i class="fas fa-photo-video"></i>
-                        <span class="nav-link-text">Media Gallery</span>
+                    <a href="{% url 'reports:case_management' %}" class="nav-link {% if 'manager/cases' in request.path %}active{% endif %}">
+                        <i class="fas fa-tasks"></i>
+                        <span class="nav-link-text">Case Management</span>
                     </a>
                 </li>
+                {% endif %}
                 
-                <!-- Live Feed - for security personnel and viewers -->
-                {% if user.is_security_staff or user.role == 'viewer' or user.role == 'institution_admin' %}
+                <!-- Search Reports - for Managers and Admins -->
+                {% if user.can_view_all_reports %}
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-broadcast-tower"></i>
-                        <span class="nav-link-text">Live Feed</span>
+                    <a href="{% url 'reports:search' %}" class="nav-link {% if 'manager/search' in request.path %}active{% endif %}">
+                        <i class="fas fa-search"></i>
+                        <span class="nav-link-text">Search Reports</span>
                     </a>
                 </li>
                 {% endif %}
@@ -147,12 +132,22 @@
         <div class="nav-section">
             <div class="nav-section-title">ANALYTICS</div>
             <ul class="nav flex-column">
-                <!-- Camera Analytics - for camera managers and ICT -->
-                {% if user.can_manage_cameras or user.role == 'ict_staff' %}
+                <!-- Analytics Dashboard - for Managers and Admins -->
+                {% if user.can_view_analytics %}
                 <li class="nav-item">
-                    <a href="{% url 'cameras:dashboard' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <a href="{% url 'reports:analytics' %}" class="nav-link {% if 'manager/analytics' in request.path %}active{% endif %}">
                         <i class="fas fa-chart-line"></i>
-                        <span class="nav-link-text">Camera Analytics</span>
+                        <span class="nav-link-text">Analytics Dashboard</span>
+                    </a>
+                </li>
+                {% endif %}
+                
+                <!-- System Statistics - for Admins only -->
+                {% if user.is_admin or user.is_superuser %}
+                <li class="nav-item">
+                    <a href="{% url 'reports:system_stats' %}" class="nav-link {% if 'admin/system-stats' in request.path %}active{% endif %}">
+                        <i class="fas fa-chart-pie"></i>
+                        <span class="nav-link-text">System Statistics</span>
                     </a>
                 </li>
                 {% endif %}
@@ -160,65 +155,45 @@
         </div>
         {% endif %}
         
-        <!-- Notifications Section -->
-        <div class="nav-section">
-            <div class="nav-section-title">NOTIFICATIONS</div>
-            <ul class="nav flex-column">
-                <!-- Only keep Alerts as requested -->
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-bell"></i>
-                        <span class="nav-link-text">Alerts</span>
-                        <span class="nav-badge badge bg-danger">0</span>
-                    </a>
-                </li>
-                
-                <!-- Emergency Alerts REMOVED as per requirement #3 -->
-            </ul>
-        </div>
-        
         <!-- Administration Section -->
-        {% if user.is_administrator or user.is_superuser %}
+        {% if user.is_admin or user.is_superuser %}
         <div class="nav-section">
             <div class="nav-section-title">ADMINISTRATION</div>
             <ul class="nav flex-column">
-                <!-- User Management - for admins and institution admins -->
+                <!-- User Management - for admins only -->
                 {% if user.can_manage_users %}
                 <li class="nav-item">
-                    <a href="{% url 'accounts:user_list' %}" class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                    <a href="{% url 'admin:accounts_user_changelist' %}" class="nav-link {% if 'admin/accounts/user' in request.path %}active{% endif %}">
                         <i class="fas fa-users"></i>
                         <span class="nav-link-text">User Management</span>
                     </a>
                 </li>
                 {% endif %}
                 
-                <!-- Invite User - for admins and institution admins -->
-                {% if user.can_manage_users %}
+                <!-- Invitations - for admins only -->
+                {% if user.can_invite_users %}
                 <li class="nav-item">
-                    <a href="{% url 'accounts:invite_user' %}" class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'invite_user' %}active{% endif %}">
+                    <a href="{% url 'admin:accounts_invitation_changelist' %}" class="nav-link {% if 'admin/accounts/invitation' in request.path %}active{% endif %}">
                         <i class="fas fa-user-plus"></i>
-                        <span class="nav-link-text">Invite User</span>
+                        <span class="nav-link-text">Invitations</span>
                     </a>
                 </li>
                 {% endif %}
                 
-                <!-- Camera Management - for admins and ICT -->
-                {% if user.can_manage_cameras %}
+                <!-- Reports Export - for admins and managers -->
+                {% if user.can_export_data %}
                 <li class="nav-item">
-                    <a href="{% url 'cameras:list' %}" class="nav-link {% if request.resolver_match.namespace == 'cameras' and request.resolver_match.url_name == 'list' %}active{% endif %}">
-                        <i class="fas fa-video"></i>
-                        <span class="nav-link-text">Camera Management</span>
+                    <a href="{% url 'reports:export_reports' %}" class="nav-link {% if 'admin/export' in request.path %}active{% endif %}">
+                        <i class="fas fa-download"></i>
+                        <span class="nav-link-text">Export Data</span>
                     </a>
                 </li>
                 {% endif %}
-                
-                <!-- Alert Rules REMOVED as per requirement #4 -->
-                <!-- System Configuration REMOVED as per requirement #4 -->
                 
                 <!-- Django Admin Panel - only for superusers -->
                 {% if user.is_superuser %}
                 <li class="nav-item">
-                    <a href="{% url 'admin:index' %}" class="nav-link" target="_blank">
+                    <a href="{% url 'admin:index' %}" class="nav-link {% if 'admin' == request.resolver_match.app_name %}active{% endif %}">
                         <i class="fas fa-cogs"></i>
                         <span class="nav-link-text">Django Admin</span>
                     </a>
@@ -232,27 +207,25 @@
         <div class="nav-section">
             <div class="nav-section-title">ACCOUNT</div>
             <ul class="nav flex-column">
-                <!-- Profile page updated with proper URL -->
+                <!-- Profile -->
                 <li class="nav-item">
-                    <a href="{% url 'accounts:profile' %}" class="nav-link {% if request.resolver_match.namespace == 'accounts' and request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                    <a href="{% url 'accounts:profile' %}" class="nav-link {% if 'profile' in request.path %}active{% endif %}">
                         <i class="fas fa-user"></i>
                         <span class="nav-link-text">My Profile</span>
                     </a>
                 </li>
                 
-                <!-- Notification Settings REMOVED as per requirement #5 -->
+ 
                 
-                <!-- Role-specific account links -->
-                {% if user.is_security_staff %}
+                <!-- Notifications -->
                 <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="fas fa-calendar-alt"></i>
-                        <span class="nav-link-text">Shift Schedule</span>
+                    <a href="{% url 'dashboard:notifications' %}" class="nav-link {% if 'notifications' in request.path %}active{% endif %}">
+                        <i class="fas fa-bell"></i>
+                        <span class="nav-link-text">Notifications</span>
+                        <!-- Simple badge - remove complex filter -->
+                        <span class="nav-badge badge bg-danger">0</span>
                     </a>
                 </li>
-                {% endif %}
-                
-                <!-- Patrol Reports REMOVED as per requirement #5 -->
                 
                 <!-- Logout -->
                 <li class="nav-item">
@@ -269,21 +242,15 @@
             <div class="nav-section-title">CURRENT ROLE</div>
             <div class="px-3 py-2">
                 <span class="badge 
-                    {% if user.is_superuser or user.role == 'admin' %}bg-danger
-                    {% elif user.role == 'security_manager' %}bg-warning
-                    {% elif user.role == 'security_guard' %}bg-success
-                    {% elif user.role == 'ict_staff' %}bg-info
-                    {% elif user.role == 'institution_admin' %}bg-primary
-                    {% elif user.role == 'viewer' %}bg-secondary
-                    {% else %}bg-dark{% endif %} 
-                    w-100 text-center">
+                    {% if user.is_admin or user.is_superuser %}bg-danger
+                    {% elif user.is_manager %}bg-primary
+                    {% elif user.is_viewer %}bg-success
+                    {% else %}bg-secondary{% endif %} 
+                    w-100 text-center py-2">
                     <i class="fas 
-                        {% if user.is_superuser or user.role == 'admin' %}fa-user-shield
-                        {% elif user.role == 'security_manager' %}fa-user-tie
-                        {% elif user.role == 'security_guard' %}fa-shield-alt
-                        {% elif user.role == 'ict_staff' %}fa-laptop-code
-                        {% elif user.role == 'institution_admin' %}fa-university
-                        {% elif user.role == 'viewer' %}fa-eye
+                        {% if user.is_admin or user.is_superuser %}fa-user-shield
+                        {% elif user.is_manager %}fa-user-tie
+                        {% elif user.is_viewer %}fa-eye
                         {% else %}fa-user{% endif %} me-2"></i>
                     {{ user.get_role_display }}
                 </span>
@@ -292,6 +259,12 @@
                     <i class="fas fa-star"></i> Superuser
                 </small>
                 {% endif %}
+                <small class="text-muted d-block mt-1 text-center">
+                    {{ user.institution|default:"No institution" }}
+                </small>
+                <small class="text-muted d-block mt-1 text-center">
+                    Reports: {{ user.reported_incidents.count }}
+                </small>
             </div>
         </div>
     </nav>
@@ -300,6 +273,7 @@
     <div class="sidebar-footer">
         <small class="text-white-50">
             CampusGuard AI v1.0<br>
+            Evidence Intelligence Platform<br>
             © {% now "Y" %}
         </small>
     </div>
