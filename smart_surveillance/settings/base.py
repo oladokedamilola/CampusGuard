@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-91g18xno8ih_wm7$9r=kwpg1*(6z&ksrqny_q95*nv*75!rh=!'
+SECRET_KEY = ''
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -183,7 +183,7 @@ PASSWORD_RESET_TOKEN_EXPIRY_HOURS = int(os.getenv('PASSWORD_RESET_TOKEN_EXPIRY_H
 # ============================================================================
 FASTAPI_CONFIG = {
     'BASE_URL': os.environ.get('FASTAPI_BASE_URL', 'http://localhost:8001'),
-    'API_KEY': os.environ.get('FASTAPI_API_KEY', 'a3f8e97b12c450d6f34a8921b567d0e9f12a34b5678c9d0e1f23a45b67c89d012'),
+    'API_KEY': os.environ.get('FASTAPI_API_KEY', ''),
     'TIMEOUT': 120,  # seconds for processing requests
     'RETRY_ATTEMPTS': 3,
     'RETRY_DELAY': 2,  # seconds between retries
@@ -196,6 +196,7 @@ FASTAPI_CONFIG = {
         'HEALTH_CHECK': '/health',
     }
 }
+
 
 # Media upload settings
 MAX_UPLOAD_SIZE = 500 * 1024 * 1024  # 500MB
